@@ -1,3 +1,4 @@
+import functools
 import hashlib
 import json
 import logging
@@ -5,6 +6,12 @@ from typing import Callable, Iterable, Text
 
 import toolz
 from toolz import curried
+
+
+def wrapped_partial(func: Callable, *args, **kwargs) -> Callable:
+    partial_func = functools.partial(func, *args, **kwargs)
+    functools.update_wrapper(partial_func, func)
+    return partial_func
 
 
 @toolz.curry
