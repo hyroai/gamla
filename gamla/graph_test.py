@@ -1,6 +1,6 @@
 import unittest
 
-import graph
+from gamla import graph
 
 
 class Test(unittest.TestCase):
