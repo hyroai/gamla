@@ -87,14 +87,6 @@ def first(*funcs, exception_type):
     return inner
 
 
-def rename(f: Callable, new_name: Text) -> Callable:
-    def inner(*args,**kwargs):
-        return f(*args,**kwargs)
-    inner.__name__ = new_name
-    return inner
-
-
-
 logger = curried.do(logging.info)
 
 
