@@ -5,6 +5,7 @@ import time
 import requests
 import requests.adapters
 import requests.packages.urllib3.util.retry
+import toolz
 from gevent import pool
 
 
@@ -33,8 +34,14 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     return session
 
 
+# TODO(uri): Remove in favor of `pmap`.
 def curried_pmap(f):
     def inner(it):
         return pool.Group().map(f, it)
 
     return inner
+
+
+@toolz.curry
+def pmap(f, it):
+    return pool.Group().map(f, it)

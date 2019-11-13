@@ -8,6 +8,15 @@ import toolz
 from toolz import curried
 
 
+def singleize(func: Callable) -> Callable:
+    def wrapped(some_input):
+        if isinstance(some_input, tuple):
+            return func(some_input)
+        return toolz.first(func((some_input,)))
+
+    return wrapped
+
+
 def wrapped_partial(func: Callable, *args, **kwargs) -> Callable:
     partial_func = functools.partial(func, *args, **kwargs)
     functools.update_wrapper(partial_func, func)
