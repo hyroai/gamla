@@ -85,10 +85,10 @@ def assert_that(f):
 
 
 def first(*funcs, exception_type):
-    def inner(inp):
+    def inner(*args, **kwargs):
         for func in funcs:
             try:
-                return func(inp)
+                return func(*args, **kwargs)
             except exception_type:
                 pass
         raise exception_type
