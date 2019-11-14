@@ -1,11 +1,25 @@
 import functools
 import hashlib
+import itertools
 import json
 import logging
 from typing import Callable, Iterable, Text
 
 import toolz
 from toolz import curried
+
+
+def bifurcate(*funcs):
+    """Serially runs each function on tee'd copies of `input_generator`."""
+
+    def inner(input_generator):
+        return toolz.pipe(
+            zip(funcs, itertools.tee(input_generator, len(funcs))),
+            curried.map(star(lambda f, generator: f(generator))),
+            tuple,
+        )
+
+    return inner
 
 
 def singleize(func: Callable) -> Callable:
