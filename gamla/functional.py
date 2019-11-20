@@ -9,6 +9,14 @@ import toolz
 from toolz import curried
 
 
+def _do_if(condition, fun):
+    return curried.do(curried_ternary(condition, fun, toolz.identity))
+
+
+def check(condition, exception):
+    return _do_if(condition, make_raise(exception))
+
+
 def bifurcate(*funcs):
     """Serially runs each function on tee'd copies of `input_generator`."""
 
