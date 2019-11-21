@@ -3,10 +3,15 @@ import hashlib
 import itertools
 import json
 import logging
-from typing import Callable, Iterable, Text
+from typing import Callable, Dict, Iterable, Text
 
 import toolz
 from toolz import curried
+
+
+@toolz.curry
+def dict_get(dict_obj: Dict, default, key):
+    return dict_obj.get(key, default)
 
 
 def _do_if(condition, fun):
@@ -14,7 +19,7 @@ def _do_if(condition, fun):
 
 
 def check(condition, exception):
-    return _do_if(condition, make_raise(exception))
+    return _do_if(toolz.complement(condition), make_raise(exception))
 
 
 def bifurcate(*funcs):

@@ -7,17 +7,17 @@ from toolz.curried import operator
 
 
 @toolz.curry
-def graph_traverse(source: Any, get_neighbors: Callable) -> FrozenSet:
+def graph_traverse(source: Any, get_neighbors: Callable) -> Iterable:
     """BFS over a graph, yielding unique nodes."""
     seen = set()
     queue = [source]
     while queue:
         current = queue.pop()
+        yield current
         seen.add(current)
         for node in get_neighbors(current):
             if node not in seen:
                 queue = [node] + queue
-    return frozenset(seen)
 
 
 def traverse_graph_by_radius(
@@ -58,11 +58,13 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
     """Graph is assumed to undirected, so each edge must appear both ways."""
     nodes_left = frozenset(graph)
     while nodes_left:
-        result = graph_traverse(
-            source=toolz.first(nodes_left),
-            get_neighbors=toolz.compose(
-                curried.filter(operator.contains(nodes_left)), graph.get
-            ),
+        result = frozenset(
+            graph_traverse(
+                source=toolz.first(nodes_left),
+                get_neighbors=toolz.compose(
+                    curried.filter(operator.contains(nodes_left)), graph.get
+                ),
+            )
         )
         yield result
         nodes_left -= result
