@@ -124,7 +124,7 @@ def pfirst(*funcs, exception_type):
     def inner(*args, **kwargs):
         return toolz.pipe(
             funcs,
-            curried.pmap(
+            pmap(
                 toolz.excepts(
                     exception_type,
                     lambda func: func(*args, **kwargs),
