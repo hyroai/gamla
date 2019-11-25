@@ -3,9 +3,10 @@ import hashlib
 import itertools
 import json
 import logging
-from typing import Callable, Dict, Iterable, Text
+from typing import Callable, Dict, Iterable, Text, Type
 
 import toolz
+from gevent import pool
 from toolz import curried
 
 
@@ -90,6 +91,7 @@ def translate_exception(func, exc1, exc2):
     return toolz.excepts(exc1, func, make_raise(exc2))
 
 
+@functools.lru_cache(maxsize=None)
 def compute_stable_json_hash(item) -> Text:
     return hashlib.sha1(
         json.dumps(
@@ -111,7 +113,32 @@ def assert_that(f):
     return curried.do(_assert_f_output_on_inp(f))
 
 
-def first(*funcs, exception_type):
+@toolz.curry
+def pmap(f, it):
+    return pool.Group().map(f, it)
+
+
+def pfirst(*funcs, exception_type):
+    value_signifying_failure = "gamla-first-failed"
+
+    def inner(*args, **kwargs):
+        return toolz.pipe(
+            funcs,
+            curried.pmap(
+                toolz.excepts(
+                    exception_type,
+                    lambda func: func(*args, **kwargs),
+                    lambda _: value_signifying_failure,
+                )
+            ),
+            curried.filter(lambda x: x != value_signifying_failure),
+            next,
+        )
+
+    return inner
+
+
+def first(*funcs, exception_type: Type[Exception], run_parallel: bool = False):
     def inner(*args, **kwargs):
         for func in funcs:
             try:

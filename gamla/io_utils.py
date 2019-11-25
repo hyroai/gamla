@@ -4,8 +4,6 @@ import time
 
 import requests
 import requests.adapters
-import toolz
-from gevent import pool
 from requests.packages.urllib3.util import retry
 
 
@@ -33,8 +31,3 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     return session
-
-
-@toolz.curry
-def pmap(f, it):
-    return pool.Group().map(f, it)
