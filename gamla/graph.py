@@ -5,6 +5,8 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
+from gamla import functional
+
 
 @toolz.curry
 def graph_traverse(source: Any, get_neighbors: Callable) -> Iterable:
@@ -68,3 +70,17 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
         )
         yield result
         nodes_left -= result
+
+
+@toolz.curry
+def groupby_many(f, it):
+    return toolz.pipe(
+        it,
+        curried.mapcat(
+            toolz.compose(
+                functional.star(itertools.product),
+                lambda element: (f(element), [element]),
+            )
+        ),
+        edges_to_graph,
+    )
