@@ -132,7 +132,7 @@ def pfirst(*funcs, exception_type):
                 )
             ),
             curried.filter(lambda x: x != value_signifying_failure),
-            next,
+            translate_exception(next, StopIteration, exception_type),
         )
 
     return inner
