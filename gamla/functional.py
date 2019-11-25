@@ -56,9 +56,17 @@ def anymap(f: Callable, it: Iterable):
     return any(map(f, it))
 
 
+def anyjuxt(*funcs):
+    return toolz.compose(any, toolz.juxt(*funcs))
+
+
 @toolz.curry
 def allmap(f: Callable, it: Iterable):
     return all(map(f, it))
+
+
+def alljuxt(*funcs):
+    return toolz.compose(all, toolz.juxt(*funcs))
 
 
 def ignore_input(inner):
@@ -115,7 +123,8 @@ def assert_that(f):
 
 @toolz.curry
 def pmap(f, it):
-    return pool.Group().map(f, it)
+    # The `tuple` is mainly for convenience of users (even without it, the pool is eager).
+    return tuple(pool.Group().map(f, it))
 
 
 def pfirst(*funcs, exception_type):
