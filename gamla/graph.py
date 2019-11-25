@@ -77,9 +77,9 @@ def groupby_many(f, it):
     return toolz.pipe(
         it,
         curried.mapcat(
-            toolz.compose(
-                functional.star(itertools.product),
+            toolz.compose_left(
                 lambda element: (f(element), [element]),
+                functional.star(itertools.product),
             )
         ),
         edges_to_graph,
