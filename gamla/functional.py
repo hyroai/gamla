@@ -123,8 +123,19 @@ def assert_that(f):
 
 @toolz.curry
 def pmap(f, it):
-    # The `tuple` is mainly for convenience of users (even without it, the pool is eager).
+    # The `tuple` is for callers convenience (even without it, the pool is eager).
     return tuple(pool.Group().map(f, it))
+
+
+@toolz.curry
+def pfilter(f, it):
+    return toolz.pipe(
+        it,
+        bifurcate(pmap(f), curried.map(toolz.identity)),
+        zip,
+        curried.filter(toolz.first),
+        curried.map(toolz.second),
+    )
 
 
 def pfirst(*funcs, exception_type):
