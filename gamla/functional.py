@@ -5,6 +5,7 @@ import json
 import logging
 from typing import Callable, Dict, Iterable, Text, Type
 
+import gevent
 import toolz
 from gevent import pool
 from toolz import curried
@@ -139,26 +140,33 @@ def pfilter(f, it):
 
 
 def pfirst(*funcs, exception_type):
-    value_signifying_failure = "gamla-first-failed"
+    """This is for parallel and lazy behaviour for when we want to start everything in parallel, but return a value on the first successful result."""
+    failure_value = "gamla-value-signifying-failure"
 
     def inner(*args, **kwargs):
         return toolz.pipe(
             funcs,
-            pmap(
-                toolz.excepts(
-                    exception_type,
-                    lambda func: func(*args, **kwargs),
-                    lambda _: value_signifying_failure,
+            # Prepare runs for each function on the given input, wrapping them for failure
+            # as gevent treats an exception within a greenlet as a real error.
+            curried.map(
+                lambda f: gevent.spawn(
+                    toolz.excepts(exception_type, f, lambda _: failure_value),
+                    *args,
+                    **kwargs
                 )
             ),
-            curried.filter(lambda x: x != value_signifying_failure),
+            # Materialize to actually start the requests in parallel.
+            tuple,
+            # Don't wait for all to finish, start examining the requests by order.
+            curried.map(lambda promise: promise.get()),
+            curried.filter(lambda result: result != failure_value),
             translate_exception(next, StopIteration, exception_type),
         )
 
     return inner
 
 
-def first(*funcs, exception_type: Type[Exception], run_parallel: bool = False):
+def first(*funcs, exception_type: Type[Exception]):
     def inner(*args, **kwargs):
         for func in funcs:
             try:
