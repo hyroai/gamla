@@ -16,12 +16,12 @@ def dict_get(dict_obj: Dict, default, key):
     return dict_obj.get(key, default)
 
 
-def _do_if(condition, fun):
+def do_if(condition, fun):
     return curried.do(curried_ternary(condition, fun, toolz.identity))
 
 
 def check(condition, exception):
-    return _do_if(toolz.complement(condition), make_raise(exception))
+    return do_if(toolz.complement(condition), make_raise(exception))
 
 
 def bifurcate(*funcs):
