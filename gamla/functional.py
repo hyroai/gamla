@@ -122,10 +122,13 @@ def assert_that(f):
     return curried.do(_assert_f_output_on_inp(f))
 
 
+_GLOBAL_POOL = pool.Group()
+
+
 @toolz.curry
 def pmap(f, it):
     # The `tuple` is for callers convenience (even without it, the pool is eager).
-    return tuple(pool.Group().map(f, it))
+    return tuple(_GLOBAL_POOL.map(f, it))
 
 
 @toolz.curry
