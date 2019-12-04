@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import hashlib
 import itertools
@@ -123,6 +124,22 @@ def assert_that(f):
 
 
 _GLOBAL_POOL = pool.Group()
+
+
+def acompose(*funcs):
+    async def composed(inp):
+        for f in reversed(funcs):
+            inp = f(inp)
+            if asyncio.iscoroutine(inp):
+                inp = await inp
+        return inp
+
+    return composed
+
+
+@toolz.curry
+async def amap(f, it):
+    return await asyncio.gather(*map(f, it))
 
 
 @toolz.curry
