@@ -1,4 +1,3 @@
-import asyncio
 import functools
 import hashlib
 import inspect
@@ -136,10 +135,14 @@ async def apipe(val, *funcs):
 
 
 def acompose(*funcs):
-    async def composed(inp):
+    async def composed(*args, **kwargs):
+        if args:
+            inp = toolz.first(args)
+        else:
+            inp = toolz.first(kwargs.values())
         for f in reversed(funcs):
             inp = f(inp)
-            if asyncio.iscoroutine(inp):
+            if inspect.isawaitable(inp):
                 inp = await inp
         return inp
 
@@ -167,6 +170,40 @@ async def amap(f, it):
 async def mapa(f, it):
     async for element in it:
         yield f(element)
+
+
+async def aconcat(async_generators):
+    async for g in async_generators:
+        for x in g:
+            yield x
+
+
+def ajuxt(*funcs):
+    async def ajuxt_inner(x):
+        results = []
+        for f in funcs:
+            result = f(x)
+            if inspect.isawaitable(result):
+                result = await result
+            results.append(result)
+        return tuple(results)
+
+    return ajuxt_inner
+
+
+def afirst(*funcs, exception_type):
+    async def afirst_inner(x):
+        for f in funcs:
+            try:
+                result = f(x)
+                if inspect.isawaitable(result):
+                    result = await result
+                return result
+            except exception_type:
+                pass
+        raise exception_type
+
+    return afirst_inner
 
 
 @toolz.curry
