@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import hashlib
+import inspect
 import itertools
 import json
 import logging
@@ -126,6 +127,14 @@ def assert_that(f):
 _GLOBAL_POOL = pool.Group()
 
 
+async def apipe(val, *funcs):
+    for f in funcs:
+        val = f(val)
+        if inspect.isawaitable(val):
+            val = await val
+    return val
+
+
 def acompose(*funcs):
     async def composed(inp):
         for f in reversed(funcs):
@@ -137,9 +146,27 @@ def acompose(*funcs):
     return composed
 
 
+def acompose_left(*funcs):
+    return acompose(*reversed(funcs))
+
+
+async def materialize(async_generator):
+    elements = []
+    async for element in async_generator:
+        elements.append(element)
+    return tuple(elements)
+
+
 @toolz.curry
 async def amap(f, it):
-    return await asyncio.gather(*map(f, it))
+    for element in it:
+        yield await f(element)
+
+
+@toolz.curry
+async def mapa(f, it):
+    async for element in it:
+        yield f(element)
 
 
 @toolz.curry
@@ -160,14 +187,18 @@ def pfilter(f, it):
 
 
 def pfirst(*funcs, exception_type):
-    """This is for parallel and lazy behaviour for when we want to start everything in parallel, but return a value on the first successful result."""
+    """Parallel+lazy iterator.
+
+    This is used for when we want to start everything in parallel, but return a value
+    on the first successful result.
+    """
     failure_value = "gamla-value-signifying-failure"
 
     def inner(*args, **kwargs):
         return toolz.pipe(
             funcs,
-            # Prepare runs for each function on the given input, wrapping them for failure
-            # as gevent treats an exception within a greenlet as a real error.
+            # Prepare runs for each function on the given input, wrapping them for
+            # failure as gevent treats an exception within a greenlet as a real error.
             curried.map(
                 lambda f: gevent.spawn(
                     toolz.excepts(exception_type, f, lambda _: failure_value),
