@@ -41,7 +41,7 @@ def _async_timeit(f):
 
 
 def timeit(f):
-    if asyncio.iscoroutine(f):
+    if asyncio.iscoroutinefunction(f):
         return _async_timeit(f)
 
     @functools.wraps(f)
