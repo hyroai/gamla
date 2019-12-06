@@ -199,6 +199,15 @@ def ajuxt(*funcs):
     return ajuxt_inner
 
 
+@toolz.curry
+async def afilter(func, it):
+    it = tuple(it)
+    results = await amap(func, it)
+    return toolz.pipe(
+        zip(it, results), curried.filter(toolz.second), curried.map(toolz.first)
+    )
+
+
 def afirst(*funcs, exception_type):
     async def afirst_inner(x):
         for f in funcs:
