@@ -8,11 +8,17 @@ import requests
 import requests.adapters
 from requests.packages.urllib3.util import retry
 
+_HTTP_SESSION = aiohttp.ClientSession()
 
-async def apost(url, json, timeout):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url=url, json=json, timeout=timeout) as response:
-            return await response.json()
+
+def apost(url, json, timeout, headers=None):
+    return _HTTP_SESSION.post(url=url, json=json, timeout=timeout, headers=headers)
+
+
+def aget(url, timeout, params=None, headers=None, json=None):
+    return _HTTP_SESSION.get(
+        url=url, timeout=timeout, headers=headers, params=params, json=json
+    )
 
 
 def _log_args(name, elapsed, args, kwargs):

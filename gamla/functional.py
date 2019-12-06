@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import hashlib
 import inspect
@@ -162,8 +163,15 @@ async def materialize(async_generator):
 
 @toolz.curry
 async def amap(f, it):
-    for element in it:
-        yield await f(element)
+    return await asyncio.gather(*map(f, it))
+
+
+@toolz.curry
+async def aexcepts(exception_type, func, handler, x):
+    try:
+        return await func(x)
+    except exception_type as error:
+        return handler(error)
 
 
 @toolz.curry
