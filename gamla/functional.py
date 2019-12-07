@@ -288,3 +288,31 @@ logger = curried.do(logging.info)
 
 def log_text(text: Text):
     return curried.do(lambda _: logging.info(text))
+
+
+# To get a unique caching key for each function invocation, we take `args` and `items()`
+# of `kwargs` and sort them (by keys), while also marking the beginning of `kwargs`.
+# Inspired by: http://code.activestate.com/recipes/578078/ (python LRU cache
+# implementation).
+def make_call_key(args, kwargs):
+    key = args
+    if kwargs:
+        key += "##kwargs##", tuple(sorted(kwargs.items()))
+    return key
+
+
+def acache(f):
+
+    cache = {}
+
+    @functools.wraps(f)
+    async def wrapper(*args, **kwargs):
+        key = make_call_key(args, kwargs)
+        try:
+            return cache[key]
+        except KeyError:
+            result = await f(*args, **kwargs)
+            cache[key] = result
+            return result
+
+    return wrapper
