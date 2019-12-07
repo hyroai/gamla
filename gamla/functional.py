@@ -295,24 +295,8 @@ def log_text(text: Text):
 # Inspired by: http://code.activestate.com/recipes/578078/ (python LRU cache
 # implementation).
 def make_call_key(args, kwargs):
+    """Stable id for function calls, can be used for caching."""
     key = args
     if kwargs:
         key += "##kwargs##", tuple(sorted(kwargs.items()))
     return key
-
-
-def acache(f):
-
-    cache = {}
-
-    @functools.wraps(f)
-    async def wrapper(*args, **kwargs):
-        key = make_call_key(args, kwargs)
-        try:
-            return cache[key]
-        except KeyError:
-            result = await f(*args, **kwargs)
-            cache[key] = result
-            return result
-
-    return wrapper
