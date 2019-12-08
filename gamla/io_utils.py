@@ -1,26 +1,36 @@
 import asyncio
+import datetime
 import functools
 import logging
 import time
+from typing import Text
 
 import requests
 import requests.adapters
 from requests.packages.urllib3.util import retry
 
 
-def _log_args(name, elapsed, args, kwargs):
+def _time_to_readable(time_s: float):
+    return datetime.datetime.fromtimestamp(time_s)
+
+
+def _request_id(name, args, kwargs) -> Text:
     args_str = str(args)[:50]
     kwargs_str = str(kwargs)[:50]
-    logging.info(f"{name}: {elapsed} (args: {args_str}, kwargs: {kwargs_str})")
+    return f"{name}, args: {args_str}, kwargs: {kwargs_str}"
 
 
 def _async_timeit(f):
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
+        req_id = _request_id(f.__name__, args, kwargs)
         start = time.time()
+        logging.info(f"{req_id} started at {_time_to_readable(start)}")
         result = await f(*args, **kwargs)
-        _log_args(
-            name=f.__name__, elapsed=time.time() - start, args=args, kwargs=kwargs
+        finish = time.time()
+        elapsed = finish - start
+        logging.info(
+            f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed}"
         )
         return result
 
@@ -33,10 +43,14 @@ def timeit(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
+        req_id = _request_id(f.__name__, args, kwargs)
         start = time.time()
+        logging.info(f"{req_id} started at {_time_to_readable(start)}")
         result = f(*args, **kwargs)
-        _log_args(
-            name=f.__name__, elapsed=time.time() - start, args=args, kwargs=kwargs
+        finish = time.time()
+        elapsed = finish - start
+        logging.info(
+            f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed}"
         )
         return result
 
