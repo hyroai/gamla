@@ -45,6 +45,13 @@ def singleize(func: Callable) -> Callable:
             return func(some_input)
         return toolz.first(func((some_input,)))
 
+    async def wrapped_async(some_input):
+        if isinstance(some_input, tuple):
+            return await func(some_input)
+        return toolz.first(await func((some_input,)))
+
+    if inspect.iscoroutinefunction(func):
+        return wrapped_async
     return wrapped
 
 
