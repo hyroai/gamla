@@ -80,9 +80,8 @@ def batch_calls(f, timeout=5):
 
     async def make_call():
         if not queue:
-            return
-        await asyncio.sleep(0.1)
-        if not queue:
+            await asyncio.sleep(0.1)
+            asyncio.create_task(make_call())
             return
         queue_copy = dict(queue)
         queue.clear()
@@ -94,6 +93,8 @@ def batch_calls(f, timeout=5):
         except Exception as exception:
             for async_result in queue_copy.values():
                 async_result.set_exception(exception)
+        await asyncio.sleep(0.1)
+        asyncio.create_task(make_call())
 
     async def wrapped(hashable_input):
         if hashable_input in queue:
@@ -104,8 +105,7 @@ def batch_calls(f, timeout=5):
         if hashable_input in queue:
             return await asyncio.wait_for(queue[hashable_input], timeout=timeout)
         queue[hashable_input] = async_result
-        if len(queue) == 1:
-            asyncio.create_task(make_call())
         return await asyncio.wait_for(async_result, timeout=timeout)
 
+    asyncio.create_task(make_call())
     return wrapped
