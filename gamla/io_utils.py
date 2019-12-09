@@ -77,6 +77,7 @@ def batch_calls(f, timeout=5):
     that gets a single request.
     """
     queue = {}
+    active = False
 
     async def make_call():
         if not queue:
@@ -97,6 +98,10 @@ def batch_calls(f, timeout=5):
         asyncio.create_task(make_call())
 
     async def wrapped(hashable_input):
+        nonlocal active
+        if not active:
+            active = True
+            asyncio.create_task(make_call())
         if hashable_input in queue:
             return await asyncio.wait_for(queue[hashable_input], timeout=timeout)
         async_result = asyncio.Future()
@@ -107,5 +112,4 @@ def batch_calls(f, timeout=5):
         queue[hashable_input] = async_result
         return await asyncio.wait_for(async_result, timeout=timeout)
 
-    asyncio.create_task(make_call())
     return wrapped
