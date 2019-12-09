@@ -70,7 +70,7 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
 
 
 # TODO(uri): move the test as well
-def batch_calls(f, timeout=5):
+def batch_calls(f, timeout=20):
     """Batches single call into one request.
 
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
