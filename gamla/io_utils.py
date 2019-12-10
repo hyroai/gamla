@@ -7,7 +7,6 @@ from typing import Text
 
 import requests
 import requests.adapters
-import toolz
 from requests.packages.urllib3.util import retry
 
 from gamla import functional
@@ -84,18 +83,18 @@ def batch_calls(f, timeout=20):
         await asyncio.sleep(0.1)
         if not queue:
             return
-        queue_items = list(queue.items())
+        promises = tuple(queue.values())
+        requests = tuple(queue.keys())
         queue.clear()
-        requests = tuple(map(toolz.first, queue_items))
-        # We use a list to make sure we don't set twice on this same object (e.g. in
-        # the case of an exception).
-        promises = list(map(toolz.second, queue_items))
         try:
-            results = list(await f(requests))
-            while results:
-                promises.pop().set_result(results.pop())
+            for promise, result in zip(promises, (await f(requests))):
+                if promise.done() or promise.cancelled():
+                    continue
+                promises.set_result(result)
         except Exception as exception:
             for promise in promises:
+                if promise.done() or promise.cancelled():
+                    continue
                 promise.set_exception(exception)
 
     async def wrapped(hashable_input):
