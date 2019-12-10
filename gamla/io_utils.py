@@ -80,7 +80,7 @@ def batch_calls(f, timeout=20):
     queue = {}
 
     async def make_call():
-        asyncio.sleep(0.1)
+        await asyncio.sleep(0.1)
         if not queue:
             return
         queue_copy = dict(queue)
