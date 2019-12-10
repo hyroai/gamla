@@ -88,11 +88,13 @@ def batch_calls(f, timeout=20):
         queue.clear()
         try:
             for promise, result in zip(promises, await f(requests)):
+                # We check for possible mid-exception or timeouts.
                 if promise.done() or promise.cancelled():
                     continue
                 promise.set_result(result)
         except Exception as exception:
             for promise in promises:
+                # We check for possible mid-exception or timeouts.
                 if promise.done() or promise.cancelled():
                     continue
                 promise.set_exception(exception)
