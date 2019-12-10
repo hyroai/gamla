@@ -9,6 +9,8 @@ import requests
 import requests.adapters
 from requests.packages.urllib3.util import retry
 
+from gamla import functional
+
 
 def _time_to_readable(time_s: float):
     return datetime.datetime.fromtimestamp(time_s)
@@ -69,7 +71,6 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     return session
 
 
-# TODO(uri): move the test as well
 def batch_calls(f, timeout=20):
     """Batches single call into one request.
 
@@ -104,5 +105,21 @@ def batch_calls(f, timeout=20):
         queue[hashable_input] = async_result
         asyncio.create_task(make_call())
         return await asyncio.wait_for(async_result, timeout=timeout)
+
+    return wrapped
+
+
+def queue_identical_calls(f):
+    # Note that pending grows infinitely large, this assumes we cache the results
+    # anyway after this decorator, so we at most double the memory consumption.
+    pending = {}
+
+    @functools.wraps(f)
+    async def wrapped(*args, **kwargs):
+        key = functional.make_call_key(args, kwargs)
+        if key not in pending:
+            pending[key] = asyncio.Future()
+            pending[key].set_result(await f(*args, **kwargs))
+        return await asyncio.wait_for(pending[key], timeout=20)
 
     return wrapped
