@@ -90,7 +90,7 @@ def batch_calls(f, timeout=20):
             for promise, result in zip(promises, (await f(requests))):
                 if promise.done() or promise.cancelled():
                     continue
-                promises.set_result(result)
+                promise.set_result(result)
         except Exception as exception:
             for promise in promises:
                 if promise.done() or promise.cancelled():
