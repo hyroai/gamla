@@ -87,7 +87,7 @@ def batch_calls(f, timeout=20):
         requests = tuple(queue.keys())
         queue.clear()
         try:
-            for promise, result in zip(promises, (await f(requests))):
+            for promise, result in zip(promises, await f(requests)):
                 if promise.done() or promise.cancelled():
                     continue
                 promise.set_result(result)
