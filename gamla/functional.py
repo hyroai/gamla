@@ -161,20 +161,8 @@ def acompose_left(*funcs):
     return acompose(*reversed(funcs))
 
 
-async def throttled_amap(f, it, limit):
-    semaphore = asyncio.Semaphore(limit)
-
-    def with_lock(f):
-        async def wrapped(*args, **kwargs):
-            async with semaphore:
-                return await f(*args, **kwargs)
-
-        return wrapped
-
-    return await gamla.amap(with_lock(f), it)
-
-
 def run_sync(f):
+    """Runs a coroutine in a synchronous context, blocking until result arrives."""
     loop = asyncio.new_event_loop()
     return loop.run_until_complete(asyncio.ensure_future(f, loop=loop))
 
