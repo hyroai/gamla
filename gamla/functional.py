@@ -167,13 +167,6 @@ def run_sync(f):
     return loop.run_until_complete(asyncio.ensure_future(f, loop=loop))
 
 
-async def materialize(async_generator):
-    elements = []
-    async for element in async_generator:
-        elements.append(element)
-    return tuple(elements)
-
-
 @toolz.curry
 async def amap(f, it):
     return await asyncio.gather(*map(f, it))
