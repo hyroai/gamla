@@ -161,11 +161,10 @@ def acompose_left(*funcs):
     return acompose(*reversed(funcs))
 
 
-async def materialize(async_generator):
-    elements = []
-    async for element in async_generator:
-        elements.append(element)
-    return tuple(elements)
+def run_sync(f):
+    """Runs a coroutine in a synchronous context, blocking until result arrives."""
+    loop = asyncio.new_event_loop()
+    return loop.run_until_complete(asyncio.ensure_future(f, loop=loop))
 
 
 @toolz.curry

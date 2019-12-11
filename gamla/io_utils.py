@@ -7,6 +7,7 @@ from typing import Text
 
 import requests
 import requests.adapters
+import toolz
 from requests.packages.urllib3.util import retry
 
 from gamla import functional
@@ -128,3 +129,20 @@ def queue_identical_calls(f):
         return await asyncio.wait_for(pending[key], timeout=20)
 
     return wrapped
+
+
+@toolz.curry
+def athrottle(limit, f):
+    semaphore = asyncio.Semaphore(limit)
+
+    @functools.wraps(f)
+    async def wrapped(*args, **kwargs):
+        async with semaphore:
+            return await f(*args, **kwargs)
+
+    return wrapped
+
+
+@toolz.curry
+async def throttled_amap(f, it, limit):
+    return await functional.amap(athrottle(limit, f), it)
