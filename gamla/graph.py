@@ -12,11 +12,18 @@ from gamla import functional
 def graph_traverse(
     source: Any, get_neighbors: Callable, key: Callable = toolz.identity
 ) -> Iterable:
+    yield from graph_traverse_many([source], get_neighbors=get_neighbors, key=key)
+
+
+@toolz.curry
+def graph_traverse_many(
+    sources: Any, get_neighbors: Callable, key: Callable = toolz.identity
+) -> Iterable:
     """BFS over a graph, yielding unique nodes.
 
     Note: `get_neighbors` must return elements without duplicates."""
     seen = set()
-    queue = [source]
+    queue = [*sources]
     while queue:
         current = queue.pop()
         yield current
