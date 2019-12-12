@@ -13,12 +13,12 @@ def graph_traverse(
     source: Any, get_neighbors: Callable, key_function: Callable = toolz.identity
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes."""
-    seen = {}
+    seen = set()
     queue = [source]
     while queue:
         current = queue.pop()
         yield current
-        seen[key_function(current)] = current
+        seen.add(key_function(current))
         for node in get_neighbors(current):
             if key_function(node) not in seen:
                 queue = [node] + queue
