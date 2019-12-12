@@ -10,7 +10,7 @@ from gamla import functional
 
 @toolz.curry
 def graph_traverse(
-    source: Any, get_neighbors: Callable, key_function: Callable = toolz.identity
+    source: Any, get_neighbors: Callable, key: Callable = toolz.identity
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes."""
     seen = set()
@@ -18,9 +18,9 @@ def graph_traverse(
     while queue:
         current = queue.pop()
         yield current
-        seen.add(key_function(current))
+        seen.add(key(current))
         for node in get_neighbors(current):
-            if key_function(node) not in seen:
+            if key(node) not in seen:
                 queue = [node] + queue
 
 
