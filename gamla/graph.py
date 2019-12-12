@@ -12,7 +12,9 @@ from gamla import functional
 def graph_traverse(
     source: Any, get_neighbors: Callable, key: Callable = toolz.identity
 ) -> Iterable:
-    """BFS over a graph, yielding unique nodes."""
+    """BFS over a graph, yielding unique nodes.
+
+    Note: `get_neighbors` must return elements without duplicates."""
     seen = set()
     queue = [source]
     while queue:
