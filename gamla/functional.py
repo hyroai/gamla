@@ -315,9 +315,9 @@ def top(iterable, key=toolz.identity):
     """Generates elements from max to min."""
     h = []
     for value in iterable:
-        heapq_max.heappush(h, (key(value), value))
+        heapq_max.heappush_max(h, (key(value), value))
     while h:
-        yield toolz.second(heapq_max.heappop(h))
+        yield toolz.second(heapq_max.heappop_max(h))
 
 
 @toolz.curry
