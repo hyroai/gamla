@@ -9,6 +9,7 @@ import logging
 from typing import Callable, Dict, Iterable, Text, Type
 
 import gevent
+import heapq_max
 import toolz
 from gevent import pool
 from toolz import curried
@@ -311,7 +312,17 @@ def make_call_key(args, kwargs):
 
 @toolz.curry
 def top(iterable, key=toolz.identity):
-    """Useful for taking top n elements."""
+    """Generates elements from max to min."""
+    h = []
+    for value in iterable:
+        heapq_max.heappush(h, (key(value), value))
+    while h:
+        yield toolz.second(heapq_max.heappop(h))
+
+
+@toolz.curry
+def lowest(iterable, key=toolz.identity):
+    """Generates elements from min to max."""
     h = []
     for value in iterable:
         heapq.heappush(h, (key(value), value))
