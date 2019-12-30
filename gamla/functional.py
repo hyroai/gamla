@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import hashlib
+import heapq
 import inspect
 import itertools
 import json
@@ -306,3 +307,13 @@ def make_call_key(args, kwargs):
     if kwargs:
         key += "##kwargs##", tuple(sorted(kwargs.items()))
     return key
+
+
+@toolz.curry
+def top(iterable, key=toolz.identity):
+    """Useful for taking top n elements."""
+    h = []
+    for value in iterable:
+        heapq.heappush(h, (key(value), value))
+    while h:
+        yield toolz.second(heapq.heappop(h))
