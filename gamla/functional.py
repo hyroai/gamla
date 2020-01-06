@@ -1,4 +1,5 @@
 import asyncio
+import cProfile
 import functools
 import hashlib
 import heapq
@@ -265,7 +266,7 @@ def pfirst(*funcs, exception_type):
                 lambda f: gevent.spawn(
                     toolz.excepts(exception_type, f, lambda _: failure_value),
                     *args,
-                    **kwargs
+                    **kwargs,
                 )
             ),
             # Materialize to actually start the requests in parallel.
@@ -328,3 +329,15 @@ def lowest(iterable, key=toolz.identity):
         heapq.heappush(h, (key(value), value))
     while h:
         yield toolz.second(heapq.heappop(h))
+
+
+def profileit(func):
+    def wrapper(*args, **kwargs):
+        filename = func.__name__ + ".profile"  # Name the data file sensibly
+        prof = cProfile.Profile()
+        retval = prof.runcall(func, *args, **kwargs)
+        prof.dump_stats(filename)
+        logging.info(f"Saved profiling stats to {filename}")
+        return retval
+
+    return wrapper
