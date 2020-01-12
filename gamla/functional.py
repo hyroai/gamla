@@ -82,6 +82,10 @@ def alljuxt(*funcs):
     return toolz.compose(all, toolz.juxt(*funcs))
 
 
+def juxtcat(*funcs):
+    return toolz.compose(toolz.concat, toolz.juxt(*funcs))
+
+
 def ignore_input(inner):
     def ignore_and_run(*args, **kwargs):
         return inner()
@@ -315,25 +319,27 @@ def make_call_key(args, kwargs):
 def top(iterable, key=toolz.identity):
     """Generates elements from max to min."""
     h = []
-    for value in iterable:
-        heapq_max.heappush_max(h, (key(value), value))
+    for i, value in enumerate(iterable):
+        # Use the index as a tie breaker.
+        heapq_max.heappush_max(h, (key(value), i, value))
     while h:
-        yield toolz.second(heapq_max.heappop_max(h))
+        yield toolz.nth(2, heapq_max.heappop_max(h))
 
 
 @toolz.curry
-def lowest(iterable, key=toolz.identity):
+def bottom(iterable, key=toolz.identity):
     """Generates elements from min to max."""
     h = []
-    for value in iterable:
-        heapq.heappush(h, (key(value), value))
+    for i, value in enumerate(iterable):
+        # Use the index as a tie breaker.
+        heapq.heappush(h, (key(value), i, value))
     while h:
-        yield toolz.second(heapq.heappop(h))
+        yield toolz.nth(2, heapq.heappop(h))
 
 
 def profileit(func):
     def wrapper(*args, **kwargs):
-        filename = func.__name__ + ".profile"  # Name the data file sensibly
+        filename = func.__name__ + ".profile"
         prof = cProfile.Profile()
         retval = prof.runcall(func, *args, **kwargs)
         prof.dump_stats(filename)
