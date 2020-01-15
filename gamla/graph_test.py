@@ -15,3 +15,11 @@ def test_cliques_to_graph():
         7: frozenset({8}),
         8: frozenset({7}),
     }
+
+
+def test_cycles():
+    assert graph.has_cycle({1: [1]})
+    assert graph.has_cycle({1: [2], 2: [3], 3: [1]})
+    assert graph.has_cycle({1: [2], 2: [3], 3: [4], 4: [2]})
+    assert not graph.has_cycle({1: [2]})
+    assert not graph.has_cycle({1: [2], 2: [3]})

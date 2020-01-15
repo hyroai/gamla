@@ -95,3 +95,26 @@ def groupby_many(f, it):
         ),
         edges_to_graph,
     )
+
+
+@toolz.curry
+def _has_cycle(sourced, get_neighbors, visited, node):
+    if node in sourced:
+        return True
+    if node in visited:
+        return False
+    visited.add(node)
+    return toolz.pipe(
+        node,
+        get_neighbors,
+        functional.anymap(_has_cycle(sourced | {node}, get_neighbors, visited)),
+    )
+
+
+def has_cycle(graph):
+    return toolz.pipe(
+        graph,
+        dict.keys,
+        curried.map(_has_cycle(frozenset(), curried.get(seq=graph, default=()), set())),
+        any,
+    )
