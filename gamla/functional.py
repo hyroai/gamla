@@ -300,8 +300,11 @@ logger = curried.do(logging.info)
 
 
 def log_text(text: Text):
-    return curried.do(lambda _: logging.info(text))
+    return curried.do(lambda x: logging.info(text.format(x)))
 
+
+def just(x):
+    return ignore_input(lambda: x)
 
 # To get a unique caching key for each function invocation, we take `args` and `items()`
 # of `kwargs` and sort them (by keys), while also marking the beginning of `kwargs`.
