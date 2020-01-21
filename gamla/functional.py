@@ -306,6 +306,7 @@ def log_text(text: Text):
 def just(x):
     return ignore_input(lambda: x)
 
+
 # To get a unique caching key for each function invocation, we take `args` and `items()`
 # of `kwargs` and sort them (by keys), while also marking the beginning of `kwargs`.
 # Inspired by: http://code.activestate.com/recipes/578078/ (python LRU cache
