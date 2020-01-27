@@ -351,3 +351,13 @@ def profileit(func):
         return retval
 
     return wrapper
+
+
+@toolz.curry
+def inside(val, container):
+    return val in container
+
+
+@toolz.curry
+def pair_with(f, element):
+    return f(element), element

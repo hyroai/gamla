@@ -59,12 +59,9 @@ edges_to_graph = toolz.compose(
 )
 
 
-def cliques_to_graph(cliques: Iterable[Iterable]) -> Dict[Any, FrozenSet[Any]]:
-    return toolz.pipe(
-        cliques,
-        curried.mapcat(lambda clique: itertools.permutations(clique, r=2)),
-        edges_to_graph,
-    )
+cliques_to_graph = toolz.compose_left(
+    curried.mapcat(lambda clique: itertools.permutations(clique, r=2)), edges_to_graph
+)
 
 
 def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
