@@ -361,3 +361,8 @@ def inside(val, container):
 @toolz.curry
 def pair_with(f, element):
     return f(element), element
+
+
+@toolz.curry
+async def apair_with(f, element):
+    return await f(element), element
