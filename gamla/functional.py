@@ -14,6 +14,7 @@ import heapq_max
 import toolz
 from gevent import pool
 from toolz import curried
+from toolz.curried import operator
 
 
 @toolz.curry
@@ -366,3 +367,6 @@ def pair_with(f, element):
 @toolz.curry
 async def apair_with(f, element):
     return await f(element), element
+
+
+average = toolz.compose_left(toolz.bifuracte(sum, toolz.count), star(operator.truediv))
