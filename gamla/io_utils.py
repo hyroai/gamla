@@ -18,9 +18,7 @@ def _time_to_readable(time_s: float):
 
 
 def _request_id(name, args, kwargs) -> Text:
-    args_str = str(args)[:50]
-    kwargs_str = str(kwargs)[:50]
-    return f"{name}, args: {args_str}, kwargs: {kwargs_str}"
+    return f"{name}, args: {args}, kwargs: {kwargs}"
 
 
 def _async_timeit(f):
@@ -53,7 +51,7 @@ def timeit(f):
         finish = time.time()
         elapsed = finish - start
         logging.info(
-            f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed}"
+            f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}"
         )
         return result
 
