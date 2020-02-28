@@ -370,3 +370,11 @@ async def apair_with(f, element):
 
 
 average = toolz.compose_left(bifurcate(sum, toolz.count), star(operator.truediv))
+
+
+@toolz.curry
+def len_equals(length: int, seq):
+    return len(seq) == length
+
+
+do_breakpoint = curried.do(lambda x: breakpoint())
