@@ -378,3 +378,11 @@ def len_equals(length: int, seq):
 
 
 do_breakpoint = curried.do(lambda x: breakpoint())
+
+
+@toolz.curry
+def skip(n, seq):
+    for i, x in enumerate(seq):
+        if i < n:
+            continue
+        yield x
