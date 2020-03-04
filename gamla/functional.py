@@ -8,7 +8,7 @@ import inspect
 import itertools
 import json
 import logging
-from typing import Callable, Dict, Iterable, Text, Type
+from typing import Callable, Iterable, Text, Type
 
 import gevent
 import heapq_max
@@ -16,11 +16,6 @@ import toolz
 from gevent import pool
 from toolz import curried
 from toolz.curried import operator
-
-
-@toolz.curry
-def dict_get(dict_obj: Dict, default, key):
-    return dict_obj.get(key, default)
 
 
 def do_if(condition, fun):
