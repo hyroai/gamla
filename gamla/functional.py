@@ -1,4 +1,5 @@
 import asyncio
+import builtins
 import cProfile
 import functools
 import hashlib
@@ -377,7 +378,7 @@ def len_equals(length: int, seq):
     return len(seq) == length
 
 
-do_breakpoint = curried.do(lambda x: breakpoint())
+do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
 @toolz.curry
