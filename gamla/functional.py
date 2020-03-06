@@ -234,16 +234,16 @@ def afirst(*funcs, exception_type):
 
 
 @toolz.curry
-def pmap(f, it):
+def pmap(f, n_workers, it):
     # The `tuple` is for callers convenience (even without it, the pool is eager).
-    return tuple(_GLOBAL_POOL.map(f, it))
+    return tuple(pool.Pool(n_workers).map(f, it))
 
 
 @toolz.curry
 def pfilter(f, it):
     return toolz.pipe(
         it,
-        bifurcate(pmap(f), curried.map(toolz.identity)),
+        bifurcate(pmap(f, None), curried.map(toolz.identity)),
         zip,
         curried.filter(toolz.first),
         curried.map(toolz.second),
