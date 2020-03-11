@@ -8,12 +8,11 @@ import inspect
 import itertools
 import json
 import logging
+from concurrent import futures
 from typing import Callable, Iterable, Text, Type
 
-import gevent
 import heapq_max
 import toolz
-from gevent import pool
 from toolz import curried
 from toolz.curried import operator
 
@@ -135,9 +134,6 @@ def assert_that(f):
     return curried.do(_assert_f_output_on_inp(f))
 
 
-_GLOBAL_POOL = pool.Group()
-
-
 async def apipe(val, *funcs):
     for f in funcs:
         val = f(val)
@@ -236,7 +232,7 @@ def afirst(*funcs, exception_type):
 @toolz.curry
 def pmap(f, n_workers, it):
     # The `tuple` is for callers convenience (even without it, the pool is eager).
-    return tuple(pool.Pool(n_workers).map(f, it))
+    return tuple(futures.ThreadPoolExecutor(max_workers=n_workers).map(f, it))
 
 
 @toolz.curry
@@ -248,37 +244,6 @@ def pfilter(f, it):
         curried.filter(toolz.first),
         curried.map(toolz.second),
     )
-
-
-def pfirst(*funcs, exception_type):
-    """Parallel+lazy iterator.
-
-    This is used for when we want to start everything in parallel, but return a value
-    on the first successful result.
-    """
-    failure_value = "gamla-value-signifying-failure"
-
-    def inner(*args, **kwargs):
-        return toolz.pipe(
-            funcs,
-            # Prepare runs for each function on the given input, wrapping them for
-            # failure as gevent treats an exception within a greenlet as a real error.
-            curried.map(
-                lambda f: gevent.spawn(
-                    toolz.excepts(exception_type, f, lambda _: failure_value),
-                    *args,
-                    **kwargs,
-                )
-            ),
-            # Materialize to actually start the requests in parallel.
-            tuple,
-            # Don't wait for all to finish, start examining the requests by order.
-            curried.map(lambda promise: promise.get()),
-            curried.filter(lambda result: result != failure_value),
-            translate_exception(next, StopIteration, exception_type),
-        )
-
-    return inner
 
 
 def first(*funcs, exception_type: Type[Exception]):

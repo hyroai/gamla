@@ -6,16 +6,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gamla",
-    version="0.0.41",
+    version="0.0.42",
     long_description=_LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     packages=setuptools.find_namespace_packages(),
-    install_requires=[
-        "toolz",
-        "gevent",
-        "requests",
-        "pytest",
-        "pytest-asyncio",
-        "heapq_max",
-    ],
+    install_requires=["toolz", "requests", "pytest", "pytest-asyncio", "heapq_max"],
 )
