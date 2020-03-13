@@ -5,6 +5,7 @@ import logging
 import time
 from typing import Text
 
+import async_timeout
 import requests
 import requests.adapters
 import toolz
@@ -152,3 +153,14 @@ def athrottle(limit, f):
 @toolz.curry
 async def throttled_amap(f, it, limit):
     return await functional.amap(athrottle(limit, f), it)
+
+
+def timeout(seconds: float):
+    def wrapper(corofunc):
+        async def run(*args, **kwargs):
+            with async_timeout.timeout(seconds):
+                return await corofunc(*args, **kwargs)
+
+        return run
+
+    return wrapper

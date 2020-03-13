@@ -10,5 +10,12 @@ setuptools.setup(
     long_description=_LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     packages=setuptools.find_namespace_packages(),
-    install_requires=["toolz", "requests", "pytest", "pytest-asyncio", "heapq_max"],
+    install_requires=[
+        "async-timeout",
+        "heapq_max",
+        "pytest-asyncio",
+        "pytest",
+        "requests",
+        "toolz",
+    ],
 )
