@@ -13,26 +13,39 @@ from requests.packages.urllib3.util import retry
 from gamla import functional
 
 
-def _time_to_readable(time_s: float):
+def _time_to_readable(time_s: float) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(time_s)
 
 
-def _request_id(name, args, kwargs) -> Text:
-    return f"{name}, args: {args}, kwargs: {kwargs}"
+def _request_id(name: Text, args, kwargs) -> Text:
+    params_str = f", args: {args}, kwargs: {kwargs}"
+    together = name + params_str
+    if len(together) > 100:
+        return name
+    return together
+
+
+def _log_finish(req_id: Text, start: float):
+    finish = time.time()
+    elapsed = finish - start
+    logging.info(
+        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}"
+    )
+
+
+def _log_start(req_id: Text) -> float:
+    start = time.time()
+    logging.info(f"{req_id} started at {_time_to_readable(start)}")
+    return start
 
 
 def _async_timeit(f):
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
         req_id = _request_id(f.__name__, args, kwargs)
-        start = time.time()
-        logging.info(f"{req_id} started at {_time_to_readable(start)}")
+        start = _log_start(req_id)
         result = await f(*args, **kwargs)
-        finish = time.time()
-        elapsed = finish - start
-        logging.info(
-            f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed}"
-        )
+        _log_finish(req_id, start)
         return result
 
     return wrapper
@@ -45,14 +58,9 @@ def timeit(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         req_id = _request_id(f.__name__, args, kwargs)
-        start = time.time()
-        logging.info(f"{req_id} started at {_time_to_readable(start)}")
+        start = _log_start(req_id)
         result = f(*args, **kwargs)
-        finish = time.time()
-        elapsed = finish - start
-        logging.info(
-            f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}"
-        )
+        _log_finish(req_id, start)
         return result
 
     return wrapper
