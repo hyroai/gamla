@@ -16,6 +16,8 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
+do_breakpoint = curried.do(lambda x: builtins.breakpoint())
+
 
 def do_if(condition, fun):
     return curried.do(curried_ternary(condition, fun, toolz.identity))
@@ -65,21 +67,37 @@ def anymap(f: Callable, it: Iterable):
     return any(map(f, it))
 
 
-def anyjuxt(*funcs):
-    return toolz.compose(any, toolz.juxt(*funcs))
-
-
 @toolz.curry
 def allmap(f: Callable, it: Iterable):
     return all(map(f, it))
 
 
-def alljuxt(*funcs):
-    return toolz.compose(all, toolz.juxt(*funcs))
+@toolz.curry
+def apply(value, function):
+    return function(value)
 
 
-def juxtcat(*funcs):
-    return toolz.compose(toolz.concat, toolz.juxt(*funcs))
+@toolz.curry
+def after(f1, f2):
+    return toolz.compose(f1, f2)
+
+
+@toolz.curry
+def before(f1, f2):
+    return toolz.compose_left(f1, f2)
+
+
+def lazyjuxt(*funcs):
+    return toolz.compose_left(apply, curried.map, apply(funcs))
+
+
+alljuxt = toolz.compose(after(all), lazyjuxt)
+
+
+anyjuxt = toolz.compose(after(any), lazyjuxt)
+
+
+juxtcat = toolz.compose(after(toolz.concat), lazyjuxt)
 
 
 def ignore_input(inner):
@@ -336,9 +354,6 @@ average = toolz.compose_left(bifurcate(sum, toolz.count), star(operator.truediv)
 @toolz.curry
 def len_equals(length: int, seq):
     return len(seq) == length
-
-
-do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
 @toolz.curry
