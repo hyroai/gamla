@@ -95,6 +95,22 @@ def groupby_many(f, it):
 
 
 @toolz.curry
+async def agroupby_many(f, it):
+    return await functional.apipe(
+        it,
+        functional.amap(
+            functional.acompose_left(
+                functional.apair_with(f),
+                functional.star(lambda x, y: (x, [y])),
+                functional.star(itertools.product),
+            )
+        ),
+        toolz.concat,
+        edges_to_graph,
+    )
+
+
+@toolz.curry
 def _has_cycle(sourced, get_neighbors, visited, node):
     if node in sourced:
         return True
