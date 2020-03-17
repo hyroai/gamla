@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/uriva/gamla.svg?branch=master)](https://travis-ci.com/uriva/gamla)
+[![Build Status](https://travis-ci.com/hyroai/gamla.svg?branch=master)](https://travis-ci.com/hyroai/gamla)
 
 Gamla is a functional programming library for python.
 
