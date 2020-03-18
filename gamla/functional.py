@@ -162,14 +162,12 @@ async def apipe(val, *funcs):
 
 def acompose(*funcs):
     async def composed(*args, **kwargs):
-        if args:
-            inp = toolz.first(args)
-        else:
-            inp = toolz.first(kwargs.values())
         for f in reversed(funcs):
-            inp = f(inp)
+            inp = f(*args, **kwargs)
             if inspect.isawaitable(inp):
                 inp = await inp
+            args = [inp]
+            kwargs = {}
         return inp
 
     return composed
