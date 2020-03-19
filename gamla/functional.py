@@ -342,8 +342,18 @@ def pair_with(f, element):
 
 
 @toolz.curry
+def pair_right(f, element):
+    return element, f(element)
+
+
+@toolz.curry
 async def apair_with(f, element):
     return await f(element), element
+
+
+@toolz.curry
+async def apair_right(f, element):
+    return await element, f(element)
 
 
 average = toolz.compose_left(bifurcate(sum, toolz.count), star(operator.truediv))
