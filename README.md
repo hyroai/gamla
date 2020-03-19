@@ -4,4 +4,8 @@ Gamla is a functional programming library for python.
 
 `pip install gamla`
 
-To deploy: `python setup.py sdist bdist_wheel; twine upload dist/*; rm dist/ -r;`
+## Releasing a new  version
+
+1. Createa a pypi account.
+1. Download twine and give it your pypi credentials.
+1. `python setup.py sdist bdist_wheel; twine upload dist/*; rm dist/ -r;`
