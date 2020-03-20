@@ -58,6 +58,16 @@ edges_to_graph = toolz.compose(
     curried.groupby(toolz.first),
 )
 
+graph_to_edges = toolz.compose_left(
+    curried.keymap(lambda x: (x,)),
+    dict.items,
+    curried.mapcat(functional.star(itertools.product)),
+)
+
+reverse_graph = toolz.compose_left(
+    graph_to_edges, curried.map(toolz.compose_left(reversed, tuple)), edges_to_graph
+)
+
 
 cliques_to_graph = toolz.compose_left(
     curried.mapcat(lambda clique: itertools.permutations(clique, r=2)), edges_to_graph
