@@ -372,5 +372,5 @@ def skip(n, seq):
         yield x
 
 
-def wrap(x):
+def wrap_tuple(x):
     return (x,)
