@@ -370,3 +370,7 @@ def skip(n, seq):
         if i < n:
             continue
         yield x
+
+
+def wrap_tuple(x):
+    return (x,)
