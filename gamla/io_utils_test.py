@@ -12,7 +12,7 @@ pytestmark = pytest.mark.asyncio
 async def test_batch_decorator():
     times_f_called = 0
 
-    @io_utils.batch_calls()
+    @io_utils.batch_calls
     async def slow_identity(inputs):
         nonlocal times_f_called
         times_f_called += 1
@@ -28,7 +28,7 @@ async def test_batch_decorator():
 async def test_batch_decorator_errors():
     times_f_called = 0
 
-    @io_utils.batch_calls()
+    @io_utils.batch_calls
     async def slow_identity_with_errors(inputs):
         nonlocal times_f_called
         times_f_called += 1

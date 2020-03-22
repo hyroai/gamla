@@ -79,57 +79,49 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     return session
 
 
-def batch_calls(request_timeout=20):
+def batch_calls(f):
     """Batches single call into one request.
 
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
     that gets a single request.
     """
+    queue = {}
 
-    def decorator(f):
-        queue = {}
+    async def make_call():
+        await asyncio.sleep(0.1)
+        if not queue:
+            return
+        promises = tuple(queue.values())
+        requests = tuple(queue.keys())
+        queue.clear()
+        try:
+            for promise, result in zip(promises, await f(requests)):
+                # We check for possible mid-exception or timeouts.
+                if promise.done() or promise.cancelled():
+                    continue
+                promise.set_result(result)
+        except Exception as exception:
+            for promise in promises:
+                # We check for possible mid-exception or timeouts.
+                if promise.done() or promise.cancelled():
+                    continue
+                promise.set_exception(exception)
 
-        async def make_call():
-            await asyncio.sleep(0.1)
-            if not queue:
-                return
-            promises = tuple(queue.values())
-            requests = tuple(queue.keys())
-            queue.clear()
-            try:
-                for promise, result in zip(promises, await f(requests)):
-                    # We check for possible mid-exception or timeouts.
-                    if promise.done() or promise.cancelled():
-                        continue
-                    promise.set_result(result)
-            except Exception as exception:
-                for promise in promises:
-                    # We check for possible mid-exception or timeouts.
-                    if promise.done() or promise.cancelled():
-                        continue
-                    promise.set_exception(exception)
+    @functools.wraps(f)
+    async def wrapped(hashable_input):
+        if hashable_input in queue:
+            return await queue[hashable_input]
+        async_result = asyncio.Future()
+        # Check again because of context switch
+        # due to the creation of `asyncio.Future`.
+        # TODO(uri): Make sure this is needed.
+        if hashable_input in queue:
+            return await queue[hashable_input]
+        queue[hashable_input] = async_result
+        asyncio.create_task(make_call())
+        return await async_result
 
-        @functools.wraps(f)
-        async def wrapped(hashable_input):
-            if hashable_input in queue:
-                return await asyncio.wait_for(
-                    queue[hashable_input], timeout=request_timeout
-                )
-            async_result = asyncio.Future()
-            # Check again because of context switch
-            # due to the creation of `asyncio.Future`.
-            # TODO(uri): Make sure this is needed.
-            if hashable_input in queue:
-                return await asyncio.wait_for(
-                    queue[hashable_input], timeout=request_timeout
-                )
-            queue[hashable_input] = async_result
-            asyncio.create_task(make_call())
-            return await asyncio.wait_for(async_result, timeout=request_timeout)
-
-        return wrapped
-
-    return decorator
+    return wrapped
 
 
 def queue_identical_calls(f):
