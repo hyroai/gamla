@@ -79,7 +79,7 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     return session
 
 
-def batch_calls(f, timeout=20):
+def batch_calls(f):
     """Batches single call into one request.
 
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
@@ -107,17 +107,19 @@ def batch_calls(f, timeout=20):
                     continue
                 promise.set_exception(exception)
 
+    @functools.wraps(f)
     async def wrapped(hashable_input):
         if hashable_input in queue:
-            return await asyncio.wait_for(queue[hashable_input], timeout=timeout)
+            return await queue[hashable_input]
         async_result = asyncio.Future()
-        # Check again because of context switch due to the creation of `asyncio.Future`.
+        # Check again because of context switch
+        # due to the creation of `asyncio.Future`.
         # TODO(uri): Make sure this is needed.
         if hashable_input in queue:
-            return await asyncio.wait_for(queue[hashable_input], timeout=timeout)
+            return await queue[hashable_input]
         queue[hashable_input] = async_result
         asyncio.create_task(make_call())
-        return await asyncio.wait_for(async_result, timeout=timeout)
+        return await async_result
 
     return wrapped
 
