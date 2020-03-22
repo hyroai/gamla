@@ -85,6 +85,7 @@ def batch_calls(request_timeout=20):
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
     that gets a single request.
     """
+
     def decorator(f):
         queue = {}
 
@@ -111,12 +112,17 @@ def batch_calls(request_timeout=20):
         @functools.wraps(f)
         async def wrapped(hashable_input):
             if hashable_input in queue:
-                return await asyncio.wait_for(queue[hashable_input], timeout=request_timeout)
+                return await asyncio.wait_for(
+                    queue[hashable_input], timeout=request_timeout
+                )
             async_result = asyncio.Future()
-            # Check again because of context switch due to the creation of `asyncio.Future`.
+            # Check again because of context switch
+            # due to the creation of `asyncio.Future`.
             # TODO(uri): Make sure this is needed.
             if hashable_input in queue:
-                return await asyncio.wait_for(queue[hashable_input], timeout=request_timeout)
+                return await asyncio.wait_for(
+                    queue[hashable_input], timeout=request_timeout
+                )
             queue[hashable_input] = async_result
             asyncio.create_task(make_call())
             return await asyncio.wait_for(async_result, timeout=request_timeout)
