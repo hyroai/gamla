@@ -374,3 +374,40 @@ def skip(n, seq):
 
 def wrap_tuple(x):
     return (x,)
+
+
+def assoc_in(d, keys, value, factory=dict):
+    return update_in(d, keys, lambda x: value, value, factory)
+
+
+def update_in(d, keys, func, default=None, factory=dict):
+    ks = iter(keys)
+    k = next(ks)
+
+    rv = inner = factory()
+    rv.update(d)
+
+    for key in ks:
+        if k in d:
+            d = d[k]
+            if isinstance(d, dict):
+                dtemp = {}
+                dtemp.update(d)
+            elif isinstance(d, list):
+                dtemp = []
+                dtemp.extend(d)
+            else:
+                dtemp = factory()
+        else:
+            d = dtemp = factory()
+
+        inner[k] = inner = dtemp
+        k = key
+
+    if k in d:
+        inner[k] = func(d[k])
+    elif isinstance(d, list):
+        inner.append(func(d[k]))
+    else:
+        inner[k] = func(default)
+    return rv
