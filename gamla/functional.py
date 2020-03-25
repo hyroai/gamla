@@ -388,7 +388,7 @@ def update_in(d, keys, func, default=None, factory=dict):
     rv.update(d)
 
     for key in ks:
-        if k in d:
+        if k in d or isinstance(d, list):
             d = d[k]
             if isinstance(d, dict):
                 dtemp = {}
@@ -406,8 +406,6 @@ def update_in(d, keys, func, default=None, factory=dict):
 
     if k in d:
         inner[k] = func(d[k])
-    elif isinstance(d, list):
-        inner.append(func(d[k]))
     else:
         inner[k] = func(default)
     return rv
