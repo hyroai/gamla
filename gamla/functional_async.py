@@ -8,7 +8,7 @@ from toolz import curried
 from gamla import functional
 
 
-async def await_if_needed(value):
+async def to_awaitable(value):
     if inspect.isawaitable(value):
         return await value
     return value
@@ -16,14 +16,14 @@ async def await_if_needed(value):
 
 async def apipe(val, *funcs):
     for f in funcs:
-        val = await await_if_needed(f(val))
+        val = await to_awaitable(f(val))
     return val
 
 
 def acompose(*funcs):
     async def composed(*args, **kwargs):
         for f in reversed(funcs):
-            args = [await await_if_needed(f(*args, **kwargs))]
+            args = [await to_awaitable(f(*args, **kwargs))]
             kwargs = {}
         return toolz.first(args)
 
@@ -68,7 +68,7 @@ async def aconcat(async_generators):
 def ajuxt(*funcs):
     async def ajuxt_inner(x):
         return await apipe(
-            funcs, amap(acompose_left(functional.apply(x), await_if_needed)), tuple
+            funcs, amap(acompose_left(functional.apply(x), to_awaitable)), tuple
         )
 
     return ajuxt_inner
@@ -87,7 +87,7 @@ def afirst(*funcs, exception_type):
     async def afirst_inner(x):
         for f in funcs:
             try:
-                return await await_if_needed(f(x))
+                return await to_awaitable(f(x))
             except exception_type:
                 pass
         raise exception_type
@@ -124,9 +124,9 @@ async def aitemmap(f, d: Dict):
 def aternary(condition, f_true, f_false):
     async def aternary_inner(*args, **kwargs):
         return (
-            await await_if_needed(f_true(*args, **kwargs))
-            if await await_if_needed(condition(*args, **kwargs))
-            else await await_if_needed(f_false(*args, **kwargs))
+            await to_awaitable(f_true(*args, **kwargs))
+            if await to_awaitable(condition(*args, **kwargs))
+            else await to_awaitable(f_false(*args, **kwargs))
         )
 
     return aternary_inner
