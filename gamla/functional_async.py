@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+from typing import Dict
 
 import toolz
 from toolz import curried
@@ -106,3 +107,17 @@ async def apair_with(f, element):
 @toolz.curry
 async def apair_right(f, element):
     return element, await f(element)
+
+
+@toolz.curry
+async def akeymap(f, d: Dict):
+    return await apipe(
+        dict.items, amap(ajuxt(acompose_left(toolz.first, f), toolz.second)), dict
+    )
+
+
+@toolz.curry
+async def avalmap(f, d: Dict):
+    return await apipe(
+        dict.items, amap(ajuxt(toolz.first, acompose_left(toolz.second, f))), dict
+    )
