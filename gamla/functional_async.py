@@ -5,24 +5,27 @@ from typing import Dict
 import toolz
 from toolz import curried
 
+from gamla import functional
+
+
+async def await_if_needed(value):
+    if inspect.isawaitable(value):
+        return await value
+    return value
+
 
 async def apipe(val, *funcs):
     for f in funcs:
-        val = f(val)
-        if inspect.isawaitable(val):
-            val = await val
+        val = await await_if_needed(f(val))
     return val
 
 
 def acompose(*funcs):
     async def composed(*args, **kwargs):
         for f in reversed(funcs):
-            inp = f(*args, **kwargs)
-            if inspect.isawaitable(inp):
-                inp = await inp
-            args = [inp]
+            args = [await await_if_needed(f(*args, **kwargs))]
             kwargs = {}
-        return inp
+        return toolz.first(args)
 
     return composed
 
@@ -64,13 +67,9 @@ async def aconcat(async_generators):
 
 def ajuxt(*funcs):
     async def ajuxt_inner(x):
-        results = []
-        for f in funcs:
-            result = f(x)
-            if inspect.isawaitable(result):
-                result = await result
-            results.append(result)
-        return tuple(results)
+        return await apipe(
+            funcs, amap(acompose_left(functional.apply(x), await_if_needed)), tuple
+        )
 
     return ajuxt_inner
 
@@ -88,10 +87,7 @@ def afirst(*funcs, exception_type):
     async def afirst_inner(x):
         for f in funcs:
             try:
-                result = f(x)
-                if inspect.isawaitable(result):
-                    result = await result
-                return result
+                return await await_if_needed(f(x))
             except exception_type:
                 pass
         raise exception_type
@@ -122,3 +118,15 @@ async def avalmap(f, d: Dict):
 @toolz.curry
 async def aitemmap(f, d: Dict):
     return await apipe(d, dict.items, amap(f), dict)
+
+
+@toolz.curry
+def aternary(condition, f_true, f_false):
+    async def aternary_inner(*args, **kwargs):
+        return (
+            await await_if_needed(f_true(*args, **kwargs))
+            if await await_if_needed(condition(*args, **kwargs))
+            else await await_if_needed(f_false(*args, **kwargs))
+        )
+
+    return aternary_inner
