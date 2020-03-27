@@ -111,13 +111,14 @@ async def apair_right(f, element):
 
 @toolz.curry
 async def akeymap(f, d: Dict):
-    return await apipe(
-        d, dict.items, amap(ajuxt(acompose_left(toolz.first, f), toolz.second)), dict
-    )
+    return await aitemmap(ajuxt(acompose_left(toolz.first, f), toolz.second), d)
 
 
 @toolz.curry
 async def avalmap(f, d: Dict):
-    return await apipe(
-        d, dict.items, amap(ajuxt(toolz.first, acompose_left(toolz.second, f))), dict
-    )
+    return await aitemmap(ajuxt(toolz.first, acompose_left(toolz.second, f)), d)
+
+
+@toolz.curry
+async def aitemmap(f, d: Dict):
+    return await apipe(d, dict.items, amap(f), dict)
