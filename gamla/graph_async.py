@@ -1,9 +1,8 @@
 import itertools
 
-import graph
 import toolz
 
-from gamla import functional, functional_async
+from gamla import functional, functional_async, graph
 
 
 @toolz.curry
