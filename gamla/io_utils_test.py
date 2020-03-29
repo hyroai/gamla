@@ -3,7 +3,7 @@ import random
 
 import pytest
 
-from gamla import functional, io_utils
+from gamla import functional_async, io_utils
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
@@ -20,7 +20,9 @@ async def test_batch_decorator():
         return inputs
 
     inputs = tuple(range(100))
-    results = await functional.apipe(inputs, functional.amap(slow_identity), tuple)
+    results = await functional_async.apipe(
+        inputs, functional_async.amap(slow_identity), tuple
+    )
     assert results == inputs
     assert times_f_called < 5
 
@@ -38,12 +40,14 @@ async def test_batch_decorator_errors():
         return inputs
 
     assert (
-        await functional.apipe((1,), functional.amap(slow_identity_with_errors), tuple)
+        await functional_async.apipe(
+            (1,), functional_async.amap(slow_identity_with_errors), tuple
+        )
     ) == (1,)
 
     with pytest.raises(ValueError):
-        await functional.apipe(
-            (1, 2, 3), functional.amap(slow_identity_with_errors), tuple
+        await functional_async.apipe(
+            (1, 2, 3), functional_async.amap(slow_identity_with_errors), tuple
         )
 
     assert times_f_called == 2
@@ -60,7 +64,7 @@ async def test_with_and_without_deduper():
 
     # Without.
     assert inputs == tuple(
-        await functional.amap(identity_with_spying_and_delay, inputs)
+        await functional_async.amap(identity_with_spying_and_delay, inputs)
     )
 
     assert len(called) == len(inputs)
@@ -69,7 +73,7 @@ async def test_with_and_without_deduper():
 
     # With.
     assert inputs == tuple(
-        await functional.amap(
+        await functional_async.amap(
             io_utils.queue_identical_calls(identity_with_spying_and_delay), inputs
         )
     )
