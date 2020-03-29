@@ -3,7 +3,8 @@ import random
 
 import pytest
 
-from gamla import functional_async, io_utils
+import gamla
+from gamla import io_utils
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
@@ -20,9 +21,7 @@ async def test_batch_decorator():
         return inputs
 
     inputs = tuple(range(100))
-    results = await functional_async.apipe(
-        inputs, functional_async.amap(slow_identity), tuple
-    )
+    results = await gamla.apipe(inputs, gamla.amap(slow_identity), tuple)
     assert results == inputs
     assert times_f_called < 5
 
@@ -39,16 +38,12 @@ async def test_batch_decorator_errors():
             raise ValueError
         return inputs
 
-    assert (
-        await functional_async.apipe(
-            (1,), functional_async.amap(slow_identity_with_errors), tuple
-        )
-    ) == (1,)
+    assert (await gamla.apipe((1,), gamla.amap(slow_identity_with_errors), tuple)) == (
+        1,
+    )
 
     with pytest.raises(ValueError):
-        await functional_async.apipe(
-            (1, 2, 3), functional_async.amap(slow_identity_with_errors), tuple
-        )
+        await gamla.apipe((1, 2, 3), gamla.amap(slow_identity_with_errors), tuple)
 
     assert times_f_called == 2
 
@@ -63,9 +58,7 @@ async def test_with_and_without_deduper():
         return x
 
     # Without.
-    assert inputs == tuple(
-        await functional_async.amap(identity_with_spying_and_delay, inputs)
-    )
+    assert inputs == tuple(await gamla.amap(identity_with_spying_and_delay, inputs))
 
     assert len(called) == len(inputs)
 
@@ -73,7 +66,7 @@ async def test_with_and_without_deduper():
 
     # With.
     assert inputs == tuple(
-        await functional_async.amap(
+        await gamla.amap(
             io_utils.queue_identical_calls(identity_with_spying_and_delay), inputs
         )
     )
