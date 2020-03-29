@@ -1,6 +1,6 @@
 import asyncio
 import inspect
-from typing import Dict
+from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Iterable
 
 import toolz
 from toolz import curried
@@ -43,6 +43,14 @@ def run_sync(f):
 @toolz.curry
 async def amap(f, it):
     return await asyncio.gather(*map(f, it))
+
+
+@toolz.curry
+async def amap_ascompleted(
+    f: Callable[[Any], Awaitable[Any]], it: Iterable
+) -> AsyncGenerator[Any, None]:
+    for future in asyncio.as_completed(map(f, it)):
+        yield await future
 
 
 @toolz.curry
