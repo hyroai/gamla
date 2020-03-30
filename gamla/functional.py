@@ -272,6 +272,10 @@ def wrap_tuple(x):
     return (x,)
 
 
+def invoke(x):
+    return x()
+
+
 @toolz.curry
 def assoc_in(d, keys, value, factory=dict):
     return update_in(d, keys, lambda x: value, value, factory)
