@@ -5,35 +5,48 @@ import logging
 import time
 from typing import Text
 
+import async_timeout
 import requests
 import requests.adapters
+import toolz
 from requests.packages.urllib3.util import retry
 
-from gamla import functional
+from gamla import functional, functional_async
 
 
-def _time_to_readable(time_s: float):
+def _time_to_readable(time_s: float) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(time_s)
 
 
-def _request_id(name, args, kwargs) -> Text:
-    args_str = str(args)[:50]
-    kwargs_str = str(kwargs)[:50]
-    return f"{name}, args: {args_str}, kwargs: {kwargs_str}"
+def _request_id(name: Text, args, kwargs) -> Text:
+    params_str = f", args: {args}, kwargs: {kwargs}"
+    together = name + params_str
+    if len(together) > 100:
+        return name
+    return together
+
+
+def _log_finish(req_id: Text, start: float):
+    finish = time.time()
+    elapsed = finish - start
+    logging.info(
+        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}"
+    )
+
+
+def _log_start(req_id: Text) -> float:
+    start = time.time()
+    logging.info(f"{req_id} started at {_time_to_readable(start)}")
+    return start
 
 
 def _async_timeit(f):
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
         req_id = _request_id(f.__name__, args, kwargs)
-        start = time.time()
-        logging.info(f"{req_id} started at {_time_to_readable(start)}")
+        start = _log_start(req_id)
         result = await f(*args, **kwargs)
-        finish = time.time()
-        elapsed = finish - start
-        logging.info(
-            f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed}"
-        )
+        _log_finish(req_id, start)
         return result
 
     return wrapper
@@ -46,14 +59,9 @@ def timeit(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         req_id = _request_id(f.__name__, args, kwargs)
-        start = time.time()
-        logging.info(f"{req_id} started at {_time_to_readable(start)}")
+        start = _log_start(req_id)
         result = f(*args, **kwargs)
-        finish = time.time()
-        elapsed = finish - start
-        logging.info(
-            f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed}"
-        )
+        _log_finish(req_id, start)
         return result
 
     return wrapper
@@ -71,7 +79,7 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     return session
 
 
-def batch_calls(f, timeout=20):
+def batch_calls(f):
     """Batches single call into one request.
 
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
@@ -99,17 +107,19 @@ def batch_calls(f, timeout=20):
                     continue
                 promise.set_exception(exception)
 
+    @functools.wraps(f)
     async def wrapped(hashable_input):
         if hashable_input in queue:
-            return await asyncio.wait_for(queue[hashable_input], timeout=timeout)
+            return await queue[hashable_input]
         async_result = asyncio.Future()
-        # Check again because of context switch due to the creation of `asyncio.Future`.
+        # Check again because of context switch
+        # due to the creation of `asyncio.Future`.
         # TODO(uri): Make sure this is needed.
         if hashable_input in queue:
-            return await asyncio.wait_for(queue[hashable_input], timeout=timeout)
+            return await queue[hashable_input]
         queue[hashable_input] = async_result
         asyncio.create_task(make_call())
-        return await asyncio.wait_for(async_result, timeout=timeout)
+        return await async_result
 
     return wrapped
 
@@ -128,3 +138,31 @@ def queue_identical_calls(f):
         return await asyncio.wait_for(pending[key], timeout=20)
 
     return wrapped
+
+
+@toolz.curry
+def athrottle(limit, f):
+    semaphore = asyncio.Semaphore(limit)
+
+    @functools.wraps(f)
+    async def wrapped(*args, **kwargs):
+        async with semaphore:
+            return await f(*args, **kwargs)
+
+    return wrapped
+
+
+@toolz.curry
+async def throttled_amap(f, it, limit):
+    return await functional_async.amap(athrottle(limit, f), it)
+
+
+def timeout(seconds: float):
+    def wrapper(corofunc):
+        async def run(*args, **kwargs):
+            with async_timeout.timeout(seconds):
+                return await corofunc(*args, **kwargs)
+
+        return run
+
+    return wrapper

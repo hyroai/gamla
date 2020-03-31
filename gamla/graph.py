@@ -9,16 +9,27 @@ from gamla import functional
 
 
 @toolz.curry
-def graph_traverse(source: Any, get_neighbors: Callable) -> Iterable:
-    """BFS over a graph, yielding unique nodes."""
+def graph_traverse(
+    source: Any, get_neighbors: Callable, key: Callable = toolz.identity
+) -> Iterable:
+    yield from graph_traverse_many([source], get_neighbors=get_neighbors, key=key)
+
+
+@toolz.curry
+def graph_traverse_many(
+    sources: Any, get_neighbors: Callable, key: Callable = toolz.identity
+) -> Iterable:
+    """BFS over a graph, yielding unique nodes.
+
+    Note: `get_neighbors` must return elements without duplicates."""
     seen = set()
-    queue = [source]
+    queue = [*sources]
     while queue:
         current = queue.pop()
         yield current
-        seen.add(current)
+        seen.add(key(current))
         for node in get_neighbors(current):
-            if node not in seen:
+            if key(node) not in seen:
                 queue = [node] + queue
 
 
@@ -47,13 +58,20 @@ edges_to_graph = toolz.compose(
     curried.groupby(toolz.first),
 )
 
+graph_to_edges = toolz.compose_left(
+    curried.keymap(lambda x: (x,)),
+    dict.items,
+    curried.mapcat(functional.star(itertools.product)),
+)
 
-def cliques_to_graph(cliques: Iterable[Iterable]) -> Dict[Any, FrozenSet[Any]]:
-    return toolz.pipe(
-        cliques,
-        curried.mapcat(lambda clique: itertools.permutations(clique, r=2)),
-        edges_to_graph,
-    )
+reverse_graph = toolz.compose_left(
+    graph_to_edges, curried.map(toolz.compose_left(reversed, tuple)), edges_to_graph
+)
+
+
+cliques_to_graph = toolz.compose_left(
+    curried.mapcat(lambda clique: itertools.permutations(clique, r=2)), edges_to_graph
+)
 
 
 def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
@@ -83,4 +101,27 @@ def groupby_many(f, it):
             )
         ),
         edges_to_graph,
+    )
+
+
+@toolz.curry
+def _has_cycle(sourced, get_neighbors, visited, node):
+    if node in sourced:
+        return True
+    if node in visited:
+        return False
+    visited.add(node)
+    return toolz.pipe(
+        node,
+        get_neighbors,
+        functional.anymap(_has_cycle(sourced | {node}, get_neighbors, visited)),
+    )
+
+
+def has_cycle(graph):
+    return toolz.pipe(
+        graph,
+        dict.keys,
+        curried.map(_has_cycle(frozenset(), curried.get(seq=graph, default=()), set())),
+        any,
     )

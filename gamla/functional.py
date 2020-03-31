@@ -1,21 +1,21 @@
-import asyncio
+import builtins
+import cProfile
 import functools
 import hashlib
+import heapq
 import inspect
 import itertools
 import json
 import logging
-from typing import Callable, Dict, Iterable, Text, Type
+from concurrent import futures
+from typing import Callable, Iterable, Text, Type
 
-import gevent
+import heapq_max
 import toolz
-from gevent import pool
 from toolz import curried
+from toolz.curried import operator
 
-
-@toolz.curry
-def dict_get(dict_obj: Dict, default, key):
-    return dict_obj.get(key, default)
+do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
 def do_if(condition, fun):
@@ -66,17 +66,37 @@ def anymap(f: Callable, it: Iterable):
     return any(map(f, it))
 
 
-def anyjuxt(*funcs):
-    return toolz.compose(any, toolz.juxt(*funcs))
-
-
 @toolz.curry
 def allmap(f: Callable, it: Iterable):
     return all(map(f, it))
 
 
-def alljuxt(*funcs):
-    return toolz.compose(all, toolz.juxt(*funcs))
+@toolz.curry
+def apply(value, function):
+    return function(value)
+
+
+@toolz.curry
+def after(f1, f2):
+    return toolz.compose(f1, f2)
+
+
+@toolz.curry
+def before(f1, f2):
+    return toolz.compose_left(f1, f2)
+
+
+def lazyjuxt(*funcs):
+    return toolz.compose_left(apply, curried.map, apply(funcs))
+
+
+alljuxt = toolz.compose(after(all), lazyjuxt)
+
+
+anyjuxt = toolz.compose(after(any), lazyjuxt)
+
+
+juxtcat = toolz.compose(after(toolz.concat), lazyjuxt)
 
 
 def ignore_input(inner):
@@ -131,151 +151,21 @@ def assert_that(f):
     return curried.do(_assert_f_output_on_inp(f))
 
 
-_GLOBAL_POOL = pool.Group()
-
-
-async def apipe(val, *funcs):
-    for f in funcs:
-        val = f(val)
-        if inspect.isawaitable(val):
-            val = await val
-    return val
-
-
-def acompose(*funcs):
-    async def composed(*args, **kwargs):
-        if args:
-            inp = toolz.first(args)
-        else:
-            inp = toolz.first(kwargs.values())
-        for f in reversed(funcs):
-            inp = f(inp)
-            if inspect.isawaitable(inp):
-                inp = await inp
-        return inp
-
-    return composed
-
-
-def acompose_left(*funcs):
-    return acompose(*reversed(funcs))
-
-
-async def materialize(async_generator):
-    elements = []
-    async for element in async_generator:
-        elements.append(element)
-    return tuple(elements)
-
-
 @toolz.curry
-async def amap(f, it):
-    return await asyncio.gather(*map(f, it))
-
-
-@toolz.curry
-async def aexcepts(exception_type, func, handler, x):
-    try:
-        return await func(x)
-    except exception_type as error:
-        return handler(error)
-
-
-@toolz.curry
-async def mapa(f, it):
-    async for element in it:
-        yield f(element)
-
-
-async def aconcat(async_generators):
-    async for g in async_generators:
-        for x in g:
-            yield x
-
-
-def ajuxt(*funcs):
-    async def ajuxt_inner(x):
-        results = []
-        for f in funcs:
-            result = f(x)
-            if inspect.isawaitable(result):
-                result = await result
-            results.append(result)
-        return tuple(results)
-
-    return ajuxt_inner
-
-
-@toolz.curry
-async def afilter(func, it):
-    it = tuple(it)
-    results = await amap(func, it)
-    return toolz.pipe(
-        zip(it, results), curried.filter(toolz.second), curried.map(toolz.first)
-    )
-
-
-def afirst(*funcs, exception_type):
-    async def afirst_inner(x):
-        for f in funcs:
-            try:
-                result = f(x)
-                if inspect.isawaitable(result):
-                    result = await result
-                return result
-            except exception_type:
-                pass
-        raise exception_type
-
-    return afirst_inner
-
-
-@toolz.curry
-def pmap(f, it):
+def pmap(f, n_workers, it):
     # The `tuple` is for callers convenience (even without it, the pool is eager).
-    return tuple(_GLOBAL_POOL.map(f, it))
+    return tuple(futures.ThreadPoolExecutor(max_workers=n_workers).map(f, it))
 
 
 @toolz.curry
 def pfilter(f, it):
     return toolz.pipe(
         it,
-        bifurcate(pmap(f), curried.map(toolz.identity)),
+        bifurcate(pmap(f, None), curried.map(toolz.identity)),
         zip,
         curried.filter(toolz.first),
         curried.map(toolz.second),
     )
-
-
-def pfirst(*funcs, exception_type):
-    """Parallel+lazy iterator.
-
-    This is used for when we want to start everything in parallel, but return a value
-    on the first successful result.
-    """
-    failure_value = "gamla-value-signifying-failure"
-
-    def inner(*args, **kwargs):
-        return toolz.pipe(
-            funcs,
-            # Prepare runs for each function on the given input, wrapping them for
-            # failure as gevent treats an exception within a greenlet as a real error.
-            curried.map(
-                lambda f: gevent.spawn(
-                    toolz.excepts(exception_type, f, lambda _: failure_value),
-                    *args,
-                    **kwargs
-                )
-            ),
-            # Materialize to actually start the requests in parallel.
-            tuple,
-            # Don't wait for all to finish, start examining the requests by order.
-            curried.map(lambda promise: promise.get()),
-            curried.filter(lambda result: result != failure_value),
-            translate_exception(next, StopIteration, exception_type),
-        )
-
-    return inner
 
 
 def first(*funcs, exception_type: Type[Exception]):
@@ -294,7 +184,11 @@ logger = curried.do(logging.info)
 
 
 def log_text(text: Text):
-    return curried.do(lambda _: logging.info(text))
+    return curried.do(lambda x: logging.info(text.format(x)))
+
+
+def just(x):
+    return ignore_input(lambda: x)
 
 
 # To get a unique caching key for each function invocation, we take `args` and `items()`
@@ -307,3 +201,113 @@ def make_call_key(args, kwargs):
     if kwargs:
         key += "##kwargs##", tuple(sorted(kwargs.items()))
     return key
+
+
+@toolz.curry
+def top(iterable, key=toolz.identity):
+    """Generates elements from max to min."""
+    h = []
+    for i, value in enumerate(iterable):
+        # Use the index as a tie breaker.
+        heapq_max.heappush_max(h, (key(value), i, value))
+    while h:
+        yield toolz.nth(2, heapq_max.heappop_max(h))
+
+
+@toolz.curry
+def bottom(iterable, key=toolz.identity):
+    """Generates elements from min to max."""
+    h = []
+    for i, value in enumerate(iterable):
+        # Use the index as a tie breaker.
+        heapq.heappush(h, (key(value), i, value))
+    while h:
+        yield toolz.nth(2, heapq.heappop(h))
+
+
+def profileit(func):
+    def wrapper(*args, **kwargs):
+        filename = func.__name__ + ".profile"
+        prof = cProfile.Profile()
+        retval = prof.runcall(func, *args, **kwargs)
+        prof.dump_stats(filename)
+        logging.info(f"Saved profiling stats to {filename}")
+        return retval
+
+    return wrapper
+
+
+@toolz.curry
+def inside(val, container):
+    return val in container
+
+
+@toolz.curry
+def pair_with(f, element):
+    return f(element), element
+
+
+@toolz.curry
+def pair_right(f, element):
+    return element, f(element)
+
+
+average = toolz.compose_left(bifurcate(sum, toolz.count), star(operator.truediv))
+
+
+@toolz.curry
+def len_equals(length: int, seq):
+    return len(seq) == length
+
+
+@toolz.curry
+def skip(n, seq):
+    for i, x in enumerate(seq):
+        if i < n:
+            continue
+        yield x
+
+
+def wrap_tuple(x):
+    return (x,)
+
+
+def invoke(x):
+    return x()
+
+
+@toolz.curry
+def assoc_in(d, keys, value, factory=dict):
+    return update_in(d, keys, lambda x: value, value, factory)
+
+
+@toolz.curry
+def update_in(d, keys, func, default=None, factory=dict):
+    ks = iter(keys)
+    k = next(ks)
+
+    rv = inner = factory()
+    rv.update(d)
+
+    for key in ks:
+        if k in d or isinstance(d, list):
+            d = d[k]
+            if isinstance(d, dict):
+                dtemp = {}
+                dtemp.update(d)
+            elif isinstance(d, list):
+                dtemp = []
+                dtemp.extend(d)
+            else:
+                dtemp = factory()
+        else:
+            d = dtemp = factory()
+
+        inner[k] = inner = dtemp
+        k = key
+
+    if k in d:
+        inner[k] = func(d[k])
+    else:
+        inner[k] = func(default)
+    return rv
