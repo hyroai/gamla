@@ -1,5 +1,6 @@
 # flake8: noqa
 
+from .data import *
 from .functional import *
 from .functional_async import *
 from .graph import *
