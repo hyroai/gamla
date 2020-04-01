@@ -18,5 +18,6 @@ setuptools.setup(
         "pytest",
         "requests",
         "toolz",
+        "frozendict",
     ],
 )
