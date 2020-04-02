@@ -252,7 +252,10 @@ def pair_right(f, element):
     return element, f(element)
 
 
-average = toolz.compose_left(bifurcate(sum, toolz.count), star(operator.truediv))
+average = toolz.compose_left(
+    bifurcate(sum, toolz.count),
+    toolz.excepts(ZeroDivisionError, star(operator.truediv), lambda _: 0),
+)
 
 
 @toolz.curry
