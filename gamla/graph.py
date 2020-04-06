@@ -105,6 +105,15 @@ def groupby_many(f, it):
 
 
 @toolz.curry
+def groupby_many_reduce(key, reducer, seq):
+    result = {}
+    for element in seq:
+        for key_result in key(element):
+            result[key_result] = reducer(result.get(key_result, None), key_result)
+    return result
+
+
+@toolz.curry
 def _has_cycle(sourced, get_neighbors, visited, node):
     if node in sourced:
         return True
