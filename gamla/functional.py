@@ -1,5 +1,6 @@
 import builtins
 import cProfile
+import dataclasses
 import functools
 import hashlib
 import heapq
@@ -8,7 +9,7 @@ import itertools
 import json
 import logging
 from concurrent import futures
-from typing import Callable, Iterable, Text, Type
+from typing import Any, Callable, Iterable, Text, Type, TypeVar
 
 import heapq_max
 import toolz
@@ -314,3 +315,33 @@ def update_in(d, keys, func, default=None, factory=dict):
     else:
         inner[k] = func(default)
     return rv
+
+
+@toolz.curry
+def dataclass_transform(
+    attr_name: Text, attr_transformer: Callable[[Any], Any], dataclass_instance
+):
+    return dataclasses.replace(
+        dataclass_instance,
+        **{
+            attr_name: toolz.pipe(
+                dataclass_instance, operator.attrgetter(attr_name), attr_transformer
+            )
+        },
+    )
+
+
+@toolz.curry
+def dataclass_replace(attr_name: Text, attr_value: Any, dataclass_instance):
+    return dataclasses.replace(dataclass_instance, **{attr_name: attr_value})
+
+
+_R = TypeVar("_R")
+_E = TypeVar("_E")
+
+
+@toolz.curry
+def reduce(
+    reducer: Callable[[_R, _E], _R], initial_value: _R, elements: Iterable[_E]
+) -> _R:
+    return functools.reduce(reducer, elements, initial_value)
