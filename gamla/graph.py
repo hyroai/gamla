@@ -109,7 +109,7 @@ def groupby_many_reduce(key, reducer, seq):
     result = {}
     for element in seq:
         for key_result in key(element):
-            result[key_result] = reducer(result.get(key_result, None), key_result)
+            result[key_result] = reducer(result.get(key_result, None), element)
     return result
 
 
