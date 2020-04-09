@@ -20,7 +20,7 @@ do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
 def do_if(condition, fun):
-    return curried.do(curried_ternary(condition, fun, toolz.identity))
+    return curried.do(ternary(condition, fun, toolz.identity))
 
 
 def check(condition, exception):
@@ -107,7 +107,7 @@ def ignore_input(inner):
     return ignore_and_run
 
 
-def curried_ternary(condition, f_true, f_false):
+def ternary(condition, f_true, f_false):
     def inner(*args, **kwargs):
         return (
             f_true(*args, **kwargs)
@@ -116,6 +116,10 @@ def curried_ternary(condition, f_true, f_false):
         )
 
     return inner
+
+
+# Deprecated.
+curried_ternary = ternary
 
 
 def make_raise(exception):

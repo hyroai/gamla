@@ -27,7 +27,7 @@ def _freeze_deep_inner(value):
         return toolz.pipe(
             value,
             curried.map(
-                functional.curried_ternary(
+                functional.ternary(
                     lambda x: isinstance(x, dict), freeze_deep, toolz.identity
                 )
             ),
