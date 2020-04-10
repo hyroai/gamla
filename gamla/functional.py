@@ -188,8 +188,8 @@ def first(*funcs, exception_type: Type[Exception]):
 logger = curried.do(logging.info)
 
 
-def log_text(text: Text):
-    return curried.do(lambda x: logging.info(text.format(x)))
+def log_text(text: Text, level: int = logging.INFO):
+    return curried.do(lambda x: logging.log(level, text.format(x)))
 
 
 def just(x):
