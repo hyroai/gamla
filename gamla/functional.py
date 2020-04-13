@@ -30,9 +30,9 @@ def check(condition, exception):
 def bifurcate(*funcs):
     """Serially runs each function on tee'd copies of `input_generator`."""
 
-    def inner(input_generator):
+    def inner(input_iterable):
         return toolz.pipe(
-            zip(funcs, itertools.tee(input_generator, len(funcs))),
+            zip(funcs, itertools.tee(iter(input_iterable), len(funcs))),
             curried.map(star(lambda f, generator: f(generator))),
             tuple,
         )
