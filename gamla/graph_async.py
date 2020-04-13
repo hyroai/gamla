@@ -44,15 +44,15 @@ async def agraph_traverse_many(
     """BFS over a graph, yielding unique nodes.
 
     Note: `get_neighbors` must return elements without duplicates."""
-    seen = set()
     queue = [*sources]
+    seen = set(map(key, queue))
+
     while queue:
         current = queue.pop()
         yield current
-        seen.add(key(current))
-
         async for node in aget_neighbors(current):
             if key(node) not in seen:
+                seen.add(key(node))
                 queue = [node] + queue
 
 

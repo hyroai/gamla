@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from gamla import graph
 
 
@@ -23,3 +25,13 @@ def test_cycles():
     assert graph.has_cycle({1: [2], 2: [3], 3: [4], 4: [2]})
     assert not graph.has_cycle({1: [2]})
     assert not graph.has_cycle({1: [2], 2: [3]})
+
+
+def test_bfs_no_double_visit():
+    g = {"a": ["b", "d", "e"], "b": ["f"], "e": ["f"], "d": [], "f": []}
+    result = list(graph.graph_traverse_many("a", g.__getitem__))
+
+    for n in {"a", "b", "d", "e", "f"}:
+        assert n in result
+
+    assert len(result) == len(set(result))
