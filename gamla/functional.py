@@ -349,3 +349,13 @@ def reduce(
     reducer: Callable[[_R, _E], _R], initial_value: _R, elements: Iterable[_E]
 ) -> _R:
     return functools.reduce(reducer, elements, initial_value)
+
+
+@toolz.curry
+def suffix(val, it: Iterable):
+    return itertools.chain(it, (val,))
+
+
+@toolz.curry
+def concat_with(new_it: Iterable, it: Iterable):
+    return itertools.chain(it, new_it)
