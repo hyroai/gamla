@@ -349,3 +349,11 @@ def reduce(
     reducer: Callable[[_R, _E], _R], initial_value: _R, elements: Iterable[_E]
 ) -> _R:
     return functools.reduce(reducer, elements, initial_value)
+
+
+@toolz.curry
+def conj(val, it: Iterable):
+    if not toolz.isiterable(val):
+        val = wrap_tuple(val)
+
+    return itertools.chain(it, iter(val))
