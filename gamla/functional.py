@@ -352,8 +352,10 @@ def reduce(
 
 
 @toolz.curry
-def conj(val, it: Iterable):
-    if not toolz.isiterable(val):
-        val = wrap_tuple(val)
+def suffix(val, it: Iterable):
+    return itertools.chain(it, wrap_tuple(val))
 
-    return itertools.chain(it, iter(val))
+
+@toolz.curry
+def concat_with(new_it: Iterable, it: Iterable):
+    return itertools.chain(it, new_it)
