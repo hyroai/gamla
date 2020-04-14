@@ -353,7 +353,7 @@ def reduce(
 
 @toolz.curry
 def suffix(val, it: Iterable):
-    return itertools.chain(it, wrap_tuple(val))
+    return itertools.chain(it, (val,))
 
 
 @toolz.curry
