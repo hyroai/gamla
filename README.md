@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.com/hyroai/gamla.svg?branch=master)](https://travis-ci.com/hyroai/gamla)
 
-Gamla is a functional programming library for python.
+גamla is a functional programming library for python.
 
 `pip install gamla`
 
