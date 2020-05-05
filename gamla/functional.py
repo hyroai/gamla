@@ -129,6 +129,7 @@ def make_raise(exception):
     return ignore_input(inner)
 
 
+@toolz.curry
 def translate_exception(func, exc1, exc2):
     """`func` is assumed to be unary."""
     return toolz.excepts(exc1, func, make_raise(exc2))
