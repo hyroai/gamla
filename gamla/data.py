@@ -19,7 +19,7 @@ def get_encode_config():
 def freeze_deep(value):
     if isinstance(value, str):
         return value
-    if isinstance(value, dict):
+    if isinstance(value, dict) or isinstance(value, frozendict.frozendict):
         return toolz.pipe(
             value,
             dict,  # In case input is already a `frozendict`.
