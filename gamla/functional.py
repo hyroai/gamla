@@ -20,7 +20,7 @@ do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
 def do_if(condition, fun):
-    return curried.do(curried_ternary(condition, fun, toolz.identity))
+    return curried.do(ternary(condition, fun, toolz.identity))
 
 
 def check(condition, exception):
@@ -30,9 +30,9 @@ def check(condition, exception):
 def bifurcate(*funcs):
     """Serially runs each function on tee'd copies of `input_generator`."""
 
-    def inner(input_generator):
+    def inner(input_iterable):
         return toolz.pipe(
-            zip(funcs, itertools.tee(input_generator, len(funcs))),
+            zip(funcs, itertools.tee(iter(input_iterable), len(funcs))),
             curried.map(star(lambda f, generator: f(generator))),
             tuple,
         )
@@ -107,7 +107,7 @@ def ignore_input(inner):
     return ignore_and_run
 
 
-def curried_ternary(condition, f_true, f_false):
+def ternary(condition, f_true, f_false):
     def inner(*args, **kwargs):
         return (
             f_true(*args, **kwargs)
@@ -118,6 +118,10 @@ def curried_ternary(condition, f_true, f_false):
     return inner
 
 
+# Deprecated.
+curried_ternary = ternary
+
+
 def make_raise(exception):
     def inner():
         raise exception
@@ -125,6 +129,7 @@ def make_raise(exception):
     return ignore_input(inner)
 
 
+@toolz.curry
 def translate_exception(func, exc1, exc2):
     """`func` is assumed to be unary."""
     return toolz.excepts(exc1, func, make_raise(exc2))
@@ -184,8 +189,8 @@ def first(*funcs, exception_type: Type[Exception]):
 logger = curried.do(logging.info)
 
 
-def log_text(text: Text):
-    return curried.do(lambda x: logging.info(text.format(x)))
+def log_text(text: Text, level: int = logging.INFO):
+    return curried.do(lambda x: logging.log(level, text.format(x)))
 
 
 def just(x):
@@ -345,3 +350,18 @@ def reduce(
     reducer: Callable[[_R, _E], _R], initial_value: _R, elements: Iterable[_E]
 ) -> _R:
     return functools.reduce(reducer, elements, initial_value)
+
+
+@toolz.curry
+def suffix(val, it: Iterable):
+    return itertools.chain(it, (val,))
+
+
+@toolz.curry
+def prefix(val, it: Iterable):
+    return itertools.chain((val,), it)
+
+
+@toolz.curry
+def concat_with(new_it: Iterable, it: Iterable):
+    return itertools.chain(it, new_it)

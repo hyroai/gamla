@@ -22,14 +22,15 @@ def graph_traverse_many(
     """BFS over a graph, yielding unique nodes.
 
     Note: `get_neighbors` must return elements without duplicates."""
-    seen = set()
     queue = [*sources]
+    seen = set(map(key, queue))
+
     while queue:
         current = queue.pop()
         yield current
-        seen.add(key(current))
         for node in get_neighbors(current):
             if key(node) not in seen:
+                seen.add(key(node))
                 queue = [node] + queue
 
 
@@ -109,7 +110,7 @@ def groupby_many_reduce(key, reducer, seq):
     result = {}
     for element in seq:
         for key_result in key(element):
-            result[key_result] = reducer(result.get(key_result, None), key_result)
+            result[key_result] = reducer(result.get(key_result, None), element)
     return result
 
 

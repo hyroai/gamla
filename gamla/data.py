@@ -7,8 +7,6 @@ import frozendict
 import toolz
 from toolz import curried
 
-from gamla import functional
-
 
 def get_encode_config():
     return dataclasses.field(
@@ -18,32 +16,19 @@ def get_encode_config():
     )
 
 
-def _freeze_deep_inner(value):
+def freeze_deep(value):
     if isinstance(value, str):
         return value
-    if isinstance(value, dict):
-        return freeze_deep(value)
-    elif isinstance(value, Iterable):
+    if isinstance(value, dict) or isinstance(value, frozendict.frozendict):
         return toolz.pipe(
             value,
-            curried.map(
-                functional.curried_ternary(
-                    lambda x: isinstance(x, dict), freeze_deep, toolz.identity
-                )
-            ),
-            tuple,
+            dict,  # In case input is already a `frozendict`.
+            curried.valmap(freeze_deep),
+            frozendict.frozendict,
         )
-
+    if isinstance(value, Iterable):
+        return toolz.pipe(value, curried.map(freeze_deep), tuple)
     return value
-
-
-def freeze_deep(dict_to_freeze: Dict) -> frozendict.frozendict:
-    return toolz.pipe(
-        dict_to_freeze,
-        dict,  # In case input is already a `frozendict`.
-        curried.valmap(_freeze_deep_inner),
-        frozendict.frozendict,
-    )
 
 
 @toolz.curry
