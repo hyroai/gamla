@@ -141,5 +141,8 @@ def aternary(condition, f_true, f_false):
 
 
 @toolz.curry
-async def apply_async(value, function):
-    return await function(value)
+def apply_async(value):
+    async def apply_inner(function):
+        return await function(value)
+
+    return apply_inner
