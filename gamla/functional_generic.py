@@ -1,4 +1,5 @@
 import asyncio
+from typing import Callable
 
 import toolz
 from toolz import curried
@@ -10,13 +11,19 @@ def compose_left(*funcs):
     return compose(*reversed(funcs))
 
 
-_any_async = functional.anymap(asyncio.iscoroutinefunction)
+_any_is_async = toolz.compose(any, curried.map(asyncio.iscoroutinefunction))
 
 
 def compose(*funcs):
-    if _any_async(funcs):
+    if _any_is_async(funcs):
         return functional_async.acompose(*funcs)
     return toolz.compose(*funcs)
+
+
+def map(f: Callable):
+    if asyncio.iscoroutinefunction(f):
+        return functional_async.amap(f)
+    return curried.map(f)
 
 
 @toolz.curry
@@ -29,8 +36,12 @@ def before(f1, f2):
     return compose_left(f1, f2)
 
 
+anymap = compose(after(any), map)
+allmap = compose(after(all), map)
+
+
 def lazyjuxt(*funcs):
-    if _any_async(funcs):
+    if _any_is_async(funcs):
         return compose_left(
             functional_async.apply_async,
             functional_async.amap,

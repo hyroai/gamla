@@ -63,16 +63,6 @@ def wrapped_partial(func: Callable, *args, **kwargs) -> Callable:
 
 
 @toolz.curry
-def anymap(f: Callable, it: Iterable):
-    return any(map(f, it))
-
-
-@toolz.curry
-def allmap(f: Callable, it: Iterable):
-    return all(map(f, it))
-
-
-@toolz.curry
 def apply(value, function):
     return function(value)
 
