@@ -138,3 +138,8 @@ def aternary(condition, f_true, f_false):
         )
 
     return aternary_inner
+
+
+@toolz.curry
+async def apply_async(value, function):
+    return await function(value)

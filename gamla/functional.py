@@ -77,29 +77,6 @@ def apply(value, function):
     return function(value)
 
 
-@toolz.curry
-def after(f1, f2):
-    return toolz.compose(f1, f2)
-
-
-@toolz.curry
-def before(f1, f2):
-    return toolz.compose_left(f1, f2)
-
-
-def lazyjuxt(*funcs):
-    return toolz.compose_left(apply, curried.map, apply(funcs))
-
-
-alljuxt = toolz.compose(after(all), lazyjuxt)
-
-
-anyjuxt = toolz.compose(after(any), lazyjuxt)
-
-
-juxtcat = toolz.compose(after(toolz.concat), lazyjuxt)
-
-
 def ignore_input(inner):
     def ignore_and_run(*args, **kwargs):
         return inner()
