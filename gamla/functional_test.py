@@ -3,7 +3,7 @@ import asyncio
 import pytest
 import toolz
 
-from gamla import functional_generic
+from gamla import functional, functional_generic
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
@@ -69,3 +69,18 @@ async def test_anymap_async():
 
 async def test_allmap_async():
     assert not await functional_generic.allmap(_opposite_async, [True, True, False])
+
+
+async def test_allmap_in_async_pipe():
+    assert not await functional_generic.pipe(
+        [True, True, False],
+        functional_generic.allmap(_opposite_async),
+        # Check that the `pipe` serves a value and not a future.
+        functional.check(lambda x: isinstance(x, bool), AssertionError),
+    )
+
+
+async def test_anymap_in_pipe():
+    assert not functional_generic.pipe(
+        [True, True, False], functional_generic.allmap(lambda x: not x)
+    )

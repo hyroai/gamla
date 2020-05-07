@@ -130,7 +130,7 @@ def pipe(val, *funcs):
 
 
 @toolz.curry
-async def itemmap(f, d: Dict):
+def itemmap(f, d: Dict):
     return pipe(d, dict.items, map(f), dict)
 
 
@@ -195,11 +195,20 @@ async def filter(func, it):
     )
 
 
-@curry
-def anymap(f, it):
-    return pipe(it, gamla_map(f), any)
+def _compose_on_map(f_after):
+    def composition_over_map(*args):
+        if len(args) == 2:
+            f, it = args
+            return pipe(it, gamla_map(f), f_after)
+        [f] = args
+        if asyncio.iscoroutinefunction(f):
+            with_map = _make_amap(f)
+        else:
+            with_map = curried.map(f)
+        return compose_left(with_map, f_after)
+
+    return composition_over_map
 
 
-@curry
-def allmap(f, it):
-    return pipe(it, gamla_map(f), all)
+allmap = _compose_on_map(all)
+anymap = _compose_on_map(any)
