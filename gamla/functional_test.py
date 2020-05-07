@@ -86,7 +86,7 @@ async def test_anymap_in_pipe():
     )
 
 
-async def test_itemmap_async_curried():
+async def test_itemmap_async_sync_mixed():
     assert await functional_generic.pipe(
         {True: True},
         functional_generic.itemmap(
@@ -96,3 +96,13 @@ async def test_itemmap_async_curried():
             functional_generic.compose(tuple, functional_generic.map(lambda x: not x))
         ),
     ) == {True: True}
+
+
+async def test_keymap_async_curried():
+    assert await functional_generic.keymap(_opposite_async)({True: True}) == {
+        False: True
+    }
+
+
+async def test_valmap_sync_curried():
+    assert functional_generic.valmap(lambda x: not x)({True: True}) == {True: False}

@@ -1,7 +1,6 @@
 import asyncio
 import functools
 import inspect
-from typing import Dict
 
 import toolz
 from toolz import curried
@@ -199,13 +198,10 @@ anymap = _compose_over_binary_curried(compose(after(any), gamla_map))
 itemmap = _compose_over_binary_curried(
     compose(after(dict), before(dict.items), gamla_map)
 )
+keymap = _compose_over_binary_curried(
+    compose(itemmap, lambda f: juxt(f, toolz.second), before(toolz.first))
+)
 
-
-@toolz.curry
-def keymap(f, d: Dict):
-    return itemmap(juxt(compose_left(toolz.first, f), toolz.second), d)
-
-
-@toolz.curry
-def valmap(f, d: Dict):
-    return itemmap(juxt(toolz.first, compose_left(toolz.second, f)), d)
+valmap = _compose_over_binary_curried(
+    compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second))
+)
