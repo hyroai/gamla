@@ -20,7 +20,12 @@ do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
 def do_if(condition, fun):
-    return curried.do(ternary(condition, fun, toolz.identity))
+    def inner_do_if(x):
+        if condition(x):
+            return fun(x)
+        return x
+
+    return inner_do_if
 
 
 def check(condition, exception):
@@ -62,64 +67,11 @@ def wrapped_partial(func: Callable, *args, **kwargs) -> Callable:
     return partial_func
 
 
-@toolz.curry
-def anymap(f: Callable, it: Iterable):
-    return any(map(f, it))
-
-
-@toolz.curry
-def allmap(f: Callable, it: Iterable):
-    return all(map(f, it))
-
-
-@toolz.curry
-def apply(value, function):
-    return function(value)
-
-
-@toolz.curry
-def after(f1, f2):
-    return toolz.compose(f1, f2)
-
-
-@toolz.curry
-def before(f1, f2):
-    return toolz.compose_left(f1, f2)
-
-
-def lazyjuxt(*funcs):
-    return toolz.compose_left(apply, curried.map, apply(funcs))
-
-
-alljuxt = toolz.compose(after(all), lazyjuxt)
-
-
-anyjuxt = toolz.compose(after(any), lazyjuxt)
-
-
-juxtcat = toolz.compose(after(toolz.concat), lazyjuxt)
-
-
 def ignore_input(inner):
     def ignore_and_run(*args, **kwargs):
         return inner()
 
     return ignore_and_run
-
-
-def ternary(condition, f_true, f_false):
-    def inner(*args, **kwargs):
-        return (
-            f_true(*args, **kwargs)
-            if condition(*args, **kwargs)
-            else f_false(*args, **kwargs)
-        )
-
-    return inner
-
-
-# Deprecated.
-curried_ternary = ternary
 
 
 def make_raise(exception):
