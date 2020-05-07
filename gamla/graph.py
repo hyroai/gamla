@@ -5,7 +5,7 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional
+from gamla import functional, functional_generic
 
 
 @toolz.curry
@@ -124,7 +124,7 @@ def _has_cycle(sourced, get_neighbors, visited, node):
     return toolz.pipe(
         node,
         get_neighbors,
-        functional.anymap(_has_cycle(sourced | {node}, get_neighbors, visited)),
+        functional_generic.anymap(_has_cycle(sourced | {node}, get_neighbors, visited)),
     )
 
 
