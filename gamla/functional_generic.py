@@ -171,20 +171,11 @@ def curry(f):
     return indirection
 
 
-# TODO(uri): Currently async only.
-@curry
-async def filter(func, it):
-    results = await to_awaitable(gamla_map(func, it))
-    return toolz.pipe(
-        zip(results, it), curried.filter(toolz.first), curried.map(toolz.second)
-    )
-
-
 def _compose_over_binary_curried(composer):
     def composition_over_binary_curried(*args):
         if len(args) == 2:
-            f, it = args
-            return pipe(it, composer(f))
+            f, value = args
+            return pipe(value, composer(f))
         [f] = args
         return composer(f)
 
@@ -204,4 +195,16 @@ keymap = _compose_over_binary_curried(
 
 valmap = _compose_over_binary_curried(
     compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second))
+)
+
+
+pair_with = _compose_over_binary_curried(lambda f: juxt(f, toolz.identity))
+pair_right = _compose_over_binary_curried(lambda f: juxt(toolz.identity, f))
+
+filter = _compose_over_binary_curried(
+    compose(
+        after(compose(curried.map(toolz.second), curried.filter(toolz.first))),
+        gamla_map,
+        pair_with,
+    )
 )
