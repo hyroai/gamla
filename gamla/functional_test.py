@@ -3,7 +3,7 @@ import asyncio
 import pytest
 import toolz
 
-from gamla import functional_generic
+from gamla import functional_generic, functional
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
@@ -12,6 +12,10 @@ pytestmark = pytest.mark.asyncio
 async def _opposite_async(x):
     await asyncio.sleep(1)
     return not x
+
+
+def test_do_if():
+    assert functional.do_if(lambda _: True, lambda x: 2)(1) == 1
 
 
 def test_currying():
