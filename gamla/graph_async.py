@@ -4,15 +4,15 @@ from typing import Any, AsyncGenerator, Callable, Text, Tuple
 import toolz
 from toolz import curried
 
-from gamla import functional, functional_async, graph
+from gamla import functional, functional_async, functional_generic, graph
 
 
-@toolz.curry
+@functional_generic.curry
 async def agroupby_many(f, it):
-    return await functional_async.apipe(
+    return await functional_async.pipe(
         it,
-        functional_async.amap(
-            functional_async.acompose_left(
+        functional_async.map(
+            functional_async.compose_left(
                 functional_async.apair_with(f),
                 functional.star(lambda x, y: (x, [y])),
                 functional.star(itertools.product),
@@ -23,7 +23,7 @@ async def agroupby_many(f, it):
     )
 
 
-@toolz.curry
+@functional_generic.curry
 async def agraph_traverse(
     source: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],
@@ -35,7 +35,7 @@ async def agraph_traverse(
         yield s
 
 
-@toolz.curry
+@functional_generic.curry
 async def agraph_traverse_many(
     sources: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],
@@ -56,7 +56,7 @@ async def agraph_traverse_many(
                 queue = [node] + queue
 
 
-@toolz.curry
+@functional_generic.curry
 async def atraverse_graph_by_radius(
     source: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],

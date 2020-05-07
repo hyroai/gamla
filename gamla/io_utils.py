@@ -11,7 +11,7 @@ import requests.adapters
 import toolz
 from requests.packages.urllib3.util import retry
 
-from gamla import functional, functional_async
+from gamla import functional, functional_generic
 
 
 def _time_to_readable(time_s: float) -> datetime.datetime:
@@ -152,9 +152,9 @@ def athrottle(limit, f):
     return wrapped
 
 
-@toolz.curry
+@functional_generic.curry
 async def throttled_amap(f, it, limit):
-    return await functional_async.amap(athrottle(limit, f), it)
+    return await functional_generic.map(athrottle(limit, f), it)
 
 
 def timeout(seconds: float):
