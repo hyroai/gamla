@@ -129,21 +129,6 @@ def pipe(val, *funcs):
     return compose_left(*funcs)(val)
 
 
-@toolz.curry
-def itemmap(f, d: Dict):
-    return pipe(d, dict.items, map(f), dict)
-
-
-@toolz.curry
-def keymap(f, d: Dict):
-    return itemmap(juxt(compose_left(toolz.first, f), toolz.second), d)
-
-
-@toolz.curry
-def valmap(f, d: Dict):
-    return itemmap(juxt(toolz.first, compose_left(toolz.second, f)), d)
-
-
 def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
     f_len_args = inspect.signature(f).parameters
     args_so_far += args
@@ -187,6 +172,7 @@ def curry(f):
     return indirection
 
 
+# TODO(uri): Currently async only.
 @curry
 async def filter(func, it):
     results = await to_awaitable(gamla_map(func, it))
@@ -195,16 +181,31 @@ async def filter(func, it):
     )
 
 
-def _compose_on_map(f_after):
-    def composition_over_map(*args):
+def _compose_over_binary_curried(composer):
+    def composition_over_binary_curried(*args):
         if len(args) == 2:
             f, it = args
-            return pipe(it, gamla_map(f), f_after)
+            return pipe(it, composer(f))
         [f] = args
-        return compose_left(gamla_map(f), f_after)
+        return composer(f)
 
-    return composition_over_map
+    return composition_over_binary_curried
 
 
-allmap = _compose_on_map(all)
-anymap = _compose_on_map(any)
+allmap = _compose_over_binary_curried(compose(after(all), gamla_map))
+anymap = _compose_over_binary_curried(compose(after(any), gamla_map))
+
+
+itemmap = _compose_over_binary_curried(
+    compose(after(dict), before(dict.items), gamla_map)
+)
+
+
+@toolz.curry
+def keymap(f, d: Dict):
+    return itemmap(juxt(compose_left(toolz.first, f), toolz.second), d)
+
+
+@toolz.curry
+def valmap(f, d: Dict):
+    return itemmap(juxt(toolz.first, compose_left(toolz.second, f)), d)

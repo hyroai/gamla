@@ -84,3 +84,15 @@ async def test_anymap_in_pipe():
     assert not functional_generic.pipe(
         [True, True, False], functional_generic.allmap(lambda x: not x)
     )
+
+
+async def test_itemmap_async_curried():
+    assert await functional_generic.pipe(
+        {True: True},
+        functional_generic.itemmap(
+            functional_generic.compose(tuple, functional_generic.map(_opposite_async))
+        ),
+        functional_generic.itemmap(
+            functional_generic.compose(tuple, functional_generic.map(lambda x: not x))
+        ),
+    ) == {True: True}
