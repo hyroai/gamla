@@ -22,7 +22,8 @@ do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 def do_if(condition, fun):
     def inner_do_if(x):
         if condition(x):
-            return fun(x)
+            fun(x)
+            return x
         return x
 
     return inner_do_if
