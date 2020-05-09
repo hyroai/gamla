@@ -21,6 +21,11 @@ async def to_awaitable(value):
     return value
 
 
+_get_name_for_composition = toolz.compose_left(
+    reversed, curried.map(lambda f: f.__name__), "_THEN_".join
+)
+
+
 def _acompose(*funcs):
     async def composed(*args, **kwargs):
         for f in reversed(funcs):
@@ -28,10 +33,7 @@ def _acompose(*funcs):
             kwargs = {}
         return toolz.first(args)
 
-    return introspection.rename_function(
-        toolz.pipe(funcs, reversed, curried.map(lambda f: f.__name__), "_THEN_".join),
-        composed,
-    )
+    return introspection.rename_function(_get_name_for_composition(funcs), composed)
 
 
 def _acompose_left(*funcs):
@@ -41,7 +43,9 @@ def _acompose_left(*funcs):
 def compose(*funcs):
     if _any_is_async(funcs):
         return _acompose(*funcs)
-    return toolz.compose(*funcs)
+    return introspection.rename_function(
+        _get_name_for_composition(funcs), toolz.compose(*funcs)
+    )
 
 
 def _make_amap(f):
