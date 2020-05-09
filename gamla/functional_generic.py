@@ -33,7 +33,9 @@ def _acompose(*funcs):
             kwargs = {}
         return toolz.first(args)
 
-    return introspection.rename_function(_get_name_for_composition(funcs), composed)
+    return introspection.rename_async_function(
+        _get_name_for_composition(funcs), composed
+    )
 
 
 def _acompose_left(*funcs):

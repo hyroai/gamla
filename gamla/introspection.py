@@ -30,10 +30,21 @@ def _exec_with_return(code: Text, globals_dict: Dict):
     exec(compile(last_ast, "<ast>", "exec"), globals_dict)
 
 
-def rename_function(name: Text, f: Callable) -> Callable:
+def _clean_name_for_function(name: Text):
     # Lambdas appear as <lambda> which is not valid python function name.
-    name = name.replace("<", "").replace(">", "")
+    return name.replace("<", "").replace(">", "")
+
+
+def rename_async_function(name: Text, f: Callable) -> Callable:
+    name = _clean_name_for_function(name)
     return _exec_with_return(
         f"async def {name}(*args, **kwargs): return await f(*args, **kwargs)\n{name}",
         {"f": f},
+    )
+
+
+def rename_function(name: Text, f: Callable) -> Callable:
+    name = _clean_name_for_function(name)
+    return _exec_with_return(
+        f"def {name}(*args, **kwargs): return f(*args, **kwargs)\n{name}", {"f": f}
     )
