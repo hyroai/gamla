@@ -5,7 +5,7 @@ import inspect
 import toolz
 from toolz import curried
 
-from gamla import functional
+from gamla import functional, introspection
 
 
 def compose_left(*funcs):
@@ -28,7 +28,10 @@ def _acompose(*funcs):
             kwargs = {}
         return toolz.first(args)
 
-    return composed
+    return introspection.rename_function(
+        toolz.pipe(funcs, reversed, curried.map(lambda f: f.__name__), "_THEN_".join),
+        composed,
+    )
 
 
 def _acompose_left(*funcs):

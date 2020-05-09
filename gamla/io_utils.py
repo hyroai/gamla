@@ -3,7 +3,7 @@ import datetime
 import functools
 import logging
 import time
-from typing import Text
+from typing import Callable, Text
 
 import async_timeout
 import requests
@@ -18,7 +18,8 @@ def _time_to_readable(time_s: float) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(time_s)
 
 
-def _request_id(name: Text, args, kwargs) -> Text:
+def _request_id(f: Callable, args, kwargs) -> Text:
+    name = f.__name__
     params_str = f", args: {args}, kwargs: {kwargs}"
     together = name + params_str
     if len(together) > 100:
@@ -43,7 +44,7 @@ def _log_start(req_id: Text) -> float:
 def _async_timeit(f):
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
-        req_id = _request_id(f.__name__, args, kwargs)
+        req_id = _request_id(f, args, kwargs)
         start = _log_start(req_id)
         result = await f(*args, **kwargs)
         _log_finish(req_id, start)
@@ -58,7 +59,7 @@ def timeit(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        req_id = _request_id(f.__name__, args, kwargs)
+        req_id = _request_id(f, args, kwargs)
         start = _log_start(req_id)
         result = f(*args, **kwargs)
         _log_finish(req_id, start)
