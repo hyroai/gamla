@@ -201,16 +201,6 @@ def inside(val, container):
     return val in container
 
 
-@toolz.curry
-def pair_with(f, element):
-    return f(element), element
-
-
-@toolz.curry
-def pair_right(f, element):
-    return element, f(element)
-
-
 average = toolz.compose_left(
     bifurcate(sum, toolz.count),
     toolz.excepts(ZeroDivisionError, star(operator.truediv), lambda _: 0),

@@ -3,7 +3,7 @@ import asyncio
 import pytest
 import toolz
 
-from gamla import functional_generic, functional
+from gamla import functional, functional_generic
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
@@ -73,3 +73,54 @@ async def test_anymap_async():
 
 async def test_allmap_async():
     assert not await functional_generic.allmap(_opposite_async, [True, True, False])
+
+
+async def test_allmap_in_async_pipe():
+    assert not await functional_generic.pipe(
+        [True, True, False],
+        functional_generic.allmap(_opposite_async),
+        # Check that the `pipe` serves a value and not a future.
+        functional.check(lambda x: isinstance(x, bool), AssertionError),
+    )
+
+
+async def test_anymap_in_pipe():
+    assert not functional_generic.pipe(
+        [True, True, False], functional_generic.allmap(lambda x: not x)
+    )
+
+
+async def test_itemmap_async_sync_mixed():
+    assert await functional_generic.pipe(
+        {True: True},
+        functional_generic.itemmap(
+            functional_generic.compose(tuple, functional_generic.map(_opposite_async))
+        ),
+        functional_generic.itemmap(
+            functional_generic.compose(tuple, functional_generic.map(lambda x: not x))
+        ),
+    ) == {True: True}
+
+
+async def test_keymap_async_curried():
+    assert await functional_generic.keymap(_opposite_async)({True: True}) == {
+        False: True
+    }
+
+
+async def test_valmap_sync_curried():
+    assert functional_generic.valmap(lambda x: not x)({True: True}) == {True: False}
+
+
+async def _is_even_async(x):
+    await asyncio.sleep(0.1)
+    return x % 2 == 0
+
+
+async def test_filter_curried_async_sync_mix():
+    assert await functional_generic.pipe(
+        [1, 2, 3, 4],
+        functional_generic.filter(_is_even_async),
+        functional_generic.map(lambda x: x + 10),
+        tuple,
+    ) == (12, 14)
