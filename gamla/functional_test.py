@@ -14,6 +14,10 @@ async def _opposite_async(x):
     return not x
 
 
+def test_do_if():
+    assert functional.do_if(lambda _: True, lambda x: 2)(1) == 1
+
+
 def test_currying():
     @functional_generic.curry
     def f(x, y, z):

@@ -15,7 +15,7 @@ setuptools.setup(
         "dataclasses_json",
         "heapq_max",
         "pytest-asyncio",
-        "pytest",
+        "pytest>=5.4.0",
         "requests",
         "toolz",
         "frozendict",
