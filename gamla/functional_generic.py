@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import inspect
+import os
 
 import toolz
 from toolz import curried
@@ -25,6 +26,8 @@ _get_name_for_composition = toolz.compose_left(
     reversed, curried.map(lambda f: f.__name__), "_THEN_".join
 )
 
+_DEBUG_MODE = not not os.environ.get("gamla-debug-mode")
+
 
 def _acompose(*funcs):
     async def composed(*args, **kwargs):
@@ -33,9 +36,12 @@ def _acompose(*funcs):
             kwargs = {}
         return toolz.first(args)
 
-    return introspection.rename_async_function(
-        _get_name_for_composition(funcs), composed
-    )
+    if _DEBUG_MODE:
+        return introspection.rename_async_function(
+            _get_name_for_composition(funcs), composed
+        )
+    composed.__name__ = "_THEN_".join(map(lambda f: f.__name__, funcs))
+    return composed
 
 
 def _acompose_left(*funcs):
@@ -45,9 +51,18 @@ def _acompose_left(*funcs):
 def compose(*funcs):
     if _any_is_async(funcs):
         return _acompose(*funcs)
-    return introspection.rename_function(
-        _get_name_for_composition(funcs), toolz.compose(*funcs)
-    )
+
+    @functools.wraps(toolz.last(funcs))
+    def composed(*args, **kwargs):
+        for f in reversed(funcs):
+            args = [f(*args, **kwargs)]
+            kwargs = {}
+        return toolz.first(args)
+
+    if _DEBUG_MODE:
+        return introspection.rename_function(_get_name_for_composition(funcs), composed)
+    composed.__name__ = "_THEN_".join(map(lambda f: f.__name__, funcs))
+    return composed
 
 
 def _make_amap(f):

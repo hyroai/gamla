@@ -1,5 +1,6 @@
 import ast
 import copy
+import logging
 from typing import Callable, Dict, Text
 
 
@@ -18,6 +19,10 @@ def _exec_with_return(code: Text, globals_dict: Dict):
 
     last_ast = copy.deepcopy(code_ast)
     last_ast.body = code_ast.body[-1:]
+
+    logging.warning(
+        "Giving true names for composition (this will slow things considerably)"
+    )
 
     exec(compile(init_ast, "<ast>", "exec"), globals_dict)
     if type(last_ast.body[0]) == ast.Expr:
