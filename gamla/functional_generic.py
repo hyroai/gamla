@@ -26,7 +26,12 @@ _get_name_for_composition = toolz.compose_left(
     reversed, curried.map(lambda f: f.__name__), "_THEN_".join
 )
 
-_DEBUG_MODE = not not os.environ.get("gamla-debug-mode")
+_DEBUG_MODE = not not os.environ.get("GAMLA_DEBUG_MODE")
+
+
+def _fast_rename_function(funcs, f):
+    f.__name__ = "_THEN_".join(map(lambda f: f.__name__, funcs))
+    return f
 
 
 def _acompose(*funcs):
@@ -40,12 +45,7 @@ def _acompose(*funcs):
         return introspection.rename_async_function(
             _get_name_for_composition(funcs), composed
         )
-    composed.__name__ = "_THEN_".join(map(lambda f: f.__name__, funcs))
-    return composed
-
-
-def _acompose_left(*funcs):
-    return _acompose(*reversed(funcs))
+    return _fast_rename_function(funcs, composed)
 
 
 def compose(*funcs):
@@ -61,8 +61,7 @@ def compose(*funcs):
 
     if _DEBUG_MODE:
         return introspection.rename_function(_get_name_for_composition(funcs), composed)
-    composed.__name__ = "_THEN_".join(map(lambda f: f.__name__, funcs))
-    return composed
+    return _fast_rename_function(funcs, composed)
 
 
 def _make_amap(f):
