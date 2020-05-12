@@ -93,6 +93,20 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
 
 @toolz.curry
 def groupby_many(f, it):
+    """Return a mapping `{y: {x s.t. y \in f(x)}}, where `x \in it` and `f(x)` is an iterable. `
+
+    >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
+    >>> groupby_many(lambda name: (name[0], name[-1]), names)
+    {'a': frozenset({'alice'}),
+     'e': frozenset({'alice', 'charlie', 'edith'}),
+     'b': frozenset({'bob'}),
+     'c': frozenset({'charlie'}),
+     'd': frozenset({'dan'}),
+     'n': frozenset({'dan'}),
+     'h': frozenset({'edith'}),
+     'f': frozenset({'frank'}),
+     'k': frozenset({'frank'})}
+    """
     return toolz.pipe(
         it,
         curried.mapcat(
