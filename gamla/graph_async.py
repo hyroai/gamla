@@ -13,7 +13,7 @@ async def agroupby_many(f, it):
         it,
         functional_async.map(
             functional_async.compose_left(
-                functional_async.apair_with(f),
+                functional_generic.pair_with(f),
                 functional.star(lambda x, y: (x, [y])),
                 functional.star(itertools.product),
             )

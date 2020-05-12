@@ -22,7 +22,8 @@ do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 def do_if(condition, fun):
     def inner_do_if(x):
         if condition(x):
-            return fun(x)
+            fun(x)
+            return x
         return x
 
     return inner_do_if
@@ -198,16 +199,6 @@ def profileit(func):
 @toolz.curry
 def inside(val, container):
     return val in container
-
-
-@toolz.curry
-def pair_with(f, element):
-    return f(element), element
-
-
-@toolz.curry
-def pair_right(f, element):
-    return element, f(element)
 
 
 average = toolz.compose_left(

@@ -1,7 +1,6 @@
 import asyncio
 import functools
 import inspect
-from typing import Dict
 
 import toolz
 from toolz import curried
@@ -129,21 +128,6 @@ def pipe(val, *funcs):
     return compose_left(*funcs)(val)
 
 
-@toolz.curry
-async def itemmap(f, d: Dict):
-    return pipe(d, dict.items, map(f), dict)
-
-
-@toolz.curry
-def keymap(f, d: Dict):
-    return itemmap(juxt(compose_left(toolz.first, f), toolz.second), d)
-
-
-@toolz.curry
-def valmap(f, d: Dict):
-    return itemmap(juxt(toolz.first, compose_left(toolz.second, f)), d)
-
-
 def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
     f_len_args = inspect.signature(f).parameters
     args_so_far += args
@@ -187,19 +171,39 @@ def curry(f):
     return indirection
 
 
-@curry
-async def filter(func, it):
-    results = await to_awaitable(gamla_map(func, it))
-    return toolz.pipe(
-        zip(results, it), curried.filter(toolz.first), curried.map(toolz.second)
+def _compose_over_binary_curried(composer):
+    def composition_over_binary_curried(*args):
+        f = composer(args[0])
+        if len(args) == 2:
+            return f(args[1])
+        return f
+
+    return composition_over_binary_curried
+
+
+allmap = _compose_over_binary_curried(compose(after(all), gamla_map))
+anymap = _compose_over_binary_curried(compose(after(any), gamla_map))
+
+
+itemmap = _compose_over_binary_curried(
+    compose(after(dict), before(dict.items), gamla_map)
+)
+keymap = _compose_over_binary_curried(
+    compose(itemmap, lambda f: juxt(f, toolz.second), before(toolz.first))
+)
+
+valmap = _compose_over_binary_curried(
+    compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second))
+)
+
+
+pair_with = _compose_over_binary_curried(lambda f: juxt(f, toolz.identity))
+pair_right = _compose_over_binary_curried(lambda f: juxt(toolz.identity, f))
+
+filter = _compose_over_binary_curried(
+    compose(
+        after(compose(curried.map(toolz.second), curried.filter(toolz.first))),
+        gamla_map,
+        pair_with,
     )
-
-
-@curry
-def anymap(f, it):
-    return pipe(it, gamla_map(f), any)
-
-
-@curry
-def allmap(f, it):
-    return pipe(it, gamla_map(f), all)
+)

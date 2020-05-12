@@ -53,13 +53,3 @@ def afirst(*funcs, exception_type):
         raise exception_type
 
     return afirst_inner
-
-
-@functional_generic.curry
-async def apair_with(f, element):
-    return await f(element), element
-
-
-@functional_generic.curry
-async def apair_right(f, element):
-    return element, await f(element)
