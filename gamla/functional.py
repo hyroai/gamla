@@ -308,3 +308,8 @@ def prefix(val, it: Iterable):
 @toolz.curry
 def concat_with(new_it: Iterable, it: Iterable):
     return itertools.chain(it, new_it)
+
+
+@toolz.curry
+def wrap_str(wrapping_string, x):
+    return wrapping_string.format(x)
