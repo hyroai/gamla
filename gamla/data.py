@@ -60,7 +60,7 @@ def tuple_of_tuples_to_csv(
     )
 
 
-class Enum(set):
+class Enum(frozenset):
     def __getattr__(self, name):
         if name in self:
             return name
