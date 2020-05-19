@@ -93,7 +93,7 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
 
 @toolz.curry
 def groupby_many(f, it):
-    """Return a mapping `{y: {x s.t. y \in f(x)}}, where `x \in it`. `
+    """Return a mapping `{y: {x s.t. y \in f(x)}}, where x \in it. `
 
     Parameters:
     f (Callable): Key function (given object in collection outputs tuple of keys).
