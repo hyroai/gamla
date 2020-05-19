@@ -72,6 +72,11 @@ def ignore_input(inner):
     def ignore_and_run(*args, **kwargs):
         return inner()
 
+    async def ignore_and_run_async(*args, **kwargs):
+        return await inner()
+
+    if inspect.iscoroutinefunction(inner):
+        return ignore_and_run_async
     return ignore_and_run
 
 
