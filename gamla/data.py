@@ -58,3 +58,10 @@ def tuple_of_tuples_to_csv(
         curried.map(toolz.compose_left(curried.map(str), tuple, separator.join)),
         "\n".join,
     )
+
+
+class Enum(frozenset):
+    def __getattr__(self, name):
+        if name in self:
+            return name
+        raise AttributeError

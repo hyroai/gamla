@@ -4,11 +4,6 @@ from typing import Any, AsyncGenerator, Awaitable, Callable, Iterable
 from gamla import functional_generic
 
 
-async def apipe(val, *funcs):
-    f = functional_generic.compose_left(*funcs)
-    return await f(val)
-
-
 def run_sync(f):
     """Runs a coroutine in a synchronous context, blocking until result arrives."""
     loop = asyncio.new_event_loop()

@@ -72,6 +72,11 @@ def ignore_input(inner):
     def ignore_and_run(*args, **kwargs):
         return inner()
 
+    async def ignore_and_run_async(*args, **kwargs):
+        return await inner()
+
+    if inspect.iscoroutinefunction(inner):
+        return ignore_and_run_async
     return ignore_and_run
 
 
@@ -308,3 +313,8 @@ def prefix(val, it: Iterable):
 @toolz.curry
 def concat_with(new_it: Iterable, it: Iterable):
     return itertools.chain(it, new_it)
+
+
+@toolz.curry
+def wrap_str(wrapping_string: Text, x: Text) -> Text:
+    return wrapping_string.format(x)

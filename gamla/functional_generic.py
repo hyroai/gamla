@@ -31,13 +31,14 @@ def _acompose(*funcs):
     return composed
 
 
-def _acompose_left(*funcs):
-    return _acompose(*reversed(funcs))
-
-
 def compose(*funcs):
     if _any_is_async(funcs):
-        return _acompose(*funcs)
+        composed = _acompose(*funcs)
+        # TODO(uri): Far from a perfect id, but should work most of the time.
+        # Improve by having higher order functions create meaningful names (e.g. `map`).
+        # Copying `toolz` convention.
+        composed.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
+        return composed
     return toolz.compose(*funcs)
 
 
