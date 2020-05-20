@@ -1,6 +1,7 @@
 import dataclasses
+import enum
 import json
-from typing import Any, Dict, Iterable, Optional, Text, Tuple
+from typing import Any, Dict, FrozenSet, Iterable, Optional, Text, Tuple
 
 import dataclasses_json
 import frozendict
@@ -60,8 +61,5 @@ def tuple_of_tuples_to_csv(
     )
 
 
-class Enum(frozenset):
-    def __getattr__(self, name):
-        if name in self:
-            return name
-        raise AttributeError
+def make_enum(name: Text, strings: FrozenSet[Text]) -> enum.Enum:
+    return enum.Enum(name, " ".join(strings))
