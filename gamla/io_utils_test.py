@@ -21,7 +21,7 @@ async def test_batch_decorator():
         return inputs
 
     inputs = tuple(range(100))
-    results = await gamla.apipe(inputs, gamla.map(slow_identity), tuple)
+    results = await gamla.pipe(inputs, gamla.map(slow_identity), tuple)
     assert results == inputs
     assert times_f_called < 5
 

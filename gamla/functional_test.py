@@ -124,3 +124,7 @@ async def test_filter_curried_async_sync_mix():
         functional_generic.map(lambda x: x + 10),
         tuple,
     ) == (12, 14)
+
+
+def test_wrap_str():
+    assert toolz.pipe("john", functional.wrap_str("hi {}")) == "hi john"

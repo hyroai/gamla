@@ -196,11 +196,10 @@ def curry(f):
 
 def _compose_over_binary_curried(composer):
     def composition_over_binary_curried(*args):
+        f = composer(args[0])
         if len(args) == 2:
-            f, value = args
-            return pipe(value, composer(f))
-        [f] = args
-        return composer(f)
+            return f(args[1])
+        return f
 
     return composition_over_binary_curried
 
