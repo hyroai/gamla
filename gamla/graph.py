@@ -23,15 +23,22 @@ def graph_traverse_many(
 
     Note: `get_neighbors` must return elements without duplicates."""
     queue = [*sources]
-    seen = set(map(key, queue))
-
+    keys = set(map(key, queue))
+    seen = dict(zip(keys, queue))
     while queue:
         current = queue.pop()
         yield current
         for node in get_neighbors(current):
-            if key(node) not in seen:
-                seen.add(key(node))
+            key_node = key(node)
+            if key_node not in seen.keys():
+                # seen.add(key(node))
+                seen[key_node] = node
                 queue = [node] + queue
+            else:
+                old_node = seen[key_node]
+                if node > old_node:
+                    seen[key_node] = node
+                    queue = [node] + queue
 
 
 def traverse_graph_by_radius(
