@@ -9,16 +9,11 @@ from gamla import functional, functional_generic
 
 
 def default_accumulator(
-    queue: Any,
-    seen: Any,
-    current: Any,
-    get_neighbors: Callable,
-    key: Callable = toolz.identity,
+    queue: Any, seen: Any, node: Any, key: Callable = toolz.identity
 ) -> Any:
-    for node in get_neighbors(current):
-        if key(node) not in seen:
-            seen.add(key(node))
-            queue = [node] + queue
+    if key(node) not in seen:
+        seen.add(key(node))
+        queue = [node] + queue
     return queue
 
 
@@ -60,7 +55,8 @@ def graph_traverse_many(
     while queue:
         current = queue.pop()
         yield current
-        queue = accumulator(queue, seen, current, get_neighbors, key)
+        for node in get_neighbors(current):
+            queue = accumulator(queue, seen, node, key)
 
 
 def traverse_graph_by_radius(
