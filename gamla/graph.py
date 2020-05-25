@@ -8,37 +8,59 @@ from toolz.curried import operator
 from gamla import functional, functional_generic
 
 
+def default_accumulator(
+    queue: Any,
+    seen: Any,
+    current: Any,
+    get_neighbors: Callable,
+    key: Callable = toolz.identity,
+) -> Any:
+    for node in get_neighbors(current):
+        if key(node) not in seen:
+            seen.add(key(node))
+            queue = [node] + queue
+    return queue
+
+
+def default_seen(queue: Any, key: Callable = toolz.identity) -> Any:
+    return set(map(key, queue))
+
+
 @toolz.curry
 def graph_traverse(
-    source: Any, get_neighbors: Callable, key: Callable = toolz.identity
+    source: Any,
+    get_neighbors: Callable,
+    key: Callable = toolz.identity,
+    accumulator: Callable = default_accumulator,
+    seen_func: Callable = default_seen,
 ) -> Iterable:
-    yield from graph_traverse_many([source], get_neighbors=get_neighbors, key=key)
+    yield from graph_traverse_many(
+        [source],
+        get_neighbors=get_neighbors,
+        key=key,
+        accumulator=accumulator,
+        seen_func=seen_func,
+    )
 
 
 @toolz.curry
 def graph_traverse_many(
-    sources: Any, get_neighbors: Callable, key: Callable = toolz.identity
+    sources: Any,
+    get_neighbors: Callable,
+    key: Callable = toolz.identity,
+    accumulator: Callable = default_accumulator,
+    seen_func: Callable = default_seen,
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
 
     Note: `get_neighbors` must return elements without duplicates."""
     queue = [*sources]
-    keys = set(map(key, queue))
-    seen = dict(zip(keys, queue))
+    seen = seen_func(queue, key)
+
     while queue:
         current = queue.pop()
         yield current
-        for node in get_neighbors(current):
-            key_node = key(node)
-            if key_node not in seen.keys():
-                # seen.add(key(node))
-                seen[key_node] = node
-                queue = [node] + queue
-            else:
-                old_node = seen[key_node]
-                if node > old_node:
-                    seen[key_node] = node
-                    queue = [node] + queue
+        queue = accumulator(queue, seen, current, get_neighbors, key)
 
 
 def traverse_graph_by_radius(
@@ -75,7 +97,6 @@ graph_to_edges = toolz.compose_left(
 reverse_graph = toolz.compose_left(
     graph_to_edges, curried.map(toolz.compose_left(reversed, tuple)), edges_to_graph
 )
-
 
 cliques_to_graph = toolz.compose_left(
     curried.mapcat(lambda clique: itertools.permutations(clique, r=2)), edges_to_graph
