@@ -8,17 +8,15 @@ from toolz.curried import operator
 from gamla import functional, functional_generic
 
 
-def default_accumulator(
-    queue: Any, seen: Any, node: Any, key: Callable = toolz.identity
-) -> Any:
-    if key(node) not in seen:
-        seen.add(key(node))
-        queue = [node] + queue
-    return queue
+@toolz.curry
+def is_better_node(node: Any, seen: Dict, key: Callable):
+    old_node = seen[key(node)]
+    return node > old_node
 
 
-def default_seen(queue: Any, key: Callable = toolz.identity) -> Any:
-    return set(map(key, queue))
+@toolz.curry
+def save_to_dict(element: Any, dictionary: Dict, func: Callable):
+    dictionary[func(element)] = element
 
 
 @toolz.curry
@@ -26,37 +24,50 @@ def graph_traverse(
     source: Any,
     get_neighbors: Callable,
     key: Callable = toolz.identity,
-    accumulator: Callable = default_accumulator,
-    seen_func: Callable = default_seen,
+    keep_best: bool = False,
+    seen_dict: Dict = {},
 ) -> Iterable:
+    remember = save_to_dict(dictionary=seen_dict, func=key)
+    is_seen = toolz.compose_left(key, seen_dict.__contains__)
+    better_node = is_better_node(seen=seen_dict, key=key)
+
     yield from graph_traverse_many(
         [source],
         get_neighbors=get_neighbors,
-        key=key,
-        accumulator=accumulator,
-        seen_func=seen_func,
+        keep_best=keep_best,
+        is_seen=is_seen,
+        remember=remember,
+        better_node=better_node,
     )
 
 
 @toolz.curry
 def graph_traverse_many(
     sources: Any,
+    is_seen: Callable,
+    keep_best: bool,
+    remember: Callable,
     get_neighbors: Callable,
-    key: Callable = toolz.identity,
-    accumulator: Callable = default_accumulator,
-    seen_func: Callable = default_seen,
+    better_node: Callable,
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
 
     Note: `get_neighbors` must return elements without duplicates."""
     queue = [*sources]
-    seen = seen_func(queue, key)
+    for element in queue:
+        remember(element)
 
     while queue:
         current = queue.pop()
         yield current
         for node in get_neighbors(current):
-            queue = accumulator(queue, seen, node, key)
+            if not is_seen(node):
+                remember(node)
+                queue = [node] + queue
+            elif keep_best:
+                if better_node(node):
+                    remember(node)
+                    queue = [node] + queue
 
 
 def traverse_graph_by_radius(
