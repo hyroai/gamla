@@ -142,7 +142,7 @@ def test_case_multiple_predicates():
 
 
 def test_case_no_predicate():
-    with pytest.raises(KeyError):
+    with pytest.raises(functional_generic.NoConditionMatched):
         functional_generic.case_dict(
             {operator.not_: toolz.identity, operator.not_: toolz.identity}
         )(True)

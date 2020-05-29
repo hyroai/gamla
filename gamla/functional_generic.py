@@ -215,6 +215,10 @@ _first_truthy_index = compose_left(
 )
 
 
+class NoConditionMatched(Exception):
+    pass
+
+
 def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     """Case with functions.
 
@@ -226,7 +230,9 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
             compose_left(
                 lazyjuxt(*predicates),
                 _first_truthy_index,
-                functional.check(toolz.complement(operator.eq(None)), KeyError),
+                functional.check(
+                    toolz.complement(operator.eq(None)), NoConditionMatched
+                ),
                 mappers.__getitem__,
             )
         ),
