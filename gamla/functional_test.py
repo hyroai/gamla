@@ -127,7 +127,7 @@ async def test_filter_curried_async_sync_mix():
     ) == (12, 14)
 
 
-def test_wrap_str():
+async def test_wrap_str():
     assert toolz.pipe("john", functional.wrap_str("hi {}")) == "hi john"
 
 
@@ -152,3 +152,20 @@ async def test_case_async():
     assert not await functional_generic.case_dict(
         {_opposite_async: toolz.identity, toolz.identity: _opposite_async}
     )(True)
+
+
+async def test_partition_when():
+    assert functional.partition_when(lambda x: x == 1, []) == ()
+
+    assert tuple(
+        functional.partition_when(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1])
+    ) == ((1,), (1,), (2, 2, 1), (1,), (2, 1), (1,), (1,))
+
+
+async def test_drop_last_while():
+    assert tuple(functional.drop_last_while(lambda x: x == 1, [])) == ()
+    assert tuple(functional.drop_last_while(lambda x: x == 1, [1])) == ()
+    assert tuple(functional.drop_last_while(lambda x: x == 1, [2])) == (2,)
+    assert tuple(
+        functional.drop_last_while(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1])
+    ) == (1, 1, 2, 2, 1, 1, 2)
