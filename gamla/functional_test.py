@@ -2,6 +2,7 @@ import asyncio
 
 import pytest
 import toolz
+from toolz.curried import operator
 
 from gamla import functional, functional_generic
 
@@ -128,3 +129,26 @@ async def test_filter_curried_async_sync_mix():
 
 def test_wrap_str():
     assert toolz.pipe("john", functional.wrap_str("hi {}")) == "hi john"
+
+
+def test_case_single_predicate():
+    assert functional_generic.case_dict({toolz.identity: toolz.identity})(True)
+
+
+def test_case_multiple_predicates():
+    assert not functional_generic.case_dict(
+        {operator.not_: toolz.identity, toolz.identity: operator.not_}
+    )(True)
+
+
+def test_case_no_predicate():
+    with pytest.raises(KeyError):
+        functional_generic.case_dict(
+            {operator.not_: toolz.identity, operator.not_: toolz.identity}
+        )(True)
+
+
+async def test_case_async():
+    assert not await functional_generic.case_dict(
+        {_opposite_async: toolz.identity, toolz.identity: _opposite_async}
+    )(True)

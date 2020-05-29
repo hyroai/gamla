@@ -318,3 +318,8 @@ def concat_with(new_it: Iterable, it: Iterable):
 @toolz.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
+
+
+@toolz.curry
+def apply(value, function):
+    return function(value)
