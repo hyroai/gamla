@@ -325,6 +325,7 @@ def apply(value, function):
     return function(value)
 
 
+@toolz.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
     return toolz.pipe(
         seq, reversed, toolz.curry(itertools.dropwhile)(predicate), tuple, reversed
