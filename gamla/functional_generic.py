@@ -240,7 +240,7 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     )
 
 
-def case(predicates_and_mappers: Tuple[Tuple[Callable, ...], Tuple[Callable, ...]]):
+def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
     predicates = tuple(map(toolz.first, predicates_and_mappers))
     mappers = tuple(map(toolz.second, predicates_and_mappers))
     return _case(predicates, mappers)
