@@ -1,9 +1,11 @@
 import asyncio
 import functools
 import inspect
+from typing import Callable, Tuple
 
 import toolz
 from toolz import curried
+from toolz.curried import operator
 
 from gamla import functional
 
@@ -74,11 +76,6 @@ def before(f1, f2):
     return compose_left(f1, f2)
 
 
-@toolz.curry
-def apply(value, function):
-    return function(value)
-
-
 def lazyjuxt(*funcs):
     """Reverts to eager implementation if any of `funcs` is async."""
     if _any_is_async(funcs):
@@ -86,12 +83,12 @@ def lazyjuxt(*funcs):
         async def lazyjuxt_inner(value):
             return await toolz.pipe(
                 funcs,
-                curried.map(toolz.compose_left(apply(value), to_awaitable)),
+                curried.map(toolz.compose_left(functional.apply(value), to_awaitable)),
                 functional.star(asyncio.gather),
             )
 
         return lazyjuxt_inner
-    return compose_left(apply, curried.map, apply(funcs))
+    return compose_left(functional.apply, curried.map, functional.apply(funcs))
 
 
 juxt = compose(after(tuple), lazyjuxt)
@@ -208,3 +205,45 @@ filter = _compose_over_binary_curried(
         pair_with,
     )
 )
+
+
+_first_truthy_index = compose_left(
+    enumerate,
+    curried.filter(toolz.second),
+    curried.map(toolz.first),
+    toolz.excepts(StopIteration, toolz.first),
+)
+
+
+class NoConditionMatched(Exception):
+    pass
+
+
+def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
+    """Case with functions.
+
+    Handles async iff one of the predicates is async.
+    Raises `KeyError` if no condition matched.
+    """
+    return compose_left(
+        pair_right(
+            compose_left(
+                lazyjuxt(*predicates),
+                _first_truthy_index,
+                functional.check(
+                    toolz.complement(operator.eq(None)), NoConditionMatched
+                ),
+                mappers.__getitem__,
+            )
+        ),
+        functional.star(functional.apply),
+    )
+
+
+def case(predicates_and_mappers: Tuple[Tuple[Callable, ...], Tuple[Callable, ...]]):
+    predicates = tuple(map(toolz.first, predicates_and_mappers))
+    mappers = tuple(map(toolz.second, predicates_and_mappers))
+    return _case(predicates, mappers)
+
+
+case_dict = compose_left(dict.items, tuple, case)
