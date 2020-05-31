@@ -34,13 +34,13 @@ def graph_traverse(
     keep_best: bool = False,
 ) -> Iterable:
 
-    yield from graph_traverse_many(
+    yield from graph_traverse_many_gen(
         [source], get_neighbors=get_neighbors, key=key, keep_best=keep_best
     )
 
 
 @toolz.curry
-def graph_traverse_many(
+def graph_traverse_many_gen(
     sources: Any, get_neighbors: Callable, key: Callable, keep_best: bool
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
@@ -64,6 +64,9 @@ def graph_traverse_many(
             if is_updatable(node):
                 remember(node)
                 queue = [node] + queue
+
+
+graph_traverse_many = graph_traverse_many_gen(keep_best=False)
 
 
 def traverse_graph_by_radius(
