@@ -9,14 +9,21 @@ from gamla import functional, functional_generic
 
 
 @toolz.curry
-def is_better_node(node: Any, seen: Dict, key: Callable):
+def _is_better_node(node: Any, seen: Dict, key: Callable):
     old_node = seen[key(node)]
     return node > old_node
 
 
 @toolz.curry
-def save_to_dict(element: Any, dictionary: Dict, func: Callable):
+def _save_to_dict(element: Any, dictionary: Dict, func: Callable):
     dictionary[func(element)] = element
+
+
+@toolz.curry
+def _accumulate(
+    element: Any, is_seen: Callable, better_node: Callable, keep_best: bool
+):
+    return not is_seen(element) or (keep_best and better_node(element))
 
 
 @toolz.curry
@@ -27,28 +34,23 @@ def graph_traverse(
     keep_best: bool = False,
 ) -> Iterable:
     seen_dict: Dict = {}
-    remember = save_to_dict(dictionary=seen_dict, func=key)
+    remember = _save_to_dict(dictionary=seen_dict, func=key)
     is_seen = toolz.compose_left(key, seen_dict.__contains__)
-    better_node = is_better_node(seen=seen_dict, key=key)
+    better_node = _is_better_node(seen=seen_dict, key=key)
 
     yield from graph_traverse_many(
         [source],
         get_neighbors=get_neighbors,
-        keep_best=keep_best,
-        is_seen=is_seen,
         remember=remember,
-        better_node=better_node,
+        accumulator=_accumulate(
+            is_seen=is_seen, better_node=better_node, keep_best=keep_best
+        ),
     )
 
 
 @toolz.curry
 def graph_traverse_many(
-    sources: Any,
-    is_seen: Callable,
-    keep_best: bool,
-    remember: Callable,
-    get_neighbors: Callable,
-    better_node: Callable,
+    sources: Any, remember: Callable, get_neighbors: Callable, accumulator: Callable
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
 
@@ -61,13 +63,9 @@ def graph_traverse_many(
         current = queue.pop()
         yield current
         for node in get_neighbors(current):
-            if not is_seen(node):
+            if accumulator(node):
                 remember(node)
                 queue = [node] + queue
-            elif keep_best:
-                if better_node(node):
-                    remember(node)
-                    queue = [node] + queue
 
 
 def traverse_graph_by_radius(
