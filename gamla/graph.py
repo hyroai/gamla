@@ -20,7 +20,7 @@ def _save_to_dict(element: Any, dictionary: Dict, func: Callable):
 
 
 @toolz.curry
-def _accumulate(
+def _is_updatable(
     element: Any, is_seen: Callable, better_node: Callable, keep_best: bool
 ):
     return not is_seen(element) or (keep_best and better_node(element))
@@ -33,28 +33,26 @@ def graph_traverse(
     key: Callable = toolz.identity,
     keep_best: bool = False,
 ) -> Iterable:
-    seen_dict: Dict = {}
-    remember = _save_to_dict(dictionary=seen_dict, func=key)
-    is_seen = toolz.compose_left(key, seen_dict.__contains__)
-    better_node = _is_better_node(seen=seen_dict, key=key)
 
     yield from graph_traverse_many(
-        [source],
-        get_neighbors=get_neighbors,
-        remember=remember,
-        accumulator=_accumulate(
-            is_seen=is_seen, better_node=better_node, keep_best=keep_best
-        ),
+        [source], get_neighbors=get_neighbors, key=key, keep_best=keep_best
     )
 
 
 @toolz.curry
 def graph_traverse_many(
-    sources: Any, remember: Callable, get_neighbors: Callable, accumulator: Callable
+    sources: Any, get_neighbors: Callable, key: Callable, keep_best: bool
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
 
     Note: `get_neighbors` must return elements without duplicates."""
+    seen_dict: Dict = {}
+    remember = _save_to_dict(dictionary=seen_dict, func=key)
+    is_seen = toolz.compose_left(key, seen_dict.__contains__)
+    better_node = _is_better_node(seen=seen_dict, key=key)
+    is_updatable = _is_updatable(
+        is_seen=is_seen, better_node=better_node, keep_best=keep_best
+    )
     queue = [*sources]
     for element in queue:
         remember(element)
@@ -63,7 +61,7 @@ def graph_traverse_many(
         current = queue.pop()
         yield current
         for node in get_neighbors(current):
-            if accumulator(node):
+            if is_updatable(node):
                 remember(node)
                 queue = [node] + queue
 
