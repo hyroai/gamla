@@ -41,7 +41,10 @@ def graph_traverse(
 
 @toolz.curry
 def graph_traverse_many_gen(
-    sources: Any, get_neighbors: Callable, key: Callable, keep_best: bool
+    sources: Any,
+    get_neighbors: Callable,
+    key: Callable = toolz.identity,
+    keep_best: bool = False,
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
 
