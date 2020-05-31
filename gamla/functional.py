@@ -9,7 +9,7 @@ import itertools
 import json
 import logging
 from concurrent import futures
-from typing import Any, Callable, Iterable, Text, Type, TypeVar, Sequence
+from typing import Any, Callable, Iterable, Sequence, Text, Type, TypeVar
 
 import heapq_max
 import toolz
@@ -318,6 +318,11 @@ def concat_with(new_it: Iterable, it: Iterable):
 @toolz.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
+
+
+@toolz.curry
+def apply(value, function):
+    return function(value)
 
 
 @toolz.curry
