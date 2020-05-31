@@ -26,10 +26,16 @@ def graph_traverse(
     key: Callable = toolz.identity,
     keep_best: bool = False,
     seen_dict: Dict = {},
+    seen_set: set = set(),
 ) -> Iterable:
-    remember = save_to_dict(dictionary=seen_dict, func=key)
-    is_seen = toolz.compose_left(key, seen_dict.__contains__)
-    better_node = is_better_node(seen=seen_dict, key=key)
+    if not keep_best:
+        remember = toolz.compose_left(key, seen_set.add)
+        is_seen = toolz.compose_left(key, seen_set.__contains__)
+        better_node = is_better_node(seen=seen_set, key=key)
+    else:
+        remember = save_to_dict(dictionary=seen_dict, func=key)
+        is_seen = toolz.compose_left(key, seen_dict.__contains__)
+        better_node = is_better_node(seen=seen_dict, key=key)
 
     yield from graph_traverse_many(
         [source],
