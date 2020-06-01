@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Callable, Dict, FrozenSet, Iterable, Text, Tuple
+from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
 import toolz
 from toolz import curried
@@ -21,33 +21,29 @@ def graph_traverse_many(
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
     Note: `get_neighbors` must return elements without duplicates."""
-    queue = [*sources]
-    seen = set(map(key, queue))
-
-    while queue:
-        current = queue.pop()
-        yield current
-        for node in get_neighbors(current):
-            if key(node) not in seen:
-                seen.add(key(node))
-                queue = [node] + queue
+    seen_set: Set = set()
+    remember = seen_set.add
+    should_traverse = seen_set.__contains__
+    yield from general_graph_traverse_many(
+        sources, get_neighbors, remember, should_traverse
+    )
 
 
 @toolz.curry
 def general_graph_traverse(
-    source: Any, get_neighbors: Callable, remember: Callable, is_updatable: Callable
+    source: Any, get_neighbors: Callable, remember: Callable, should_traverse: Callable
 ) -> Iterable:
     yield from general_graph_traverse_many(
         [source],
         get_neighbors=get_neighbors,
         remember=remember,
-        is_updatable=is_updatable,
+        should_traverse=should_traverse,
     )
 
 
 @toolz.curry
 def general_graph_traverse_many(
-    sources: Any, get_neighbors: Callable, remember: Callable, is_updatable: Callable
+    sources: Any, get_neighbors: Callable, remember: Callable, should_traverse: Callable
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
     Note: `get_neighbors` must return elements without duplicates."""
@@ -60,7 +56,7 @@ def general_graph_traverse_many(
         current = queue.pop()
         yield current
         for node in get_neighbors(current):
-            if is_updatable(node):
+            if should_traverse(node):
                 remember(node)
                 queue = [node] + queue
 
