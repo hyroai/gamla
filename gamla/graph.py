@@ -9,51 +9,49 @@ from gamla import functional, functional_generic
 
 
 @toolz.curry
-def _is_better_node(seen: Dict, key: Callable, node: Any):
-    old_node = seen[key(node)]
-    return node > old_node
-
-
-@toolz.curry
-def _save_to_dict(dictionary: Dict, func: Callable, element: Any):
-    dictionary[func(element)] = element
-
-
-@toolz.curry
-def _is_updatable(
-    is_seen: Callable, better_node: Callable, keep_best: bool, element: Any
-):
-    return not is_seen(element) or (keep_best and better_node(element))
-
-
-@toolz.curry
 def graph_traverse(
-    source: Any,
-    get_neighbors: Callable,
-    key: Callable = toolz.identity,
-    keep_best: bool = False,
+    source: Any, get_neighbors: Callable, key: Callable = toolz.identity
 ) -> Iterable:
+    yield from graph_traverse_many([source], get_neighbors=get_neighbors, key=key)
 
-    yield from graph_traverse_many_gen(
-        [source], get_neighbors=get_neighbors, key=key, keep_best=keep_best
+
+@toolz.curry
+def graph_traverse_many(
+    sources: Any, get_neighbors: Callable, key: Callable = toolz.identity
+) -> Iterable:
+    """BFS over a graph, yielding unique nodes.
+    Note: `get_neighbors` must return elements without duplicates."""
+    queue = [*sources]
+    seen = set(map(key, queue))
+
+    while queue:
+        current = queue.pop()
+        yield current
+        for node in get_neighbors(current):
+            if key(node) not in seen:
+                seen.add(key(node))
+                queue = [node] + queue
+
+
+@toolz.curry
+def general_graph_traverse(
+    source: Any, get_neighbors: Callable, remember: Callable, is_updatable: Callable
+) -> Iterable:
+    yield from general_graph_traverse_many(
+        [source],
+        get_neighbors=get_neighbors,
+        remember=remember,
+        is_updatable=is_updatable,
     )
 
 
 @toolz.curry
-def graph_traverse_many_gen(
-    sources: Any,
-    get_neighbors: Callable,
-    key: Callable = toolz.identity,
-    keep_best: bool = False,
+def general_graph_traverse_many(
+    sources: Any, get_neighbors: Callable, remember: Callable, is_updatable: Callable
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
-
     Note: `get_neighbors` must return elements without duplicates."""
-    seen_dict: Dict = {}
-    remember = _save_to_dict(seen_dict, key)
-    is_seen = toolz.compose_left(key, seen_dict.__contains__)
-    better_node = _is_better_node(seen_dict, key)
-    is_updatable = _is_updatable(is_seen, better_node, keep_best)
+
     queue = [*sources]
     for element in queue:
         remember(element)
@@ -65,9 +63,6 @@ def graph_traverse_many_gen(
             if is_updatable(node):
                 remember(node)
                 queue = [node] + queue
-
-
-graph_traverse_many = graph_traverse_many_gen(keep_best=False)
 
 
 def traverse_graph_by_radius(
