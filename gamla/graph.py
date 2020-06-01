@@ -30,18 +30,6 @@ def graph_traverse_many(
 
 
 @toolz.curry
-def general_graph_traverse(
-    source: Any, get_neighbors: Callable, remember: Callable, should_traverse: Callable
-) -> Iterable:
-    yield from general_graph_traverse_many(
-        [source],
-        get_neighbors=get_neighbors,
-        remember=remember,
-        should_traverse=should_traverse,
-    )
-
-
-@toolz.curry
 def general_graph_traverse_many(
     sources: Any, get_neighbors: Callable, remember: Callable, should_traverse: Callable
 ) -> Iterable:
