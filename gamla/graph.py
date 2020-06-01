@@ -9,19 +9,19 @@ from gamla import functional, functional_generic
 
 
 @toolz.curry
-def _is_better_node(node: Any, seen: Dict, key: Callable):
+def _is_better_node(seen: Dict, key: Callable, node: Any):
     old_node = seen[key(node)]
     return node > old_node
 
 
 @toolz.curry
-def _save_to_dict(element: Any, dictionary: Dict, func: Callable):
+def _save_to_dict(dictionary: Dict, func: Callable, element: Any):
     dictionary[func(element)] = element
 
 
 @toolz.curry
 def _is_updatable(
-    element: Any, is_seen: Callable, better_node: Callable, keep_best: bool
+    is_seen: Callable, better_node: Callable, keep_best: bool, element: Any
 ):
     return not is_seen(element) or (keep_best and better_node(element))
 
@@ -50,12 +50,10 @@ def graph_traverse_many_gen(
 
     Note: `get_neighbors` must return elements without duplicates."""
     seen_dict: Dict = {}
-    remember = _save_to_dict(dictionary=seen_dict, func=key)
+    remember = _save_to_dict(seen_dict, key)
     is_seen = toolz.compose_left(key, seen_dict.__contains__)
-    better_node = _is_better_node(seen=seen_dict, key=key)
-    is_updatable = _is_updatable(
-        is_seen=is_seen, better_node=better_node, keep_best=keep_best
-    )
+    better_node = _is_better_node(seen_dict, key)
+    is_updatable = _is_updatable(is_seen, better_node, keep_best)
     queue = [*sources]
     for element in queue:
         remember(element)
