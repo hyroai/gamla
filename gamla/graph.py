@@ -22,8 +22,8 @@ def graph_traverse_many(
     """BFS over a graph, yielding unique nodes.
     Note: `get_neighbors` must return elements without duplicates."""
     seen_set: Set = set()
-    remember = seen_set.add
-    should_traverse = seen_set.__contains__
+    remember = toolz.compose_left(key, seen_set.add)
+    should_traverse = toolz.compose_left(key, seen_set.__contains__, lambda x: not x)
     yield from general_graph_traverse_many(
         sources, get_neighbors, remember, should_traverse
     )
