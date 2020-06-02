@@ -154,12 +154,18 @@ async def test_case_async():
     )(True)
 
 
-async def test_partition_when():
-    assert functional.partition_when(lambda x: x == 1, []) == ()
-
+def test_partition_after():
+    assert functional.partition_after(lambda x: x == 1, []) == ()
     assert tuple(
-        functional.partition_when(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1])
+        functional.partition_after(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1])
     ) == ((1,), (1,), (2, 2, 1), (1,), (2, 1), (1,), (1,))
+
+
+def test_partition_before():
+    assert functional.partition_before(lambda x: x == 1, []) == ()
+    assert tuple(
+        functional.partition_before(lambda x: x == 1, [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1])
+    ) == ((3,), (1,), (1, 2, 2), (1,), (1, 2), (1,), (1,), (1,))
 
 
 async def test_drop_last_while():

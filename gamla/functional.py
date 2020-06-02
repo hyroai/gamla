@@ -333,13 +333,24 @@ def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence
 
 
 @toolz.curry
-def partition_when(
+def partition_after(
     predicate: Callable[[Any], bool], seq: Sequence
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,))
         if not a or predicate(a[-1][-1])
         else (*a[:-1], (*a[-1], b)),
+        seq,
+        (),
+    )
+
+
+@toolz.curry
+def partition_before(
+    predicate: Callable[[Any], bool], seq: Sequence
+) -> Sequence[Sequence]:
+    return toolz.reduce(
+        lambda a, b: (*a, (b,)) if not a or predicate(b) else (*a[:-1], (*a[-1], b)),
         seq,
         (),
     )
