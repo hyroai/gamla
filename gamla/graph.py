@@ -23,7 +23,7 @@ def graph_traverse_many(
     Note: `get_neighbors` must return elements without duplicates."""
     seen_set: Set = set()
     remember = toolz.compose_left(key, seen_set.add)
-    should_traverse = toolz.compose_left(key, seen_set.__contains__, lambda x: not x)
+    should_traverse = toolz.compose_left(key, toolz.complement(seen_set.__contains__))
     yield from general_graph_traverse_many(
         sources, get_neighbors, remember, should_traverse
     )
