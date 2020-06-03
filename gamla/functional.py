@@ -234,11 +234,6 @@ def skip(n, seq):
 
 
 def wrap_tuple(x):
-    async def _wrap_tuple_async(x):
-        return (await x,)
-
-    if inspect.iscoroutinefunction(x):
-        return _wrap_tuple_async(x)
     return (x,)
 
 
