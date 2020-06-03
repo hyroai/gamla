@@ -103,7 +103,15 @@ def compute_stable_json_hash(item) -> Text:
 
 
 def star(function: Callable) -> Callable:
-    return lambda x: function(*x)
+    def star_and_run(x):
+        return function(*x)
+
+    async def star_and_run_async(x):
+        return await function(*x)
+
+    if inspect.iscoroutinefunction(function):
+        return star_and_run_async
+    return star_and_run
 
 
 @toolz.curry
@@ -226,6 +234,11 @@ def skip(n, seq):
 
 
 def wrap_tuple(x):
+    async def _wrap_tuple_async(x):
+        return (await x,)
+
+    if inspect.iscoroutinefunction(x):
+        return _wrap_tuple_async(x)
     return (x,)
 
 
