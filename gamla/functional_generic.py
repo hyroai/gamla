@@ -7,8 +7,6 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional
-
 
 def compose_left(*funcs):
     return compose(*reversed(funcs))
@@ -83,12 +81,12 @@ def lazyjuxt(*funcs):
         async def lazyjuxt_inner(value):
             return await toolz.pipe(
                 funcs,
-                curried.map(toolz.compose_left(functional.apply(value), to_awaitable)),
-                functional.star(asyncio.gather),
+                curried.map(toolz.compose_left(apply(value), to_awaitable)),
+                star(asyncio.gather),
             )
 
         return lazyjuxt_inner
-    return compose_left(functional.apply, curried.map, functional.apply(funcs))
+    return compose_left(apply, curried.map, apply(funcs))
 
 
 juxt = compose(after(tuple), lazyjuxt)
@@ -134,6 +132,8 @@ def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
     if len_so_far > len(f_len_args):
         return f(*args_so_far)
     if len_so_far == len(f_len_args):
+        # if asyncio.iscoroutinefunction(f):
+        #     raise Exception("")
         return f(*args_so_far, **kwargs_so_far)
     if len_so_far + 1 == len(f_len_args) and asyncio.iscoroutinefunction(f):
 
@@ -230,13 +230,11 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
             compose_left(
                 lazyjuxt(*predicates),
                 _first_truthy_index,
-                functional.check(
-                    toolz.complement(operator.eq(None)), NoConditionMatched
-                ),
+                check(toolz.complement(operator.eq(None)), NoConditionMatched),
                 mappers.__getitem__,
             )
         ),
-        functional.star(functional.apply),
+        star(apply),
     )
 
 
@@ -247,3 +245,85 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
 
 
 case_dict = compose_left(dict.items, tuple, case)
+
+
+def singleize(func: Callable) -> Callable:
+    def wrapped(some_input):
+        if isinstance(some_input, tuple):
+            return func(some_input)
+        return toolz.first(func((some_input,)))
+
+    async def wrapped_async(some_input):
+        if isinstance(some_input, tuple):
+            return await func(some_input)
+        return toolz.first(await func((some_input,)))
+
+    if inspect.iscoroutinefunction(func):
+        return wrapped_async
+    return wrapped
+
+
+def ignore_input(inner):
+    def ignore_and_run(*args, **kwargs):
+        return inner()
+
+    async def ignore_and_run_async(*args, **kwargs):
+        return await inner()
+
+    if inspect.iscoroutinefunction(inner):
+        return ignore_and_run_async
+    return ignore_and_run
+
+
+def star(function: Callable) -> Callable:
+    def star_and_run(x):
+        return function(*x)
+
+    async def star_and_run_async(x):
+        return await function(*x)
+
+    if inspect.iscoroutinefunction(function):
+        return star_and_run_async
+    return star_and_run
+
+
+@toolz.curry
+def apply(value, function):
+    def apply_and_run(x):
+        return function(value)
+
+    async def apply_and_run_async(x):
+        return await function(value)
+
+    if inspect.iscoroutinefunction(function):
+        return apply_and_run_async
+    return apply_and_run
+
+
+def do_if(condition, fun):
+    def inner_do_if(x):
+        if condition(x):
+            fun(x)
+            return x
+        return x
+
+    async def inner_do_if_async(x):
+        if condition(x):
+            await fun(x)
+            return x
+        return x
+
+    if inspect.iscoroutinefunction(fun):
+        return inner_do_if_async
+    return inner_do_if
+
+
+def check(condition, exception):
+    return do_if(toolz.complement(condition), make_raise(exception))
+
+
+def make_raise(exception):
+    def inner():
+        raise exception
+
+    return ignore_input(inner)

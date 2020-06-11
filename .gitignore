@@ -1,0 +1,5 @@
+build
+dist
+.mypy_cache
+.idea
+gamla.egg-info

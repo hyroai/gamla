@@ -5,7 +5,7 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional, functional_generic
+from gamla import functional_generic
 
 
 @toolz.curry
@@ -77,7 +77,7 @@ edges_to_graph = toolz.compose(
 graph_to_edges = toolz.compose_left(
     curried.keymap(lambda x: (x,)),
     dict.items,
-    curried.mapcat(functional.star(itertools.product)),
+    curried.mapcat(functional_generic.star(itertools.product)),
 )
 
 reverse_graph = toolz.compose_left(
@@ -133,7 +133,7 @@ def groupby_many(f, it):
         curried.mapcat(
             toolz.compose_left(
                 lambda element: (f(element), [element]),
-                functional.star(itertools.product),
+                functional_generic.star(itertools.product),
             )
         ),
         edges_to_graph,

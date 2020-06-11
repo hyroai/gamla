@@ -4,7 +4,6 @@ import dataclasses
 import functools
 import hashlib
 import heapq
-import inspect
 import itertools
 import json
 import logging
@@ -16,21 +15,9 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
+from gamla import functional_generic
+
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
-
-
-def do_if(condition, fun):
-    def inner_do_if(x):
-        if condition(x):
-            fun(x)
-            return x
-        return x
-
-    return inner_do_if
-
-
-def check(condition, exception):
-    return do_if(toolz.complement(condition), make_raise(exception))
 
 
 def bifurcate(*funcs):
@@ -39,27 +26,11 @@ def bifurcate(*funcs):
     def inner(input_iterable):
         return toolz.pipe(
             zip(funcs, itertools.tee(iter(input_iterable), len(funcs))),
-            curried.map(star(lambda f, generator: f(generator))),
+            curried.map(functional_generic.star(lambda f, generator: f(generator))),
             tuple,
         )
 
     return inner
-
-
-def singleize(func: Callable) -> Callable:
-    def wrapped(some_input):
-        if isinstance(some_input, tuple):
-            return func(some_input)
-        return toolz.first(func((some_input,)))
-
-    async def wrapped_async(some_input):
-        if isinstance(some_input, tuple):
-            return await func(some_input)
-        return toolz.first(await func((some_input,)))
-
-    if inspect.iscoroutinefunction(func):
-        return wrapped_async
-    return wrapped
 
 
 def wrapped_partial(func: Callable, *args, **kwargs) -> Callable:
@@ -68,29 +39,10 @@ def wrapped_partial(func: Callable, *args, **kwargs) -> Callable:
     return partial_func
 
 
-def ignore_input(inner):
-    def ignore_and_run(*args, **kwargs):
-        return inner()
-
-    async def ignore_and_run_async(*args, **kwargs):
-        return await inner()
-
-    if inspect.iscoroutinefunction(inner):
-        return ignore_and_run_async
-    return ignore_and_run
-
-
-def make_raise(exception):
-    def inner():
-        raise exception
-
-    return ignore_input(inner)
-
-
 @toolz.curry
 def translate_exception(func, exc1, exc2):
     """`func` is assumed to be unary."""
-    return toolz.excepts(exc1, func, make_raise(exc2))
+    return toolz.excepts(exc1, func, functional_generic.make_raise(exc2))
 
 
 @functools.lru_cache(maxsize=None)
@@ -100,18 +52,6 @@ def compute_stable_json_hash(item) -> Text:
             json.loads(item.to_json()), sort_keys=True, separators=(",", ":")
         ).encode("utf-8")
     ).hexdigest()
-
-
-def star(function: Callable) -> Callable:
-    def star_and_run(x):
-        return function(*x)
-
-    async def star_and_run_async(x):
-        return await function(*x)
-
-    if inspect.iscoroutinefunction(function):
-        return star_and_run_async
-    return star_and_run
 
 
 @toolz.curry
@@ -160,7 +100,7 @@ def log_text(text: Text, level: int = logging.INFO):
 
 
 def just(x):
-    return ignore_input(lambda: x)
+    return functional_generic.ignore_input(lambda: x)
 
 
 # To get a unique caching key for each function invocation, we take `args` and `items()`
@@ -216,7 +156,9 @@ def inside(val, container):
 
 average = toolz.compose_left(
     bifurcate(sum, toolz.count),
-    toolz.excepts(ZeroDivisionError, star(operator.truediv), lambda _: 0),
+    toolz.excepts(
+        ZeroDivisionError, functional_generic.star(operator.truediv), lambda _: 0
+    ),
 )
 
 
@@ -326,11 +268,6 @@ def concat_with(new_it: Iterable, it: Iterable):
 @toolz.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
-
-
-@toolz.curry
-def apply(value, function):
-    return function(value)
 
 
 @toolz.curry
