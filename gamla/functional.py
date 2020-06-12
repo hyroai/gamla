@@ -362,3 +362,9 @@ def partition_before(
         seq,
         (),
     )
+
+
+def get_n_grams(seq):
+    return toolz.pipe(
+        range(1, len(seq) + 1), curried.mapcat(curried.sliding_window(seq=seq))
+    )
