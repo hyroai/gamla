@@ -9,7 +9,7 @@ import itertools
 import json
 import logging
 from concurrent import futures
-from typing import Any, Callable, Iterable, Text, Type, TypeVar
+from typing import Any, Callable, Iterable, Sequence, Text, Type, TypeVar
 
 import heapq_max
 import toolz
@@ -103,7 +103,15 @@ def compute_stable_json_hash(item) -> Text:
 
 
 def star(function: Callable) -> Callable:
-    return lambda x: function(*x)
+    def star_and_run(x):
+        return function(*x)
+
+    async def star_and_run_async(x):
+        return await function(*x)
+
+    if inspect.iscoroutinefunction(function):
+        return star_and_run_async
+    return star_and_run
 
 
 @toolz.curry
@@ -318,3 +326,45 @@ def concat_with(new_it: Iterable, it: Iterable):
 @toolz.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
+
+
+@toolz.curry
+def apply(value, function):
+    return function(value)
+
+
+@toolz.curry
+def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
+    return toolz.pipe(
+        seq, reversed, toolz.curry(itertools.dropwhile)(predicate), tuple, reversed
+    )
+
+
+@toolz.curry
+def partition_after(
+    predicate: Callable[[Any], bool], seq: Sequence
+) -> Sequence[Sequence]:
+    return toolz.reduce(
+        lambda a, b: (*a, (b,))
+        if not a or predicate(a[-1][-1])
+        else (*a[:-1], (*a[-1], b)),
+        seq,
+        (),
+    )
+
+
+@toolz.curry
+def partition_before(
+    predicate: Callable[[Any], bool], seq: Sequence
+) -> Sequence[Sequence]:
+    return toolz.reduce(
+        lambda a, b: (*a, (b,)) if not a or predicate(b) else (*a[:-1], (*a[-1], b)),
+        seq,
+        (),
+    )
+
+
+def get_all_n_grams(seq):
+    return toolz.pipe(
+        range(1, len(seq) + 1), curried.mapcat(curried.sliding_window(seq=seq))
+    )
