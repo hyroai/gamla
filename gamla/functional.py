@@ -140,16 +140,6 @@ def pfilter(f, it):
     )
 
 
-def first(*funcs, exception_type: Type[Exception]):
-    def inner(*args, **kwargs):
-        for func in funcs:
-            try:
-                return func(*args, **kwargs)
-            except exception_type:
-                pass
-        raise exception_type
-
-    return inner
 
 
 logger = curried.do(logging.info)
