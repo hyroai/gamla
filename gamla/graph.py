@@ -5,6 +5,7 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
+import gamla.functional_generic
 from gamla import functional, functional_generic
 
 
@@ -49,14 +50,14 @@ def traverse_graph_by_radius(
             )
 
     return map(
-        toolz.first,
+        gamla.functional_generic.first,
         graph_traverse(source=(source, 0), get_neighbors=get_neighbors_limiting_radius),
     )
 
 
 edges_to_graph = toolz.compose(
     curried.valmap(toolz.compose(frozenset, curried.map(toolz.second))),
-    curried.groupby(toolz.first),
+    curried.groupby(gamla.functional_generic.first),
 )
 
 graph_to_edges = toolz.compose_left(
@@ -81,7 +82,7 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
     while nodes_left:
         result = frozenset(
             graph_traverse(
-                source=toolz.first(nodes_left),
+                source=gamla.functional_generic.first(nodes_left),
                 get_neighbors=toolz.compose(
                     curried.filter(operator.contains(nodes_left)), graph.get
                 ),

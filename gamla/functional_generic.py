@@ -27,7 +27,7 @@ def _acompose(*funcs):
         for f in reversed(funcs):
             args = [await to_awaitable(f(*args, **kwargs))]
             kwargs = {}
-        return toolz.first(args)
+        return first(args)
 
     return composed
 
@@ -125,27 +125,7 @@ def ternary(condition, f_true, f_false):
 curried_ternary = ternary
 
 
-def first(*funcs, exception_type: Type[Exception]):
-    if _any_is_async([*funcs]):
 
-        async def inner_async(*args,**kwargs):
-            for func in funcs:
-                try:
-                    return await to_awaitable(func(*args,**kwargs))
-                except exception_type:
-                    pass
-            raise exception_type
-        return inner_async
-
-    def inner(*args, **kwargs):
-        for func in funcs:
-            try:
-                return func(*args, **kwargs)
-            except exception_type:
-                pass
-        raise exception_type
-
-    return inner
 
 
 def pipe(val, *funcs):
@@ -213,12 +193,37 @@ anymap = _compose_over_binary_curried(compose(after(any), gamla_map))
 itemmap = _compose_over_binary_curried(
     compose(after(dict), before(dict.items), gamla_map)
 )
+
+
+def first(*funcs, exception_type: Type[Exception]):
+    if _any_is_async([*funcs]):
+
+        async def inner_async(*args,**kwargs):
+            for func in funcs:
+                try:
+                    return await to_awaitable(func(*args,**kwargs))
+                except exception_type:
+                    pass
+            raise exception_type
+        return inner_async
+
+    def inner(*args, **kwargs):
+        for func in funcs:
+            try:
+                return func(*args, **kwargs)
+            except exception_type:
+                pass
+        raise exception_type
+
+    return inner
+
+
 keymap = _compose_over_binary_curried(
-    compose(itemmap, lambda f: juxt(f, toolz.second), before(toolz.first))
+    compose(itemmap, lambda f: juxt(f, toolz.second), before(first))
 )
 
 valmap = _compose_over_binary_curried(
-    compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second))
+    compose(itemmap, lambda f: juxt(first, f), before(toolz.second))
 )
 
 
@@ -227,7 +232,7 @@ pair_right = _compose_over_binary_curried(lambda f: juxt(toolz.identity, f))
 
 filter = _compose_over_binary_curried(
     compose(
-        after(compose(curried.map(toolz.second), curried.filter(toolz.first))),
+        after(compose(curried.map(toolz.second), curried.filter(first))),
         gamla_map,
         pair_with,
     )

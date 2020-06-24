@@ -9,12 +9,14 @@ import itertools
 import json
 import logging
 from concurrent import futures
-from typing import Any, Callable, Iterable, Text, Type, TypeVar
+from typing import Any, Callable, Iterable, Text, TypeVar
 
 import heapq_max
 import toolz
 from toolz import curried
 from toolz.curried import operator
+
+import gamla.functional_generic
 
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
@@ -50,12 +52,12 @@ def singleize(func: Callable) -> Callable:
     def wrapped(some_input):
         if isinstance(some_input, tuple):
             return func(some_input)
-        return toolz.first(func((some_input,)))
+        return gamla.functional_generic.first(func((some_input,)))
 
     async def wrapped_async(some_input):
         if isinstance(some_input, tuple):
             return await func(some_input)
-        return toolz.first(await func((some_input,)))
+        return gamla.functional_generic.first(await func((some_input,)))
 
     if inspect.iscoroutinefunction(func):
         return wrapped_async
@@ -122,22 +124,9 @@ def pfilter(f, it):
         it,
         bifurcate(pmap(f, None), curried.map(toolz.identity)),
         zip,
-        curried.filter(toolz.first),
+        curried.filter(gamla.functional_generic.first),
         curried.map(toolz.second),
     )
-
-
-def first(*funcs, exception_type: Type[Exception]):
-
-    def inner(*args, **kwargs):
-        for func in funcs:
-            try:
-                return func(*args, **kwargs)
-            except exception_type:
-                pass
-        raise exception_type
-
-    return inner
 
 
 logger = curried.do(logging.info)
