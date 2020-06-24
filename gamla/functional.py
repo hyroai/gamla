@@ -9,7 +9,7 @@ import itertools
 import json
 import logging
 from concurrent import futures
-from typing import Any, Callable, Iterable, Text, TypeVar
+from typing import Any, Callable, Iterable, Sequence, Text, TypeVar
 
 import heapq_max
 import toolz
@@ -74,6 +74,11 @@ def ignore_input(inner):
     def ignore_and_run(*args, **kwargs):
         return inner()
 
+    async def ignore_and_run_async(*args, **kwargs):
+        return await inner()
+
+    if inspect.iscoroutinefunction(inner):
+        return ignore_and_run_async
     return ignore_and_run
 
 
@@ -100,7 +105,15 @@ def compute_stable_json_hash(item) -> Text:
 
 
 def star(function: Callable) -> Callable:
-    return lambda x: function(*x)
+    def star_and_run(x):
+        return function(*x)
+
+    async def star_and_run_async(x):
+        return await function(*x)
+
+    if inspect.iscoroutinefunction(function):
+        return star_and_run_async
+    return star_and_run
 
 
 @toolz.curry
@@ -299,7 +312,49 @@ def prefix(val, it: Iterable):
 def concat_with(new_it: Iterable, it: Iterable):
     return itertools.chain(it, new_it)
 
-    @toolz.curry
-    def filter_by_max(key:Callable,it:Iterable):
-        max=toolz.compose_left(curried.map(key),curried.sorted,toolz.last)(it)
-        return toolz.filter(toolz.compose_left(key,operator.eq(max)),it)
+
+@toolz.curry
+def wrap_str(wrapping_string: Text, x: Text) -> Text:
+    return wrapping_string.format(x)
+
+
+@toolz.curry
+def apply(value, function):
+    return function(value)
+
+
+@toolz.curry
+def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
+    return toolz.pipe(
+        seq, reversed, toolz.curry(itertools.dropwhile)(predicate), tuple, reversed
+    )
+
+
+@toolz.curry
+def partition_after(
+    predicate: Callable[[Any], bool], seq: Sequence
+) -> Sequence[Sequence]:
+    return toolz.reduce(
+        lambda a, b: (*a, (b,))
+        if not a or predicate(a[-1][-1])
+        else (*a[:-1], (*a[-1], b)),
+        seq,
+        (),
+    )
+
+
+@toolz.curry
+def partition_before(
+    predicate: Callable[[Any], bool], seq: Sequence
+) -> Sequence[Sequence]:
+    return toolz.reduce(
+        lambda a, b: (*a, (b,)) if not a or predicate(b) else (*a[:-1], (*a[-1], b)),
+        seq,
+        (),
+    )
+
+
+def get_all_n_grams(seq):
+    return toolz.pipe(
+        range(1, len(seq) + 1), curried.mapcat(curried.sliding_window(seq=seq))
+    )

@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Callable, Dict, FrozenSet, Iterable, Text, Tuple
+from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
 import toolz
 from toolz import curried
@@ -21,17 +21,32 @@ def graph_traverse_many(
     sources: Any, get_neighbors: Callable, key: Callable = toolz.identity
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
-
     Note: `get_neighbors` must return elements without duplicates."""
+    seen_set: Set = set()
+    remember = toolz.compose_left(key, seen_set.add)
+    should_traverse = toolz.compose_left(key, toolz.complement(seen_set.__contains__))
+    yield from general_graph_traverse_many(
+        sources, get_neighbors, remember, should_traverse
+    )
+
+
+@toolz.curry
+def general_graph_traverse_many(
+    sources: Any, get_neighbors: Callable, remember: Callable, should_traverse: Callable
+) -> Iterable:
+    """BFS over a graph, yielding unique nodes.
+    Note: `get_neighbors` must return elements without duplicates."""
+
     queue = [*sources]
-    seen = set(map(key, queue))
+    for element in queue:
+        remember(element)
 
     while queue:
         current = queue.pop()
         yield current
         for node in get_neighbors(current):
-            if key(node) not in seen:
-                seen.add(key(node))
+            if should_traverse(node):
+                remember(node)
                 queue = [node] + queue
 
 
@@ -70,7 +85,6 @@ reverse_graph = toolz.compose_left(
     graph_to_edges, curried.map(toolz.compose_left(reversed, tuple)), edges_to_graph
 )
 
-
 cliques_to_graph = toolz.compose_left(
     curried.mapcat(lambda clique: itertools.permutations(clique, r=2)), edges_to_graph
 )
@@ -94,6 +108,27 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
 
 @toolz.curry
 def groupby_many(f, it):
+    """Return a mapping `{y: {x s.t. y \in f(x)}}, where x \in it. `
+
+    Parameters:
+    f (Callable): Key function (given object in collection outputs tuple of keys).
+    it (Iterable): Collection.
+
+    Returns:
+    Dict[Text, Any]: Dictionary where key has been computed by the `f` key function.
+
+    >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
+    >>> groupby_many(lambda name: (name[0], name[-1]), names)
+    {'a': frozenset({'alice'}),
+     'e': frozenset({'alice', 'charlie', 'edith'}),
+     'b': frozenset({'bob'}),
+     'c': frozenset({'charlie'}),
+     'd': frozenset({'dan'}),
+     'n': frozenset({'dan'}),
+     'h': frozenset({'edith'}),
+     'f': frozenset({'frank'}),
+     'k': frozenset({'frank'})}
+    """
     return toolz.pipe(
         it,
         curried.mapcat(
@@ -107,8 +142,21 @@ def groupby_many(f, it):
 
 
 @toolz.curry
-def groupby_many_reduce(key, reducer, seq):
-    result = {}
+def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
+    """
+    Group a collection by a key function, when the value is given by a reducer function.
+
+    Parameters:
+    key (Callable): Key function (given object in collection outputs key).
+    reducer (Callable): Reducer function (given object in collection outputs new value).
+    seq (Iterable): Collection.
+
+    Returns:
+    Dict[Text, Any]: Dictionary where key has been computed by the `key` function
+    and value by the `reducer` function.
+
+    """
+    result: Dict[Any, Any] = {}
     for element in seq:
         for key_result in key(element):
             result[key_result] = reducer(result.get(key_result, None), element)
