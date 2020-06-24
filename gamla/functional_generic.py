@@ -1,7 +1,7 @@
 import asyncio
 import functools
 import inspect
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Type
 
 import toolz
 from toolz import curried
@@ -121,6 +121,27 @@ def ternary(condition, f_true, f_false):
 
 curried_ternary = ternary
 
+def first(*funcs, exception_type: Type[Exception]):
+    if _any_is_async([*funcs]):
+
+        async def inner_async(*args,**kwargs):
+            for func in funcs:
+                try:
+                    return await to_awaitable(func(*args,**kwargs))
+                except exception_type:
+                    pass
+            raise exception_type
+        return inner_async
+
+    def inner(*args, **kwargs):
+        for func in funcs:
+            try:
+                return func(*args, **kwargs)
+            except exception_type:
+                pass
+        raise exception_type
+
+    return inner
 
 def pipe(val, *funcs):
     return compose_left(*funcs)(val)
