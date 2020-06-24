@@ -30,7 +30,7 @@ def _log_finish(req_id: Text, start: float):
     finish = time.time()
     elapsed = finish - start
     logging.info(
-        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}"
+        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}",
     )
 
 
@@ -71,8 +71,8 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(
         max_retries=retry.Retry(
-            total=retries, backoff_factor=0.1, status_forcelist=(500, 502, 504)
-        )
+            total=retries, backoff_factor=0.1, status_forcelist=(500, 502, 504),
+        ),
     )
     session.mount("http://", adapter)
     session.mount("https://", adapter)

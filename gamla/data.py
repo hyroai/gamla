@@ -11,8 +11,8 @@ from toolz import curried
 def get_encode_config():
     return dataclasses.field(
         metadata=dataclasses_json.config(
-            encoder=lambda lst: sorted(lst, key=json.dumps, reverse=False)
-        )
+            encoder=lambda lst: sorted(lst, key=json.dumps, reverse=False),
+        ),
     )
 
 
@@ -33,7 +33,7 @@ def freeze_deep(value):
 
 @toolz.curry
 def dict_to_csv(
-    table: Dict[Any, Tuple], titles: Optional[Tuple] = None, separator: Text = "\t"
+    table: Dict[Any, Tuple], titles: Optional[Tuple] = None, separator: Text = "\t",
 ) -> Text:
     return toolz.pipe(
         table,
@@ -51,7 +51,7 @@ dict_to_tuple_of_tuples = toolz.compose_left(
 
 @toolz.curry
 def tuple_of_tuples_to_csv(
-    tuple_of_tuples: Tuple[Tuple[Any], ...], separator: Text = "\t"
+    tuple_of_tuples: Tuple[Tuple[Any], ...], separator: Text = "\t",
 ) -> Text:
     return toolz.pipe(
         tuple_of_tuples,
