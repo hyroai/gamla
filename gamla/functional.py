@@ -128,6 +128,7 @@ def pfilter(f, it):
 
 
 def first(*funcs, exception_type: Type[Exception]):
+
     def inner(*args, **kwargs):
         for func in funcs:
             try:
@@ -308,3 +309,8 @@ def prefix(val, it: Iterable):
 @toolz.curry
 def concat_with(new_it: Iterable, it: Iterable):
     return itertools.chain(it, new_it)
+
+    @toolz.curry
+    def filter_by_max(key:Callable,it:Iterable):
+        max=toolz.compose_left(curried.map(key),curried.sorted,toolz.last)(it)
+        return toolz.filter(toolz.compose_left(key,operator.eq(max)),it)
