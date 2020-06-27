@@ -3,7 +3,7 @@ import datetime
 import functools
 import logging
 import time
-from typing import Text
+from typing import Callable, Iterable, Text
 
 import async_timeout
 import requests
@@ -153,7 +153,7 @@ def athrottle(limit, f):
 
 
 @functional_generic.curry
-async def throttled_amap(f, it, limit):
+async def throttled_amap(f: Callable, limit: int, it: Iterable):
     return await functional_generic.map(athrottle(limit, f), it)
 
 

@@ -271,3 +271,17 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
 
 
 case_dict = compose_left(dict.items, tuple, case)
+
+
+def apply_spec(spec):
+    if anymap(asyncio.iscoroutinefunction, spec.values()):
+
+        async def apply_spec_async(input_value):
+            promises = []
+            for k, v in spec.items():
+                promises.append(to_awaitable(v(input_value)))
+            results = await asyncio.gather(*promises)
+            return dict(zip(spec.keys(), results))
+
+        return apply_spec_async
+    return toolz.compose_left(functional.apply, curried.valmap(d=spec))
