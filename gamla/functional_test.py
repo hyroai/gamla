@@ -177,3 +177,19 @@ async def test_drop_last_while():
     assert tuple(
         functional.drop_last_while(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1]),
     ) == (1, 1, 2, 2, 1, 1, 2)
+
+
+def test_apply_spec():
+    assert functional_generic.apply_spec(
+        {"identity": toolz.identity, "increment": lambda x: x + 1},
+    )(1) == {"identity": 1, "increment": 2}
+
+
+async def test_apply_spec_async():
+    async def async_identity(x):
+        await asyncio.sleep(1)
+        return x
+
+    assert await functional_generic.apply_spec(
+        {"identity": async_identity, "increment": lambda x: x + 1},
+    )(1) == {"identity": 1, "increment": 2}
