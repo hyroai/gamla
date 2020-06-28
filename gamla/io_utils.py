@@ -160,6 +160,7 @@ async def throttled_amap(f: Callable, limit: int, it: Iterable):
 
 def timeout(seconds: float):
     def wrapper(corofunc):
+        @functools.wraps(corofunc)
         async def run(*args, **kwargs):
             with async_timeout.timeout(seconds):
                 return await corofunc(*args, **kwargs)
