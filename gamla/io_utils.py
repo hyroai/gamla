@@ -6,6 +6,7 @@ import time
 from typing import Callable, Iterable, Text
 
 import async_timeout
+import httpx
 import requests
 import requests.adapters
 import toolz
@@ -166,3 +167,9 @@ def timeout(seconds: float):
         return run
 
     return wrapper
+
+
+@functional_generic.curry
+async def get_async(timeout, url):
+    async with httpx.AsyncClient() as client:
+        return await client.get(url, timeout=timeout)
