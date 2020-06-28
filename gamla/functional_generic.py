@@ -277,10 +277,14 @@ def apply_spec(spec):
     if anymap(asyncio.iscoroutinefunction, spec.values()):
 
         async def apply_spec_async(input_value):
-            promises = []
-            for k, v in spec.items():
-                promises.append(to_awaitable(v(input_value)))
-            results = await asyncio.gather(*promises)
+            results = await toolz.pipe(
+                spec,
+                dict.values,
+                curried.map(
+                    toolz.compose_left(functional.apply(input_value), to_awaitable),
+                ),
+                functional.star(asyncio.gather),
+            )
             return dict(zip(spec.keys(), results))
 
         return apply_spec_async
