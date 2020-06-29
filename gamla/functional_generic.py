@@ -274,6 +274,12 @@ case_dict = compose_left(dict.items, tuple, case)
 
 
 def apply_spec(spec):
+    """
+    >>> spec = {"len": len, "sum": sum}
+    >>> apply_spec(spec)([1,2,3,4,5])
+    {'len': 5, 'sum': 15}
+    """
+
     if anymap(asyncio.iscoroutinefunction, spec.values()):
 
         async def apply_spec_async(input_value):
