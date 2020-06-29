@@ -16,7 +16,7 @@ async def agroupby_many(f, it):
                 functional_generic.pair_with(f),
                 functional.star(lambda x, y: (x, [y])),
                 functional.star(itertools.product),
-            )
+            ),
         ),
         toolz.concat,
         graph.edges_to_graph,
@@ -30,7 +30,7 @@ async def agraph_traverse(
     key: Callable = toolz.identity,
 ) -> AsyncGenerator:
     async for s in agraph_traverse_many(
-        [source], aget_neighbors=aget_neighbors, key=key
+        [source], aget_neighbors=aget_neighbors, key=key,
     ):
         yield s
 

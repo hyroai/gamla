@@ -87,7 +87,7 @@ async def test_allmap_in_async_pipe():
 
 async def test_anymap_in_pipe():
     assert not functional_generic.pipe(
-        [True, True, False], functional_generic.allmap(lambda x: not x)
+        [True, True, False], functional_generic.allmap(lambda x: not x),
     )
 
 
@@ -95,17 +95,17 @@ async def test_itemmap_async_sync_mixed():
     assert await functional_generic.pipe(
         {True: True},
         functional_generic.itemmap(
-            functional_generic.compose(tuple, functional_generic.map(_opposite_async))
+            functional_generic.compose(tuple, functional_generic.map(_opposite_async)),
         ),
         functional_generic.itemmap(
-            functional_generic.compose(tuple, functional_generic.map(lambda x: not x))
+            functional_generic.compose(tuple, functional_generic.map(lambda x: not x)),
         ),
     ) == {True: True}
 
 
 async def test_keymap_async_curried():
     assert await functional_generic.keymap(_opposite_async)({True: True}) == {
-        False: True
+        False: True,
     }
 
 
@@ -137,34 +137,36 @@ def test_case_single_predicate():
 
 def test_case_multiple_predicates():
     assert not functional_generic.case_dict(
-        {operator.not_: toolz.identity, toolz.identity: operator.not_}
+        {operator.not_: toolz.identity, toolz.identity: operator.not_},
     )(True)
 
 
 def test_case_no_predicate():
     with pytest.raises(functional_generic.NoConditionMatched):
         functional_generic.case_dict(
-            {operator.not_: toolz.identity, operator.not_: toolz.identity}
+            {operator.not_: toolz.identity, operator.not_: toolz.identity},
         )(True)
 
 
 async def test_case_async():
     assert not await functional_generic.case_dict(
-        {_opposite_async: toolz.identity, toolz.identity: _opposite_async}
+        {_opposite_async: toolz.identity, toolz.identity: _opposite_async},
     )(True)
 
 
 def test_partition_after():
     assert functional.partition_after(lambda x: x == 1, []) == ()
     assert tuple(
-        functional.partition_after(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1])
+        functional.partition_after(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1]),
     ) == ((1,), (1,), (2, 2, 1), (1,), (2, 1), (1,), (1,))
 
 
 def test_partition_before():
     assert functional.partition_before(lambda x: x == 1, []) == ()
     assert tuple(
-        functional.partition_before(lambda x: x == 1, [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1])
+        functional.partition_before(
+            lambda x: x == 1, [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+        ),
     ) == ((3,), (1,), (1, 2, 2), (1,), (1, 2), (1,), (1,), (1,))
 
 
@@ -173,5 +175,21 @@ async def test_drop_last_while():
     assert tuple(functional.drop_last_while(lambda x: x == 1, [1])) == ()
     assert tuple(functional.drop_last_while(lambda x: x == 1, [2])) == (2,)
     assert tuple(
-        functional.drop_last_while(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1])
+        functional.drop_last_while(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1]),
     ) == (1, 1, 2, 2, 1, 1, 2)
+
+
+def test_apply_spec():
+    assert functional_generic.apply_spec(
+        {"identity": toolz.identity, "increment": lambda x: x + 1},
+    )(1) == {"identity": 1, "increment": 2}
+
+
+async def test_apply_spec_async():
+    async def async_identity(x):
+        await asyncio.sleep(1)
+        return x
+
+    assert await functional_generic.apply_spec(
+        {"identity": async_identity, "increment": lambda x: x + 1},
+    )(1) == {"identity": 1, "increment": 2}

@@ -3,9 +3,10 @@ import datetime
 import functools
 import logging
 import time
-from typing import Text
+from typing import Callable, Iterable, Text
 
 import async_timeout
+import httpx
 import requests
 import requests.adapters
 import toolz
@@ -30,7 +31,7 @@ def _log_finish(req_id: Text, start: float):
     finish = time.time()
     elapsed = finish - start
     logging.info(
-        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}"
+        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}",
     )
 
 
@@ -71,8 +72,8 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(
         max_retries=retry.Retry(
-            total=retries, backoff_factor=0.1, status_forcelist=(500, 502, 504)
-        )
+            total=retries, backoff_factor=0.1, status_forcelist=(500, 502, 504),
+        ),
     )
     session.mount("http://", adapter)
     session.mount("https://", adapter)
@@ -153,12 +154,13 @@ def athrottle(limit, f):
 
 
 @functional_generic.curry
-async def throttled_amap(f, it, limit):
+async def throttled_amap(f: Callable, limit: int, it: Iterable):
     return await functional_generic.map(athrottle(limit, f), it)
 
 
 def timeout(seconds: float):
     def wrapper(corofunc):
+        @functools.wraps(corofunc)
         async def run(*args, **kwargs):
             with async_timeout.timeout(seconds):
                 return await corofunc(*args, **kwargs)
@@ -166,3 +168,9 @@ def timeout(seconds: float):
         return run
 
     return wrapper
+
+
+@functional_generic.curry
+async def get_async(timeout, url):
+    async with httpx.AsyncClient() as client:
+        return await client.get(url, timeout=timeout)

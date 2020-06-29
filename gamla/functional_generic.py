@@ -1,7 +1,7 @@
 import asyncio
 import functools
 import inspect
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Type
 
 import toolz
 from toolz import curried
@@ -122,6 +122,30 @@ def ternary(condition, f_true, f_false):
 curried_ternary = ternary
 
 
+def first(*funcs, exception_type: Type[Exception]):
+    if _any_is_async([*funcs]):
+
+        async def inner_async(*args, **kwargs):
+            for func in funcs:
+                try:
+                    return await to_awaitable(func(*args, **kwargs))
+                except exception_type:
+                    pass
+            raise exception_type
+
+        return inner_async
+
+    def inner(*args, **kwargs):
+        for func in funcs:
+            try:
+                return func(*args, **kwargs)
+            except exception_type:
+                pass
+        raise exception_type
+
+    return inner
+
+
 def pipe(val, *funcs):
     return compose_left(*funcs)(val)
 
@@ -184,14 +208,14 @@ anymap = _compose_over_binary_curried(compose(after(any), gamla_map))
 
 
 itemmap = _compose_over_binary_curried(
-    compose(after(dict), before(dict.items), gamla_map)
+    compose(after(dict), before(dict.items), gamla_map),
 )
 keymap = _compose_over_binary_curried(
-    compose(itemmap, lambda f: juxt(f, toolz.second), before(toolz.first))
+    compose(itemmap, lambda f: juxt(f, toolz.second), before(toolz.first)),
 )
 
 valmap = _compose_over_binary_curried(
-    compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second))
+    compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second)),
 )
 
 
@@ -203,7 +227,7 @@ filter = _compose_over_binary_curried(
         after(compose(curried.map(toolz.second), curried.filter(toolz.first))),
         gamla_map,
         pair_with,
-    )
+    ),
 )
 
 
@@ -231,10 +255,10 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
                 lazyjuxt(*predicates),
                 _first_truthy_index,
                 functional.check(
-                    toolz.complement(operator.eq(None)), NoConditionMatched
+                    toolz.complement(operator.eq(None)), NoConditionMatched,
                 ),
                 mappers.__getitem__,
-            )
+            ),
         ),
         functional.star(functional.apply),
     )
@@ -247,3 +271,21 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
 
 
 case_dict = compose_left(dict.items, tuple, case)
+
+
+def apply_spec(spec):
+    if anymap(asyncio.iscoroutinefunction, spec.values()):
+
+        async def apply_spec_async(input_value):
+            results = await toolz.pipe(
+                spec,
+                dict.values,
+                curried.map(
+                    toolz.compose_left(functional.apply(input_value), to_awaitable),
+                ),
+                functional.star(asyncio.gather),
+            )
+            return dict(zip(spec.keys(), results))
+
+        return apply_spec_async
+    return toolz.compose_left(functional.apply, curried.valmap(d=spec))

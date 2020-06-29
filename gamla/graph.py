@@ -10,14 +10,14 @@ from gamla import functional, functional_generic
 
 @toolz.curry
 def graph_traverse(
-    source: Any, get_neighbors: Callable, key: Callable = toolz.identity
+    source: Any, get_neighbors: Callable, key: Callable = toolz.identity,
 ) -> Iterable:
     yield from graph_traverse_many([source], get_neighbors=get_neighbors, key=key)
 
 
 @toolz.curry
 def graph_traverse_many(
-    sources: Any, get_neighbors: Callable, key: Callable = toolz.identity
+    sources: Any, get_neighbors: Callable, key: Callable = toolz.identity,
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
     Note: `get_neighbors` must return elements without duplicates."""
@@ -25,13 +25,16 @@ def graph_traverse_many(
     remember = toolz.compose_left(key, seen_set.add)
     should_traverse = toolz.compose_left(key, toolz.complement(seen_set.__contains__))
     yield from general_graph_traverse_many(
-        sources, get_neighbors, remember, should_traverse
+        sources, get_neighbors, remember, should_traverse,
     )
 
 
 @toolz.curry
 def general_graph_traverse_many(
-    sources: Any, get_neighbors: Callable, remember: Callable, should_traverse: Callable
+    sources: Any,
+    get_neighbors: Callable,
+    remember: Callable,
+    should_traverse: Callable,
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
     Note: `get_neighbors` must return elements without duplicates."""
@@ -50,17 +53,17 @@ def general_graph_traverse_many(
 
 
 def traverse_graph_by_radius(
-    source: Any, get_neighbors: Callable, radius: int
+    source: Any, get_neighbors: Callable, radius: int,
 ) -> Iterable:
     """Like `graph_traverse`, but does not traverse farther from given `radius`."""
 
     def get_neighbors_limiting_radius(
-        current_and_distance: Tuple[Text, int]
+        current_and_distance: Tuple[Text, int],
     ) -> Iterable[Tuple[Text, int]]:
         current, distance = current_and_distance
         if distance < radius:
             yield from map(
-                lambda neighbor: (neighbor, distance + 1), get_neighbors(current)
+                lambda neighbor: (neighbor, distance + 1), get_neighbors(current),
             )
 
     return map(
@@ -81,11 +84,11 @@ graph_to_edges = toolz.compose_left(
 )
 
 reverse_graph = toolz.compose_left(
-    graph_to_edges, curried.map(toolz.compose_left(reversed, tuple)), edges_to_graph
+    graph_to_edges, curried.map(toolz.compose_left(reversed, tuple)), edges_to_graph,
 )
 
 cliques_to_graph = toolz.compose_left(
-    curried.mapcat(lambda clique: itertools.permutations(clique, r=2)), edges_to_graph
+    curried.mapcat(lambda clique: itertools.permutations(clique, r=2)), edges_to_graph,
 )
 
 
@@ -97,9 +100,9 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
             graph_traverse(
                 source=toolz.first(nodes_left),
                 get_neighbors=toolz.compose(
-                    curried.filter(operator.contains(nodes_left)), graph.get
+                    curried.filter(operator.contains(nodes_left)), graph.get,
                 ),
-            )
+            ),
         )
         yield result
         nodes_left -= result
@@ -134,7 +137,7 @@ def groupby_many(f, it):
             toolz.compose_left(
                 lambda element: (f(element), [element]),
                 functional.star(itertools.product),
-            )
+            ),
         ),
         edges_to_graph,
     )
