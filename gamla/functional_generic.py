@@ -277,7 +277,7 @@ def apply_spec(spec):
     """
     >>> spec = {"len": len, "sum": sum}
     >>> apply_spec(spec)([1,2,3,4,5])
-    {'len': 5, 'sum': 10}
+    {'len': 5, 'sum': 15}
     """
 
     if anymap(asyncio.iscoroutinefunction, spec.values()):
