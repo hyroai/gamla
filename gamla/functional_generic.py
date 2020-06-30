@@ -296,7 +296,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
                 curried.valmap(map_dict(nonterminal_mapper, terminal_mapper)),
                 nonterminal_mapper,
             )
-        if isinstance(value, Iterable):
+        if isinstance(value, Iterable) and not isinstance(value, str):
             return toolz.pipe(
                 value,
                 curried.map(map_dict(nonterminal_mapper, terminal_mapper)),
@@ -338,7 +338,6 @@ def apply_spec(spec):
             )(spec)
 
         return apply_spec_async
-
     return compose_left(
         functional.apply,
         lambda applier: map_dict(toolz.identity, applier),
