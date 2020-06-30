@@ -320,6 +320,15 @@ _has_coroutines = compose_left(_iterdict, anymap(asyncio.iscoroutinefunction))
 
 
 def apply_spec(spec):
+    """
+    >>> spec = {"len": len, "sum": sum}
+    >>> apply_spec(spec)([1,2,3,4,5])
+    {'len': 5, 'sum': 15}
+
+    Notes:
+    - The dictionary can be nested.
+    - Returned function will be async iff any leaf is an async function.
+    """
     if _has_coroutines(spec):
 
         async def apply_spec_async(*args, **kwargs):
