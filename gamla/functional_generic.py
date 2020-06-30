@@ -81,10 +81,12 @@ def lazyjuxt(*funcs):
     """Reverts to eager implementation if any of `funcs` is async."""
     if _any_is_async(funcs):
 
-        async def lazyjuxt_inner(value):
+        async def lazyjuxt_inner(*args, **kwargs):
             return await toolz.pipe(
                 funcs,
-                curried.map(toolz.compose_left(functional.apply(value), to_awaitable)),
+                curried.map(
+                    toolz.compose_left(functional.apply(*args, **kwargs), to_awaitable),
+                ),
                 functional.star(asyncio.gather),
             )
 
@@ -261,7 +263,9 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
                 mappers.__getitem__,
             ),
         ),
-        functional.star(functional.apply),
+        functional.star(
+            lambda value, transformer: functional.apply(value)(transformer),
+        ),
     )
 
 

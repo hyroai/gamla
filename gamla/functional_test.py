@@ -33,6 +33,18 @@ def test_juxt():
     assert functional_generic.juxt(toolz.identity, lambda x: x + 1)(3) == (3, 4)
 
 
+def test_juxt_zero_params():
+    assert functional_generic.juxt(lambda: 1, lambda: 3)() == (1, 3)
+
+
+async def test_juxt_zero_params_async():
+    async def slow_1():
+        await asyncio.sleep(1)
+        return 1
+
+    assert await functional_generic.juxt(lambda: 3, slow_1)() == (3, 1)
+
+
 async def test_juxt_async():
     async def slow_identity(x):
         await asyncio.sleep(1)

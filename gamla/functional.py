@@ -316,9 +316,11 @@ def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
 
 
-@toolz.curry
-def apply(value, function):
-    return function(value)
+def apply(*args, **kwargs):
+    def apply_inner(function):
+        return function(*args, **kwargs)
+
+    return apply_inner
 
 
 @toolz.curry
