@@ -1,8 +1,9 @@
 import asyncio
 import functools
 import inspect
-from typing import Callable, Tuple, Type
+from typing import Callable, Iterable, Tuple, Type
 
+import frozendict
 import toolz
 from toolz import curried
 from toolz.curried import operator
@@ -277,25 +278,72 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
 case_dict = compose_left(dict.items, tuple, case)
 
 
+async def _await_dict(value):
+    if isinstance(value, dict) or isinstance(value, frozendict.frozendict):
+        return await pipe(
+            value,
+            # In case input is a `frozendict`.
+            dict,
+            valmap(_await_dict),
+        )
+    if isinstance(value, Iterable):
+        return await pipe(value, gamla_map(_await_dict), type(value))
+    return await to_awaitable(value)
+
+
+def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
+    def map_dict_inner(value):
+        if isinstance(value, dict) or isinstance(value, frozendict.frozendict):
+            return toolz.pipe(
+                value,
+                dict,  # In case input is a `frozendict`.
+                curried.valmap(map_dict(nonterminal_mapper, terminal_mapper)),
+                nonterminal_mapper,
+            )
+        if isinstance(value, Iterable) and not isinstance(value, str):
+            return toolz.pipe(
+                value,
+                curried.map(map_dict(nonterminal_mapper, terminal_mapper)),
+                type(value),  # Keep the same format as input.
+            )
+        return terminal_mapper(value)
+
+    if _any_is_async([nonterminal_mapper, terminal_mapper]):
+        return compose_left(map_dict_inner, _await_dict)
+
+    return map_dict_inner
+
+
+def _iterdict(d):
+    results = []
+    map_dict(toolz.identity, results.append)(d)
+    return results
+
+
+_has_coroutines = compose_left(_iterdict, _any_is_async)
+
+
 def apply_spec(spec):
     """
     >>> spec = {"len": len, "sum": sum}
     >>> apply_spec(spec)([1,2,3,4,5])
     {'len': 5, 'sum': 15}
+
+    Notes:
+    - The dictionary can be nested.
+    - Returned function will be async iff any leaf is an async function.
     """
+    if _has_coroutines(spec):
 
-    if anymap(asyncio.iscoroutinefunction, spec.values()):
-
-        async def apply_spec_async(input_value):
-            results = await toolz.pipe(
-                spec,
-                dict.values,
-                curried.map(
-                    toolz.compose_left(functional.apply(input_value), to_awaitable),
-                ),
-                functional.star(asyncio.gather),
-            )
-            return dict(zip(spec.keys(), results))
+        async def apply_spec_async(*args, **kwargs):
+            return await map_dict(
+                toolz.identity,
+                compose_left(functional.apply(*args, **kwargs), to_awaitable),
+            )(spec)
 
         return apply_spec_async
-    return toolz.compose_left(functional.apply, curried.valmap(d=spec))
+    return compose_left(
+        functional.apply,
+        lambda applier: map_dict(toolz.identity, applier),
+        functional.apply(spec),
+    )

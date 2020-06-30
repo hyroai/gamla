@@ -1,11 +1,13 @@
 import dataclasses
 import json
-from typing import Any, Dict, Iterable, Optional, Text, Tuple
+from typing import Any, Dict, Optional, Text, Tuple
 
 import dataclasses_json
 import frozendict
 import toolz
 from toolz import curried
+
+from gamla import functional_generic
 
 
 def get_encode_config():
@@ -16,19 +18,7 @@ def get_encode_config():
     )
 
 
-def freeze_deep(value):
-    if isinstance(value, str):
-        return value
-    if isinstance(value, dict) or isinstance(value, frozendict.frozendict):
-        return toolz.pipe(
-            value,
-            dict,  # In case input is already a `frozendict`.
-            curried.valmap(freeze_deep),
-            frozendict.frozendict,
-        )
-    if isinstance(value, Iterable):
-        return toolz.pipe(value, curried.map(freeze_deep), tuple)
-    return value
+freeze_deep = functional_generic.map_dict(frozendict.frozendict, toolz.identity)
 
 
 @toolz.curry
