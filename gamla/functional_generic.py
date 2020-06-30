@@ -283,7 +283,7 @@ async def _await_dict(value):
             valmap(_await_dict),
         )
     if isinstance(value, Iterable):
-        return await pipe(value, gamla_map(_await_dict), tuple)
+        return await pipe(value, gamla_map(_await_dict), type(value))
     return await to_awaitable(value)
 
 
@@ -304,7 +304,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
             )
         return terminal_mapper(value)
 
-    if anymap(asyncio.iscoroutinefunction, [nonterminal_mapper, terminal_mapper]):
+    if _any_is_async([nonterminal_mapper, terminal_mapper]):
         return compose_left(map_dict_inner, _await_dict)
 
     return map_dict_inner
@@ -316,7 +316,7 @@ def _iterdict(d):
     return results
 
 
-_has_coroutines = compose_left(_iterdict, anymap(asyncio.iscoroutinefunction))
+_has_coroutines = compose_left(_iterdict, _any_is_async)
 
 
 def apply_spec(spec):
