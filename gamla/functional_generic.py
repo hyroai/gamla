@@ -300,7 +300,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
             return toolz.pipe(
                 value,
                 curried.map(map_dict(nonterminal_mapper, terminal_mapper)),
-                tuple,
+                type(value),  # Keep the same format as input.
             )
         return terminal_mapper(value)
 
