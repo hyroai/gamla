@@ -193,3 +193,14 @@ async def test_apply_spec_async():
     assert await functional_generic.apply_spec(
         {"identity": async_identity, "increment": lambda x: x + 1},
     )(1) == {"identity": 1, "increment": 2}
+
+
+async def test_apply_spec_async_recursive():
+    async def async_identity(x):
+        await asyncio.sleep(1)
+        return x
+
+    f = functional_generic.apply_spec(
+        {"identity": {"nested": async_identity}, "increment": lambda x: x + 1},
+    )
+    assert await f(1) == {"identity": {"nested": 1}, "increment": 2}
