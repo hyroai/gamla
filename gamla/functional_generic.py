@@ -305,6 +305,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
                 value,
                 curried.map(map_dict(nonterminal_mapper, terminal_mapper)),
                 type(value),  # Keep the same format as input.
+                nonterminal_mapper,
             )
         return terminal_mapper(value)
 

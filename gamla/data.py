@@ -18,7 +18,13 @@ def get_encode_config():
     )
 
 
-freeze_deep = functional_generic.map_dict(frozendict.frozendict, toolz.identity)
+def _freeze_nonterminal(v):
+    if isinstance(v, Dict):
+        return frozendict.frozendict(v)
+    return tuple(v)
+
+
+freeze_deep = functional_generic.map_dict(_freeze_nonterminal, toolz.identity)
 
 
 @toolz.curry
