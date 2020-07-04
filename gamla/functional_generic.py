@@ -25,13 +25,14 @@ async def to_awaitable(value):
 
 
 def _acompose(*funcs):
-    async def composed(*args, **kwargs):
+    @functools.wraps(toolz.last(funcs))
+    async def async_composed(*args, **kwargs):
         for f in reversed(funcs):
             args = [await to_awaitable(f(*args, **kwargs))]
             kwargs = {}
         return toolz.first(args)
 
-    return composed
+    return async_composed
 
 
 def compose(*funcs):
@@ -42,7 +43,15 @@ def compose(*funcs):
         # Copying `toolz` convention.
         composed.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
         return composed
-    return toolz.compose(*funcs)
+
+    @functools.wraps(toolz.last(funcs))
+    def composed(*args, **kwargs):
+        for f in reversed(funcs):
+            args = [f(*args, **kwargs)]
+            kwargs = {}
+        return toolz.first(args)
+
+    return composed
 
 
 def _make_amap(f):
