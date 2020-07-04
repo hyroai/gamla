@@ -38,19 +38,19 @@ def _acompose(*funcs):
 def compose(*funcs):
     if _any_is_async(funcs):
         composed = _acompose(*funcs)
-        # TODO(uri): Far from a perfect id, but should work most of the time.
-        # Improve by having higher order functions create meaningful names (e.g. `map`).
-        # Copying `toolz` convention.
-        composed.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
-        return composed
+    else:
 
-    @functools.wraps(toolz.last(funcs))
-    def composed(*args, **kwargs):
-        for f in reversed(funcs):
-            args = [f(*args, **kwargs)]
-            kwargs = {}
-        return toolz.first(args)
+        @functools.wraps(toolz.last(funcs))
+        def composed(*args, **kwargs):
+            for f in reversed(funcs):
+                args = [f(*args, **kwargs)]
+                kwargs = {}
+            return toolz.first(args)
 
+    # TODO(uri): Far from a perfect id, but should work most of the time.
+    # Improve by having higher order functions create meaningful names (e.g. `map`).
+    # Copying `toolz` convention.
+    composed.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
     return composed
 
 
