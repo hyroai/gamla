@@ -1,4 +1,5 @@
 import dataclasses
+import itertools
 import json
 from typing import Any, Dict, Optional, Text, Tuple
 
@@ -6,8 +7,9 @@ import dataclasses_json
 import frozendict
 import toolz
 from toolz import curried
+from toolz.curried import operator
 
-from gamla import functional_generic
+from gamla import functional_generic, functional
 
 
 def get_encode_config():
@@ -53,6 +55,49 @@ def tuple_of_tuples_to_csv(
         tuple_of_tuples,
         curried.map(toolz.compose_left(curried.map(str), tuple, separator.join)),
         "\n".join,
+    )
+
+
+_field_getters = toolz.compose_left(
+    dataclasses.fields,
+    curried.map(toolz.compose_left(lambda f: f.name, operator.attrgetter)),
+    tuple,
+)
+
+
+def match(dataclass_pattern):
+    """ creates a function that returns true if input matches dataclass_pattern.
+     Use typing.Any as wildcard for field value.
+     Supports recursive patterns.
+     """
+    # pattern -> ( (getter,...), pattern) -> ((getter,...), (value,...)) ->
+    # ((getter,...), (eq(value),...)) -> alljuxt( compose_left(getter,eq(value)),... )
+    return toolz.pipe(
+        dataclass_pattern,
+        toolz.juxt(_field_getters, itertools.repeat),
+        toolz.juxt(
+            toolz.first,
+            functional.star(
+                curried.map(
+                    toolz.compose_left(
+                        toolz.apply,
+                        functional_generic.case(
+                            (
+                                (
+                                    operator.eq(Any),
+                                    functional.just(functional.just(True)),
+                                ),
+                                (dataclasses.is_dataclass, match,),
+                                (functional.just(True), operator.eq,),
+                            )
+                        ),
+                    )
+                ),
+            ),
+        ),
+        functional.star(curried.map(toolz.compose_left)),
+        functional.prefix(lambda dc: type(dc) == type(dataclass_pattern)),
+        functional.star(functional_generic.alljuxt),
     )
 
 
