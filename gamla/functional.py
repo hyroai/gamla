@@ -214,6 +214,16 @@ def len_equals(length: int, seq):
 
 
 @toolz.curry
+def len_greater(length: int, seq):
+    return len(seq) > length
+
+
+@toolz.curry
+def len_smaller(length: int, seq):
+    return len(seq) < length
+
+
+@toolz.curry
 def skip(n, seq):
     for i, x in enumerate(seq):
         if i < n:
@@ -358,3 +368,8 @@ def get_all_n_grams(seq):
     return toolz.pipe(
         range(1, len(seq) + 1), curried.mapcat(curried.sliding_window(seq=seq)),
     )
+
+
+@toolz.curry
+def is_instance(the_type, the_value):
+    return isinstance(the_value, the_type)
