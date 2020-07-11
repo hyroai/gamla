@@ -6,7 +6,6 @@ from typing import Callable, Iterable, Tuple, Type
 import frozendict
 import toolz
 from toolz import curried
-from toolz.curried import operator
 
 from gamla import functional
 
@@ -259,17 +258,17 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     """Case with functions.
 
     Handles async iff one of the predicates is async.
-    Raises `KeyError` if no condition matched.
+    Raises `NoConditionMatched` if no condition matched.
     """
+    predicates = (*predicates, functional.just(True))
+    mappers = (
+        *mappers,
+        compose_left(NoConditionMatched, functional.just_raise),
+    )
     return compose_left(
         pair_right(
             compose_left(
-                lazyjuxt(*predicates),
-                _first_truthy_index,
-                functional.check(
-                    toolz.complement(operator.eq(None)), NoConditionMatched,
-                ),
-                mappers.__getitem__,
+                lazyjuxt(*predicates), _first_truthy_index, mappers.__getitem__,
             ),
         ),
         functional.star(

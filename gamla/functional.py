@@ -23,14 +23,15 @@ def do_if(condition, fun):
     def inner_do_if(x):
         if condition(x):
             fun(x)
-            return x
         return x
 
     return inner_do_if
 
 
 def check(condition, exception):
-    return do_if(toolz.complement(condition), make_raise(exception))
+    return do_if(
+        toolz.complement(condition), toolz.compose_left(exception, just_raise),
+    )
 
 
 def bifurcate(*funcs):
