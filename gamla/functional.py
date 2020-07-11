@@ -80,6 +80,10 @@ def ignore_input(inner):
     return ignore_and_run
 
 
+def just_raise(exception):
+    raise exception
+
+
 def make_raise(exception):
     def inner():
         raise exception
