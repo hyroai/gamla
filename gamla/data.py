@@ -67,7 +67,7 @@ _field_getters = toolz.compose_left(
 
 def match(dataclass_pattern):
     """ creates a function that returns true if input matches dataclass_pattern.
-     Use typing.Any as wildcard for field value.
+     Use data.Any as wildcard for field value.
      Supports recursive patterns.
      """
     # pattern -> ( (getter,...), pattern) -> ((getter,...), (value,...)) ->
