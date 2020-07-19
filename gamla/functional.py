@@ -8,6 +8,7 @@ import inspect
 import itertools
 import json
 import logging
+import random
 from concurrent import futures
 from typing import Any, Callable, Iterable, Sequence, Text, TypeVar
 
@@ -348,3 +349,10 @@ def get_all_n_grams(seq):
 @toolz.curry
 def is_instance(the_type, the_value):
     return isinstance(the_value, the_type)
+
+
+def sample(n: int):
+    def sample_inner(population):
+        return random.sample(population, n)
+
+    return sample_inner
