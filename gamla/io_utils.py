@@ -3,7 +3,7 @@ import datetime
 import functools
 import logging
 import time
-from typing import Callable, Iterable, Text
+from typing import Text
 
 import async_timeout
 import httpx
@@ -142,7 +142,7 @@ def queue_identical_calls(f):
 
 
 @toolz.curry
-def athrottle(limit, f):
+def throttle(limit, f):
     semaphore = asyncio.Semaphore(limit)
 
     @functools.wraps(f)
@@ -151,11 +151,6 @@ def athrottle(limit, f):
             return await f(*args, **kwargs)
 
     return wrapped
-
-
-@functional_generic.curry
-async def throttled_amap(f: Callable, limit: int, it: Iterable):
-    return await functional_generic.map(athrottle(limit, f), it)
 
 
 def timeout(seconds: float):
