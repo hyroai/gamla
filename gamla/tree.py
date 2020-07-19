@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 import toolz
 from toolz import curried
@@ -20,10 +20,18 @@ class _KeyValue:
     value: Any
 
 
+_is_terminal = functional_generic.anyjuxt(
+    functional.is_instance(str),
+    functional.is_instance(int),
+    functional.is_instance(float),
+)
+
+
 def _get_children(element):
     return functional_generic.case_dict(
         {
-            functional.is_instance(tuple): toolz.identity,
+            functional.is_instance(str): functional.just(()),
+            functional.is_instance(Sequence): toolz.identity,
             functional.is_instance(dict): functional_generic.compose_left(
                 dict.items, functional_generic.map(functional.star(_KeyValue)),
             ),
@@ -33,7 +41,6 @@ def _get_children(element):
                     functional.is_instance(str), functional.wrap_tuple, _get_children,
                 ),
             ),
-            functional.is_instance(str): functional.just(()),
         },
     )(element)
 
@@ -73,8 +80,19 @@ def _get_anywhere_reducer(predicate: Callable, node, children):
     return _merge_children(children)
 
 
-def get_leafs_by_ancestor_predicate(predicate: Callable):
+def get_leaves_by_ancestor_predicate(predicate: Callable):
     """Gets leafs with ancestor nodes passing the predicate."""
     return functional_generic.compose_left(
         _tree_reduce(_get_children, _get_anywhere_reducer(predicate)), _get_matched,
     )
+
+
+@functional_generic.curry
+def _filter_leaves_reducer(predicate, node, children):
+    if _is_terminal(node) and predicate(node):
+        return (node,)
+    return toolz.concat(children)
+
+
+def filter_leaves(predicate):
+    return _tree_reduce(_get_children, _filter_leaves_reducer(predicate))
