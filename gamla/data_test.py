@@ -29,13 +29,13 @@ class MockDataclassB:
 
 def test_match_false():
     assert not data.match(MockDataclassB(MockDataclassA(5)))(
-        MockDataclassB(MockDataclassA(4))
+        MockDataclassB(MockDataclassA(4)),
     )
 
 
 def test_match_true_deep():
     assert data.match(MockDataclassB(MockDataclassA(Any)))(
-        MockDataclassB(MockDataclassA(4))
+        MockDataclassB(MockDataclassA(4)),
     )
 
 

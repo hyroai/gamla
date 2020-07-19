@@ -9,7 +9,7 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional_generic, functional
+from gamla import functional, functional_generic
 
 
 def get_encode_config():
@@ -87,11 +87,11 @@ def match(dataclass_pattern):
                                     operator.eq(Any),
                                     functional.just(functional.just(True)),
                                 ),
-                                (dataclasses.is_dataclass, match,),
-                                (functional.just(True), operator.eq,),
-                            )
+                                (dataclasses.is_dataclass, match),
+                                (functional.just(True), operator.eq),
+                            ),
                         ),
-                    )
+                    ),
                 ),
             ),
         ),
