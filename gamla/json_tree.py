@@ -10,8 +10,7 @@ from gamla import functional, functional_generic
 @functional_generic.curry
 def _tree_reduce(get_children, reduce_fn, tree_node):
     return reduce_fn(
-        tree_node,
-        tuple(map(_tree_reduce(get_children, reduce_fn), get_children(tree_node))),
+        tree_node, map(_tree_reduce(get_children, reduce_fn), get_children(tree_node)),
     )
 
 
@@ -26,7 +25,7 @@ def _get_children(element):
         {
             functional.is_instance(tuple): toolz.identity,
             functional.is_instance(dict): functional_generic.compose_left(
-                dict.items, functional_generic.map(functional.star(_KeyValue)), tuple,
+                dict.items, functional_generic.map(functional.star(_KeyValue)),
             ),
             functional.is_instance(_KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
