@@ -216,3 +216,31 @@ async def test_apply_spec_async_recursive():
         {"identity": {"nested": async_identity}, "increment": lambda x: x + 1},
     )
     assert await f(1) == {"identity": {"nested": 1}, "increment": 2}
+
+
+async def test_async_bifurcate():
+    async def async_sum(x):
+        await asyncio.sleep(1)
+        return sum(x)
+
+    def gen():
+        yield 1
+        yield 2
+        yield 3
+
+    average = await functional_generic.pipe(
+        gen(),
+        functional_generic.bifurcate(async_sum, toolz.count),
+        functional.star(operator.truediv),
+    )
+
+    assert average == 2
+
+
+def test_average():
+    def gen():
+        yield 1
+        yield 2
+        yield 3
+
+    assert functional_generic.average(gen()) == 2

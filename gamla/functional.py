@@ -34,19 +34,6 @@ def check(condition, exception):
     )
 
 
-def bifurcate(*funcs):
-    """Serially runs each function on tee'd copies of `input_generator`."""
-
-    def inner(input_iterable):
-        return toolz.pipe(
-            zip(funcs, itertools.tee(iter(input_iterable), len(funcs))),
-            curried.map(star(lambda f, generator: f(generator))),
-            tuple,
-        )
-
-    return inner
-
-
 def singleize(func: Callable) -> Callable:
     def wrapped(some_input):
         if isinstance(some_input, tuple):
@@ -134,17 +121,6 @@ def pmap(f, n_workers, it):
     return tuple(futures.ThreadPoolExecutor(max_workers=n_workers).map(f, it))
 
 
-@toolz.curry
-def pfilter(f, it):
-    return toolz.pipe(
-        it,
-        bifurcate(pmap(f, None), curried.map(toolz.identity)),
-        zip,
-        curried.filter(toolz.first),
-        curried.map(toolz.second),
-    )
-
-
 logger = curried.do(logging.info)
 
 
@@ -205,12 +181,6 @@ def profileit(func):
 @toolz.curry
 def inside(val, container):
     return val in container
-
-
-average = toolz.compose_left(
-    bifurcate(sum, toolz.count),
-    toolz.excepts(ZeroDivisionError, star(operator.truediv), lambda _: 0),
-)
 
 
 @toolz.curry
