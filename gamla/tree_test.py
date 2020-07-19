@@ -15,4 +15,4 @@ def test_get_leaves_by_ancestor_predicate_no_matches():
 
 def test_filter_leaves():
     fn = tree.filter_leaves(operator.lt(3))
-    assert fn({"t": {"t": (1, 12)}}) == (12)
+    assert tuple(fn({"t": {"t": (1, 12)}})) == (12,)

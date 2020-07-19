@@ -30,7 +30,7 @@ _is_terminal = functional_generic.anyjuxt(
 def _get_children(element):
     return functional_generic.case_dict(
         {
-            functional.is_instance(str): functional.just(()),
+            _is_terminal: functional.just(()),
             functional.is_instance(Sequence): toolz.identity,
             functional.is_instance(dict): functional_generic.compose_left(
                 dict.items, functional_generic.map(functional.star(_KeyValue)),
@@ -38,7 +38,7 @@ def _get_children(element):
             functional.is_instance(_KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
                 functional_generic.ternary(
-                    functional.is_instance(str), functional.wrap_tuple, _get_children,
+                    _is_terminal, functional.wrap_tuple, _get_children,
                 ),
             ),
         },
