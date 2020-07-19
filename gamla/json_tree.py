@@ -22,15 +22,15 @@ class _KeyValue:
 
 
 def _get_children(element):
-    return functional.case_dict(
+    return functional_generic.case_dict(
         {
             functional.is_instance(tuple): toolz.identity,
             functional.is_instance(dict): functional_generic.compose_left(
-                dict.items, functional.map(functional.star(_KeyValue)), tuple,
+                dict.items, functional_generic.map(functional.star(_KeyValue)), tuple,
             ),
             functional.is_instance(_KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
-                functional.ternary(
+                functional_generic.ternary(
                     functional.is_instance(str), functional.wrap_tuple, _get_children,
                 ),
             ),
