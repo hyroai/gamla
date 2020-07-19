@@ -1,11 +1,13 @@
 import asyncio
 import functools
 import inspect
+import itertools
 from typing import Callable, Iterable, Tuple, Type
 
 import frozendict
 import toolz
 from toolz import curried
+from toolz.curried import operator
 
 from gamla import functional
 
@@ -356,3 +358,23 @@ def apply_spec(spec):
         lambda applier: map_dict(toolz.identity, applier),
         functional.apply(spec),
     )
+
+
+# Stacks functions on top of each other, so will run pairwise on the input.
+# Similar to juxt, only zips with the incoming iterable.
+stack = compose_left(
+    enumerate,
+    map(functional.star(lambda i, f: compose(f, curried.nth(i)))),
+    functional.star(juxt),
+)
+
+
+def bifurcate(*funcs):
+    """Serially runs each function on tee'd copies of `input_generator`."""
+    return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
+
+
+average = toolz.compose_left(
+    bifurcate(sum, toolz.count),
+    toolz.excepts(ZeroDivisionError, functional.star(operator.truediv), lambda _: 0),
+)
