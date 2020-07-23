@@ -348,7 +348,7 @@ def get_all_n_grams(seq):
 
 @toolz.curry
 def is_instance(the_type, the_value):
-    return isinstance(the_value, the_type)
+    return type(the_value) == the_type
 
 
 def sample(n: int):
