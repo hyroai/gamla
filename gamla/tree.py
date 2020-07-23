@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Callable, Sequence
+from typing import Any, Callable
 
 import toolz
 from toolz import curried
@@ -31,7 +31,8 @@ def _get_children(element):
     return functional_generic.case_dict(
         {
             _is_terminal: functional.just(()),
-            functional.is_instance(Sequence): toolz.identity,
+            functional.is_instance(tuple): toolz.identity,
+            functional.is_instance(list): toolz.identity,
             functional.is_instance(dict): functional_generic.compose_left(
                 dict.items, functional_generic.map(functional.star(_KeyValue)),
             ),
