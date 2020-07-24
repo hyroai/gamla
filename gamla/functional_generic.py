@@ -95,7 +95,7 @@ def lazyjuxt(*funcs):
             return await toolz.pipe(
                 funcs,
                 curried.map(
-                    toolz.compose_left(functional.apply(*args, **kwargs), to_awaitable),
+                    compose_left(functional.apply(*args, **kwargs), to_awaitable),
                 ),
                 functional.star(asyncio.gather),
             )
@@ -163,8 +163,9 @@ def pipe(val, *funcs):
     return compose_left(*funcs)(val)
 
 
-def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
-    f_len_args = inspect.signature(f).parameters
+def _curry_helper(
+    is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
+):
     args_so_far += args
     kwargs_so_far = toolz.merge(kwargs_so_far, kwargs)
     len_so_far = len(args_so_far) + len(kwargs_so_far)
@@ -172,7 +173,7 @@ def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
         return f(*args_so_far)
     if len_so_far == len(f_len_args):
         return f(*args_so_far, **kwargs_so_far)
-    if len_so_far + 1 == len(f_len_args) and asyncio.iscoroutinefunction(f):
+    if len_so_far + 1 == len(f_len_args) and is_coroutine:
 
         @functools.wraps(f)
         async def curry_inner_async(*args, **kwargs):
@@ -184,7 +185,9 @@ def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
 
     @functools.wraps(f)
     def curry_inner(*args, **kwargs):
-        return _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs)
+        return _curry_helper(
+            is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
+        )
 
     return curry_inner
 
@@ -199,9 +202,13 @@ def _infer_defaults(f):
 
 
 def curry(f):
+    f_len_args = inspect.signature(f).parameters
+    defaults = _infer_defaults(f)
+    is_coroutine = asyncio.iscoroutinefunction(f)
+
     @functools.wraps(f)
     def indirection(*args, **kwargs):
-        return _curry_helper(f, (), _infer_defaults(f), *args, **kwargs)
+        return _curry_helper(is_coroutine, f_len_args, f, (), defaults, *args, **kwargs)
 
     return indirection
 
