@@ -17,6 +17,13 @@ def test_freeze_deep():
     {data.freeze_deep(original)}
 
 
+def test_unfreeze_deep():
+    original = data.freeze_deep({"1": {"2": "345", "some-string": ["hello"]}})
+    unfrozen = data.unfreeze_deep(original)
+
+    assert unfrozen == {"1": {"2": "345", "some-string": ("hello",)}}
+
+
 @dataclasses.dataclass(frozen=True)
 class MockDataclassA:
     a: int

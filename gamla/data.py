@@ -26,7 +26,14 @@ def _freeze_nonterminal(v):
     return tuple(v)
 
 
+def _unfreeze_nonterminal(v):
+    if isinstance(v, Dict):
+        return dict(v)
+    return tuple(v)
+
+
 freeze_deep = functional_generic.map_dict(_freeze_nonterminal, toolz.identity)
+unfreeze_deep = functional_generic.map_dict(_unfreeze_nonterminal, toolz.identity)
 
 
 @toolz.curry
