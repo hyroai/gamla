@@ -8,7 +8,7 @@ def test_freeze_deep():
     original = {"1": {"2": "345", "some-string": ["hello"]}}
     frozen = data.freeze_deep(original)
     # Check values are intact.
-    assert frozen == data.Frozenict(
+    assert frozen == data.frozendict(
         {"1": data.frozendict({"2": "345", "some-string": ("hello",)})},
     )
     # Check hashability.
