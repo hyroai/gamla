@@ -13,7 +13,6 @@ setuptools.setup(
     install_requires=[
         "async-timeout",
         "dataclasses_json",
-        "frozendict",
         "heapq_max",
         "httpx",
         "pytest-asyncio",
