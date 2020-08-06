@@ -4,12 +4,35 @@ import json
 from typing import Any, Dict, Optional, Text, Tuple
 
 import dataclasses_json
-import frozendict
 import toolz
 from toolz import curried
 from toolz.curried import operator
 
 from gamla import functional, functional_generic
+
+
+def _immutable(self, *args, **kws):
+    raise TypeError("cannot change object - object is immutable")
+
+
+class frozendict(dict):  # noqa: N801
+    def __init__(self, *args, **kwargs):
+        self._hash = None
+        self.__setattr__ = _immutable
+        super(frozendict, self).__init__(*args, **kwargs)
+
+    def __hash__(self):
+        if self._hash is None:
+            self._hash = hash(tuple(self.items()))
+        return self._hash
+
+    __setitem__ = _immutable
+    __delitem__ = _immutable
+    pop = _immutable
+    popitem = _immutable
+    clear = _immutable
+    update = _immutable
+    setdefault = _immutable
 
 
 def get_encode_config():
@@ -22,7 +45,7 @@ def get_encode_config():
 
 def _freeze_nonterminal(v):
     if isinstance(v, Dict):
-        return frozendict.frozendict(v)
+        return frozendict(v)
     return tuple(v)
 
 

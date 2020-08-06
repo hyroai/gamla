@@ -4,12 +4,11 @@ import inspect
 import itertools
 from typing import Callable, Iterable, Tuple, Type
 
-import frozendict
 import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional
+from gamla import data, functional
 
 
 def compose_left(*funcs):
@@ -296,7 +295,7 @@ case_dict = compose_left(dict.items, tuple, case)
 
 
 async def _await_dict(value):
-    if isinstance(value, dict) or isinstance(value, frozendict.frozendict):
+    if isinstance(value, dict) or isinstance(value, data.frozendict):
         return await pipe(
             value,
             # In case input is a `frozendict`.
@@ -310,7 +309,7 @@ async def _await_dict(value):
 
 def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
     def map_dict_inner(value):
-        if isinstance(value, dict) or isinstance(value, frozendict.frozendict):
+        if isinstance(value, dict) or isinstance(value, data.frozendict):
             return toolz.pipe(
                 value,
                 dict,  # In case input is a `frozendict`.
