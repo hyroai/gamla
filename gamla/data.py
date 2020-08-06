@@ -18,11 +18,12 @@ def _immutable(self, *args, **kws):
 class frozendict(dict):  # noqa: N801
     def __init__(self, *args, **kwargs):
         self._hash = None
+        self.__setattr__ = _immutable
         super(frozendict, self).__init__(*args, **kwargs)
 
     def __hash__(self):
         if self._hash is None:
-            self._hash = hash(tuple(sorted(self.items())))  # iteritems() on py2
+            self._hash = hash(tuple(self.items()))
         return self._hash
 
     __setitem__ = _immutable
