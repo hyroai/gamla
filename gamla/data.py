@@ -26,7 +26,8 @@ class frozendict(dict):  # noqa: N801
             self._hash = hash(tuple(self.items()))
         return self._hash
 
-    __setitem__ = _immutable
+    # TODO(nitzo): Disabled since we need to be able to un-serialize with dill/pickle.
+    # __setitem__ = _immutable
     __delitem__ = _immutable
     pop = _immutable
     popitem = _immutable

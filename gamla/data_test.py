@@ -1,4 +1,5 @@
 import dataclasses
+import pickle
 from typing import Any
 
 from gamla import data
@@ -13,6 +14,15 @@ def test_freeze_deep():
     )
     # Check hashability.
     {data.freeze_deep(original)}
+
+
+def test_fozendict_serializable():
+    fd = data.frozendict({"a": "something", "b": 1})
+    fd_str = pickle.dumps(fd)
+
+    fd_clone = pickle.loads(fd_str)
+
+    assert fd == fd_clone
 
 
 @dataclasses.dataclass(frozen=True)
