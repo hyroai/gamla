@@ -166,7 +166,7 @@ def timeout(seconds: float):
 
 
 @functional_generic.curry
-async def get_async(timeout: float, url):
+async def get_async(timeout: float, url: Text):
     async with httpx.AsyncClient() as client:
         return await client.get(url, timeout=timeout)
 
