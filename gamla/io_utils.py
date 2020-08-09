@@ -175,10 +175,9 @@ async def get_async(timeout: float, url: Text):
 async def post_json_async(timeout: float, url: Text, payload):
     """Expects payload to be a json object, and the response to be json as well."""
     async with httpx.AsyncClient() as client:
-        response = await client.post(
+        return await client.post(
             url=url,
             json=payload,
             headers={"content_type": "application/json"},
             timeout=timeout,
         )
-    return response.json()
