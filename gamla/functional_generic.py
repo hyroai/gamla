@@ -237,8 +237,16 @@ valmap = _compose_over_binary_curried(
     compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second)),
 )
 
-
+"""
+>>> pair_with(len, "Hello") 
+`(5, 'Hello')`
+"""
 pair_with = _compose_over_binary_curried(lambda f: juxt(f, toolz.identity))
+
+"""
+>>> pair_right(len, "Hello") 
+`('Hello', 5)`
+"""
 pair_right = _compose_over_binary_curried(lambda f: juxt(toolz.identity, f))
 
 filter = _compose_over_binary_curried(
