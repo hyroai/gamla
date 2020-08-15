@@ -16,7 +16,7 @@ setuptools.setup(
         "heapq_max",
         "httpx",
         "pytest-asyncio",
-        "pytest>=5.4.0",
+        "pytest",
         "requests",
         "toolz",
     ],
