@@ -1,13 +1,14 @@
 import asyncio
 import functools
 import inspect
-from typing import Callable, Tuple, Type
+import itertools
+from typing import Callable, Iterable, Tuple, Type
 
 import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional
+from gamla import data, functional
 
 
 def compose_left(*funcs):
@@ -24,24 +25,33 @@ async def to_awaitable(value):
 
 
 def _acompose(*funcs):
-    async def composed(*args, **kwargs):
+    @functools.wraps(toolz.last(funcs))
+    async def async_composed(*args, **kwargs):
         for f in reversed(funcs):
             args = [await to_awaitable(f(*args, **kwargs))]
             kwargs = {}
         return toolz.first(args)
 
-    return composed
+    return async_composed
 
 
 def compose(*funcs):
     if _any_is_async(funcs):
         composed = _acompose(*funcs)
-        # TODO(uri): Far from a perfect id, but should work most of the time.
-        # Improve by having higher order functions create meaningful names (e.g. `map`).
-        # Copying `toolz` convention.
-        composed.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
-        return composed
-    return toolz.compose(*funcs)
+    else:
+
+        @functools.wraps(toolz.last(funcs))
+        def composed(*args, **kwargs):
+            for f in reversed(funcs):
+                args = [f(*args, **kwargs)]
+                kwargs = {}
+            return toolz.first(args)
+
+    # TODO(uri): Far from a perfect id, but should work most of the time.
+    # Improve by having higher order functions create meaningful names (e.g. `map`).
+    # Copying `toolz` convention.
+    composed.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
+    return composed
 
 
 def _make_amap(f):
@@ -80,10 +90,12 @@ def lazyjuxt(*funcs):
     """Reverts to eager implementation if any of `funcs` is async."""
     if _any_is_async(funcs):
 
-        async def lazyjuxt_inner(value):
+        async def lazyjuxt_inner(*args, **kwargs):
             return await toolz.pipe(
                 funcs,
-                curried.map(toolz.compose_left(functional.apply(value), to_awaitable)),
+                curried.map(
+                    compose_left(functional.apply(*args, **kwargs), to_awaitable),
+                ),
                 functional.star(asyncio.gather),
             )
 
@@ -150,8 +162,9 @@ def pipe(val, *funcs):
     return compose_left(*funcs)(val)
 
 
-def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
-    f_len_args = inspect.signature(f).parameters
+def _curry_helper(
+    is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
+):
     args_so_far += args
     kwargs_so_far = toolz.merge(kwargs_so_far, kwargs)
     len_so_far = len(args_so_far) + len(kwargs_so_far)
@@ -159,7 +172,7 @@ def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
         return f(*args_so_far)
     if len_so_far == len(f_len_args):
         return f(*args_so_far, **kwargs_so_far)
-    if len_so_far + 1 == len(f_len_args) and asyncio.iscoroutinefunction(f):
+    if len_so_far + 1 == len(f_len_args) and is_coroutine:
 
         @functools.wraps(f)
         async def curry_inner_async(*args, **kwargs):
@@ -171,7 +184,9 @@ def _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs):
 
     @functools.wraps(f)
     def curry_inner(*args, **kwargs):
-        return _curry_helper(f, args_so_far, kwargs_so_far, *args, **kwargs)
+        return _curry_helper(
+            is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
+        )
 
     return curry_inner
 
@@ -186,9 +201,13 @@ def _infer_defaults(f):
 
 
 def curry(f):
+    f_len_args = inspect.signature(f).parameters
+    defaults = _infer_defaults(f)
+    is_coroutine = asyncio.iscoroutinefunction(f)
+
     @functools.wraps(f)
     def indirection(*args, **kwargs):
-        return _curry_helper(f, (), _infer_defaults(f), *args, **kwargs)
+        return _curry_helper(is_coroutine, f_len_args, f, (), defaults, *args, **kwargs)
 
     return indirection
 
@@ -247,20 +266,22 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     """Case with functions.
 
     Handles async iff one of the predicates is async.
-    Raises `KeyError` if no condition matched.
+    Raises `NoConditionMatched` if no condition matched.
     """
+    predicates = (*predicates, functional.just(True))
+    mappers = (
+        *mappers,
+        compose_left(NoConditionMatched, functional.just_raise),
+    )
     return compose_left(
         pair_right(
             compose_left(
-                lazyjuxt(*predicates),
-                _first_truthy_index,
-                functional.check(
-                    toolz.complement(operator.eq(None)), NoConditionMatched,
-                ),
-                mappers.__getitem__,
+                lazyjuxt(*predicates), _first_truthy_index, mappers.__getitem__,
             ),
         ),
-        functional.star(functional.apply),
+        functional.star(
+            lambda value, transformer: functional.apply(value)(transformer),
+        ),
     )
 
 
@@ -273,19 +294,93 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
 case_dict = compose_left(dict.items, tuple, case)
 
 
-def apply_spec(spec):
-    if anymap(asyncio.iscoroutinefunction, spec.values()):
+async def _await_dict(value):
+    if isinstance(value, dict) or isinstance(value, data.frozendict):
+        return await pipe(
+            value,
+            # In case input is a `frozendict`.
+            dict,
+            valmap(_await_dict),
+        )
+    if isinstance(value, Iterable):
+        return await pipe(value, gamla_map(_await_dict), type(value))
+    return await to_awaitable(value)
 
-        async def apply_spec_async(input_value):
-            results = await toolz.pipe(
-                spec,
-                dict.values,
-                curried.map(
-                    toolz.compose_left(functional.apply(input_value), to_awaitable),
-                ),
-                functional.star(asyncio.gather),
+
+def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
+    def map_dict_inner(value):
+        if isinstance(value, dict) or isinstance(value, data.frozendict):
+            return toolz.pipe(
+                value,
+                dict,  # In case input is a `frozendict`.
+                curried.valmap(map_dict(nonterminal_mapper, terminal_mapper)),
+                nonterminal_mapper,
             )
-            return dict(zip(spec.keys(), results))
+        if isinstance(value, Iterable) and not isinstance(value, str):
+            return toolz.pipe(
+                value,
+                curried.map(map_dict(nonterminal_mapper, terminal_mapper)),
+                type(value),  # Keep the same format as input.
+                nonterminal_mapper,
+            )
+        return terminal_mapper(value)
+
+    if _any_is_async([nonterminal_mapper, terminal_mapper]):
+        return compose_left(map_dict_inner, _await_dict)
+
+    return map_dict_inner
+
+
+def _iterdict(d):
+    results = []
+    map_dict(toolz.identity, results.append)(d)
+    return results
+
+
+_has_coroutines = compose_left(_iterdict, _any_is_async)
+
+
+def apply_spec(spec):
+    """
+    >>> spec = {"len": len, "sum": sum}
+    >>> apply_spec(spec)([1,2,3,4,5])
+    {'len': 5, 'sum': 15}
+
+    Notes:
+    - The dictionary can be nested.
+    - Returned function will be async iff any leaf is an async function.
+    """
+    if _has_coroutines(spec):
+
+        async def apply_spec_async(*args, **kwargs):
+            return await map_dict(
+                toolz.identity,
+                compose_left(functional.apply(*args, **kwargs), to_awaitable),
+            )(spec)
 
         return apply_spec_async
-    return toolz.compose_left(functional.apply, curried.valmap(d=spec))
+    return compose_left(
+        functional.apply,
+        lambda applier: map_dict(toolz.identity, applier),
+        functional.apply(spec),
+    )
+
+
+# Stacks functions on top of each other, so will run pairwise on the input.
+# Similar to juxt, only zips with the incoming iterable.
+stack = compose_left(
+    enumerate,
+    map(functional.star(lambda i, f: compose(f, curried.nth(i)))),
+    functional.star(juxt),
+)
+
+
+def bifurcate(*funcs):
+    """Serially runs each function on tee'd copies of `input_generator`."""
+    return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
+
+
+average = toolz.compose_left(
+    bifurcate(sum, toolz.count),
+    toolz.excepts(ZeroDivisionError, functional.star(operator.truediv), lambda _: 0),
+)

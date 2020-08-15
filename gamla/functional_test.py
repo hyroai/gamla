@@ -33,6 +33,18 @@ def test_juxt():
     assert functional_generic.juxt(toolz.identity, lambda x: x + 1)(3) == (3, 4)
 
 
+def test_juxt_zero_params():
+    assert functional_generic.juxt(lambda: 1, lambda: 3)() == (1, 3)
+
+
+async def test_juxt_zero_params_async():
+    async def slow_1():
+        await asyncio.sleep(1)
+        return 1
+
+    assert await functional_generic.juxt(lambda: 3, slow_1)() == (3, 1)
+
+
 async def test_juxt_async():
     async def slow_identity(x):
         await asyncio.sleep(1)
@@ -81,7 +93,7 @@ async def test_allmap_in_async_pipe():
         [True, True, False],
         functional_generic.allmap(_opposite_async),
         # Check that the `pipe` serves a value and not a future.
-        functional.check(lambda x: isinstance(x, bool), AssertionError),
+        functional.check(functional.is_instance(bool), AssertionError),
     )
 
 
@@ -193,3 +205,42 @@ async def test_apply_spec_async():
     assert await functional_generic.apply_spec(
         {"identity": async_identity, "increment": lambda x: x + 1},
     )(1) == {"identity": 1, "increment": 2}
+
+
+async def test_apply_spec_async_recursive():
+    async def async_identity(x):
+        await asyncio.sleep(1)
+        return x
+
+    f = functional_generic.apply_spec(
+        {"identity": {"nested": async_identity}, "increment": lambda x: x + 1},
+    )
+    assert await f(1) == {"identity": {"nested": 1}, "increment": 2}
+
+
+async def test_async_bifurcate():
+    async def async_sum(x):
+        await asyncio.sleep(1)
+        return sum(x)
+
+    def gen():
+        yield 1
+        yield 2
+        yield 3
+
+    average = await functional_generic.pipe(
+        gen(),
+        functional_generic.bifurcate(async_sum, toolz.count),
+        functional.star(operator.truediv),
+    )
+
+    assert average == 2
+
+
+def test_average():
+    def gen():
+        yield 1
+        yield 2
+        yield 3
+
+    assert functional_generic.average(gen()) == 2
