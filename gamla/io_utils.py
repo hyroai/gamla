@@ -166,6 +166,18 @@ def timeout(seconds: float):
 
 
 @functional_generic.curry
-async def get_async(timeout, url):
+async def get_async(timeout: float, url: Text):
     async with httpx.AsyncClient() as client:
         return await client.get(url, timeout=timeout)
+
+
+@functional_generic.curry
+async def post_json_async(timeout: float, url: Text, payload):
+    """Expects payload to be a json object, and the response to be json as well."""
+    async with httpx.AsyncClient() as client:
+        return await client.post(
+            url=url,
+            json=payload,
+            headers={"content_type": "application/json"},
+            timeout=timeout,
+        )
