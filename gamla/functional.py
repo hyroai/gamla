@@ -17,6 +17,8 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
+from gamla import functional_generic
+
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
@@ -358,7 +360,7 @@ def sample(n: int):
     return sample_inner
 
 
-@toolz.curry
+@functional_generic.curry
 def eq_by(f, value_1, value_2):
     return f(value_1) == f(value_2)
 
