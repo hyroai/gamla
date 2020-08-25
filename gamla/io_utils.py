@@ -3,7 +3,7 @@ import datetime
 import functools
 import logging
 import time
-from typing import Text, Dict
+from typing import Dict, Text
 
 import async_timeout
 import httpx

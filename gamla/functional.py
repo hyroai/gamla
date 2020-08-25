@@ -356,3 +356,11 @@ def sample(n: int):
         return random.sample(population, n)
 
     return sample_inner
+
+
+@toolz.curry
+def eq_by(f, value_1, value_2):
+    return f(value_1) == f(value_2)
+
+
+eq_str_ignore_case = eq_by(str.lower)
