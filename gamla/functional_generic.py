@@ -384,3 +384,11 @@ average = toolz.compose_left(
     bifurcate(sum, toolz.count),
     toolz.excepts(ZeroDivisionError, functional.star(operator.truediv), lambda _: 0),
 )
+
+
+@curry
+def eq_by(f, value_1, value_2):
+    return f(value_1) == f(value_2)
+
+
+eq_str_ignore_case = eq_by(str.lower)
