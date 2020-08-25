@@ -3,5 +3,7 @@ python:
   - "3.8.2"
 script:
   - pytest
+before_install:
+  - pip install --upgrade pytest
 install:
   - pip install -e .
