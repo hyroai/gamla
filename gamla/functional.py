@@ -17,6 +17,8 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
+from gamla import functional_utils
+
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
@@ -356,3 +358,11 @@ def sample(n: int):
         return random.sample(population, n)
 
     return sample_inner
+
+
+@functional_utils.curry
+def eq_by(f, value_1, value_2):
+    return f(value_1) == f(value_2)
+
+
+eq_str_ignore_case = eq_by(str.lower)

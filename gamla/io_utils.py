@@ -12,7 +12,7 @@ import requests.adapters
 import toolz
 from requests.packages.urllib3.util import retry
 
-from gamla import functional, functional_generic
+from gamla import functional, functional_utils
 
 
 def _time_to_readable(time_s: float) -> datetime.datetime:
@@ -165,13 +165,13 @@ def timeout(seconds: float):
     return wrapper
 
 
-@functional_generic.curry
+@functional_utils.curry
 async def get_async(timeout: float, url: Text):
     async with httpx.AsyncClient() as client:
         return await client.get(url, timeout=timeout)
 
 
-@functional_generic.curry
+@functional_utils.curry
 async def post_json_with_extra_headers_async(
     extra_headers: Dict[Text, Text], timeout: float, url: Text, payload
 ):
