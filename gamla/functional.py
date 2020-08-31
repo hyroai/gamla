@@ -213,6 +213,10 @@ def wrap_tuple(x):
     return (x,)
 
 
+def wrap_dict(key: Text):
+    return toolz.compose_left(wrap_tuple, prefix(key), wrap_tuple, dict)
+
+
 def invoke(x):
     return x()
 
