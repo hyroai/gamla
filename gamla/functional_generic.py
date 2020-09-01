@@ -2,7 +2,7 @@ import asyncio
 import functools
 import inspect
 import itertools
-from typing import Callable, Iterable, Tuple, Type
+from typing import Callable, Iterable, Text, Tuple, Type
 
 import toolz
 from toolz import curried
@@ -334,3 +334,9 @@ average = toolz.compose_left(
     bifurcate(sum, toolz.count),
     toolz.excepts(ZeroDivisionError, functional.star(operator.truediv), lambda _: 0),
 )
+
+
+def value_to_dict(key: Text):
+    return compose_left(
+        functional.wrap_tuple, functional.prefix(key), functional.wrap_tuple, dict,
+    )
