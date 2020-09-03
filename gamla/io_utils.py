@@ -3,7 +3,7 @@ import datetime
 import functools
 import logging
 import time
-from typing import Dict, Text
+from typing import Callable, Dict, Text
 
 import async_timeout
 import httpx
@@ -12,7 +12,7 @@ import requests.adapters
 import toolz
 from requests.packages.urllib3.util import retry
 
-from gamla import functional, functional_generic
+from gamla import functional, functional_utils
 
 
 def _time_to_readable(time_s: float) -> datetime.datetime:
@@ -80,21 +80,24 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     return session
 
 
-def batch_calls(f):
+@functional_utils.curry
+def batch_calls(max_batch_size: int, f: Callable):
     """Batches single call into one request.
 
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
     that gets a single request.
     """
-    queue = {}
+    queue: Dict = {}
 
     async def make_call():
         await asyncio.sleep(0.1)
         if not queue:
             return
-        promises = tuple(queue.values())
-        requests = tuple(queue.keys())
-        queue.clear()
+        slice_from_queue = tuple(toolz.take(max_batch_size, queue))
+        promises = tuple(map(queue.__getitem__, slice_from_queue))
+        requests = tuple(slice_from_queue)
+        for x in slice_from_queue:
+            del queue[x]
         try:
             for promise, result in zip(promises, await f(requests)):
                 # We check for possible mid-exception or timeouts.
@@ -141,7 +144,7 @@ def queue_identical_calls(f):
     return wrapped
 
 
-@toolz.curry
+@functional_utils.curry
 def throttle(limit, f):
     semaphore = asyncio.Semaphore(limit)
 
@@ -165,13 +168,13 @@ def timeout(seconds: float):
     return wrapper
 
 
-@functional_generic.curry
+@functional_utils.curry
 async def get_async(timeout: float, url: Text):
     async with httpx.AsyncClient() as client:
         return await client.get(url, timeout=timeout)
 
 
-@functional_generic.curry
+@functional_utils.curry
 async def post_json_with_extra_headers_async(
     extra_headers: Dict[Text, Text], timeout: float, url: Text, payload
 ):

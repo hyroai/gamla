@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, AsyncGenerator, Awaitable, Callable, Iterable
 
-from gamla import functional_generic
+from gamla import functional_generic, functional_utils
 
 
 def run_sync(f):
@@ -10,7 +10,7 @@ def run_sync(f):
     return loop.run_until_complete(asyncio.ensure_future(f, loop=loop))
 
 
-@functional_generic.curry
+@functional_utils.curry
 async def amap_ascompleted(
     f: Callable[[Any], Awaitable[Any]], it: Iterable
 ) -> AsyncGenerator[Any, None]:
@@ -18,7 +18,7 @@ async def amap_ascompleted(
         yield await future
 
 
-@functional_generic.curry
+@functional_utils.curry
 async def aexcepts(exception_type, func, handler, x):
     try:
         return await func(x)
@@ -26,7 +26,7 @@ async def aexcepts(exception_type, func, handler, x):
         return handler(error)
 
 
-@functional_generic.curry
+@functional_utils.curry
 async def mapa(f, it):
     async for element in it:
         yield f(element)
