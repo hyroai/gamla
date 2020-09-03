@@ -4,7 +4,7 @@ import pytest
 import toolz
 from toolz.curried import operator
 
-from gamla import functional, functional_generic
+from gamla import functional, functional_generic, functional_utils
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
@@ -20,7 +20,7 @@ def test_do_if():
 
 
 def test_currying():
-    @functional_generic.curry
+    @functional_utils.curry
     def f(x, y, z):
         return x + y + z
 

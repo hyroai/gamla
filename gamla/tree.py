@@ -4,10 +4,10 @@ from typing import Any, Callable
 import toolz
 from toolz import curried
 
-from gamla import functional, functional_generic
+from gamla import functional, functional_generic, functional_utils
 
 
-@functional_generic.curry
+@functional_utils.curry
 def _tree_reduce(get_children, reduce_fn, tree_node):
     return reduce_fn(
         tree_node, map(_tree_reduce(get_children, reduce_fn), get_children(tree_node)),
@@ -72,7 +72,7 @@ _merge_children = functional_generic.compose_left(
 )
 
 
-@functional_generic.curry
+@functional_utils.curry
 def _get_anywhere_reducer(predicate: Callable, node, children):
     if isinstance(node, str):
         return _make_matched_unmatched((), (node,))
@@ -88,7 +88,7 @@ def get_leaves_by_ancestor_predicate(predicate: Callable):
     )
 
 
-@functional_generic.curry
+@functional_utils.curry
 def _filter_leaves_reducer(predicate, node, children):
     if _is_terminal(node) and predicate(node):
         return (node,)
