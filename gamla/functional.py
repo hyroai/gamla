@@ -417,6 +417,6 @@ def countby_many(f, it):
     """
     return toolz.pipe(
         it,
-        curried.mapcat(f),
+        curried.map(f),
         groupby_many_reduce(toolz.identity, lambda x, y: x + 1 if x else 1),
     )
