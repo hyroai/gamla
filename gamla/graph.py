@@ -144,28 +144,6 @@ def groupby_many(f, it):
 
 
 @toolz.curry
-def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
-    """
-    Group a collection by a key function, when the value is given by a reducer function.
-
-    Parameters:
-    key (Callable): Key function (given object in collection outputs key).
-    reducer (Callable): Reducer function (given object in collection outputs new value).
-    seq (Iterable): Collection.
-
-    Returns:
-    Dict[Text, Any]: Dictionary where key has been computed by the `key` function
-    and value by the `reducer` function.
-
-    """
-    result: Dict[Any, Any] = {}
-    for element in seq:
-        for key_result in key(element):
-            result[key_result] = reducer(result.get(key_result, None), element)
-    return result
-
-
-@toolz.curry
 def _has_cycle(sourced, get_neighbors, visited, node):
     if node in sourced:
         return True

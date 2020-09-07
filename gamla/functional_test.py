@@ -244,3 +244,18 @@ def test_average():
         yield 3
 
     assert functional_generic.average(gen()) == 2
+
+
+def test_countby_many():
+    names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
+    assert functional.countby_many(lambda name: (name[0], name[-1]), names) == {
+        "a": 1,
+        "e": 3,
+        "b": 2,
+        "c": 1,
+        "d": 1,
+        "n": 1,
+        "h": 1,
+        "f": 1,
+        "k": 1,
+    }
