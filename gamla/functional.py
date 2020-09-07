@@ -10,7 +10,7 @@ import json
 import logging
 import random
 from concurrent import futures
-from typing import Any, Callable, Iterable, Sequence, Text, TypeVar
+from typing import Any, Callable, Dict, Iterable, Sequence, Text, TypeVar
 
 import heapq_max
 import toolz
@@ -366,3 +366,57 @@ def eq_by(f, value_1, value_2):
 
 
 eq_str_ignore_case = eq_by(str.lower)
+
+
+@toolz.curry
+def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
+    """
+    Group a collection by a key function, when the value is given by a reducer function.
+
+    Parameters:
+    key (Callable): Key function (given object in collection outputs key).
+    reducer (Callable): Reducer function (given object in collection outputs new value).
+    seq (Iterable): Collection.
+
+    Returns:
+    Dict[Text, Any]: Dictionary where key has been computed by the `key` function
+    and value by the `reducer` function.
+
+    """
+    result: Dict[Any, Any] = {}
+    for element in seq:
+        for key_result in key(element):
+            result[key_result] = reducer(result.get(key_result, None), element)
+    return result
+
+
+@functional_utils.curry
+def countby_many(f, it):
+    """Count elements of a collection by a function which returns a tuple of keys
+    for single element.
+
+    Parameters:
+    f (Callable): Key function (given object in collection outputs tuple of keys).
+    it (Iterable): Collection.
+
+    Returns:
+    Dict[Text, Any]: Dictionary where key has been computed by the `f` key function
+    and value is the frequency of this key.
+
+    >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
+    >>> countby_many(lambda name: (name[0], name[-1]), names)
+    {'a': 1,
+     'e': 3,
+     'b': 2,
+     'c': 1,
+     'd': 1,
+     'n': 1,
+     'h': 1,
+     'f': 1,
+     'k': 1}
+    """
+    return toolz.pipe(
+        it,
+        curried.mapcat(f),
+        groupby_many_reduce(toolz.identity, lambda x, y: x + 1 if x else 1),
+    )
