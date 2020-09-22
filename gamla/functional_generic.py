@@ -2,7 +2,7 @@ import asyncio
 import functools
 import inspect
 import itertools
-from typing import Callable, Iterable, Text, Tuple, Type, TypeVar
+from typing import Any, Callable, Iterable, Text, Tuple, Type, TypeVar, Union
 
 import toolz
 from toolz import curried
@@ -375,7 +375,11 @@ def reduce_curried(
 
 
 @toolz.curry
-def excepts(exception, handler, function):
+def excepts(
+    exception: Union[Tuple[Exception, ...], Exception],
+    handler: Callable[[Exception], Any],
+    function: Callable,
+):
     if asyncio.iscoroutinefunction(function):
 
         @functools.wraps(function)
