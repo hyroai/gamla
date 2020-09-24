@@ -2,7 +2,7 @@ import asyncio
 import functools
 import inspect
 import itertools
-from typing import Callable, Iterable, Text, Tuple, Type
+from typing import Any, Callable, Iterable, Text, Tuple, Type, TypeVar, Union
 
 import toolz
 from toolz import curried
@@ -226,7 +226,9 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     return compose_left(
         pair_right(
             compose_left(
-                lazyjuxt(*predicates), _first_truthy_index, mappers.__getitem__,
+                lazyjuxt(*predicates),
+                _first_truthy_index,
+                mappers.__getitem__,
             ),
         ),
         functional.star(
@@ -338,5 +340,55 @@ average = toolz.compose_left(
 
 def value_to_dict(key: Text):
     return compose_left(
-        functional.wrap_tuple, functional.prefix(key), functional.wrap_tuple, dict,
+        functional.wrap_tuple,
+        functional.prefix(key),
+        functional.wrap_tuple,
+        dict,
     )
+
+
+_R = TypeVar("_R")
+_E = TypeVar("_E")
+
+
+def reduce_curried(
+    reducer: Callable[[_R, _E], _R],
+    initial_value: _R,
+) -> Callable[[Iterable[_E]], _R]:
+    if asyncio.iscoroutinefunction(reducer):
+
+        async def reduce_async(elements):
+            state = initial_value
+            for element in elements:
+                state = await reducer(state, element)
+            return state
+
+        return reduce_async
+
+    def reduce(elements):
+        state = initial_value
+        for element in elements:
+            state = reducer(state, element)
+        return state
+
+    return reduce
+
+
+@toolz.curry
+def excepts(
+    exception: Union[Tuple[Exception, ...], Exception],
+    handler: Callable[[Exception], Any],
+    function: Callable,
+):
+    if asyncio.iscoroutinefunction(function):
+
+        @functools.wraps(function)
+        async def excepts(*args, **kwargs):
+            try:
+                return await function(*args, **kwargs)
+            except exception as error:
+                return handler(error)
+
+        return excepts
+
+    return toolz.excepts(exception, function, handler)
