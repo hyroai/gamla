@@ -4,14 +4,14 @@ import pytest
 import toolz
 from toolz.curried import operator
 
-from gamla import functional, functional_generic, functional_utils
+from gamla import currying, functional, functional_generic
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
 
 
 async def _opposite_async(x):
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.01)
     return not x
 
 
@@ -20,7 +20,7 @@ def test_do_if():
 
 
 def test_currying():
-    @functional_utils.curry
+    @currying.curry
     def f(x, y, z):
         return x + y + z
 
@@ -39,7 +39,7 @@ def test_juxt_zero_params():
 
 async def test_juxt_zero_params_async():
     async def slow_1():
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.01)
         return 1
 
     assert await functional_generic.juxt(lambda: 3, slow_1)() == (3, 1)
@@ -47,7 +47,7 @@ async def test_juxt_zero_params_async():
 
 async def test_juxt_async():
     async def slow_identity(x):
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.01)
         return x
 
     assert await functional_generic.juxt(toolz.identity, slow_identity)(3) == (3, 3)
@@ -99,20 +99,30 @@ async def test_allmap_in_async_pipe():
 
 async def test_anymap_in_pipe():
     assert not functional_generic.pipe(
-        [True, True, False], functional_generic.allmap(lambda x: not x),
+        [True, True, False],
+        functional_generic.allmap(lambda x: not x),
     )
 
 
 async def test_itemmap_async_sync_mixed():
-    assert await functional_generic.pipe(
-        {True: True},
-        functional_generic.itemmap(
-            functional_generic.compose(tuple, functional_generic.map(_opposite_async)),
-        ),
-        functional_generic.itemmap(
-            functional_generic.compose(tuple, functional_generic.map(lambda x: not x)),
-        ),
-    ) == {True: True}
+    assert (
+        await functional_generic.pipe(
+            {True: True},
+            functional_generic.itemmap(
+                functional_generic.compose(
+                    tuple,
+                    functional_generic.map(_opposite_async),
+                ),
+            ),
+            functional_generic.itemmap(
+                functional_generic.compose(
+                    tuple,
+                    functional_generic.map(lambda x: not x),
+                ),
+            ),
+        )
+        == {True: True}
+    )
 
 
 async def test_keymap_async_curried():
@@ -131,12 +141,15 @@ async def _is_even_async(x):
 
 
 async def test_filter_curried_async_sync_mix():
-    assert await functional_generic.pipe(
-        [1, 2, 3, 4],
-        functional_generic.filter(_is_even_async),
-        functional_generic.map(lambda x: x + 10),
-        tuple,
-    ) == (12, 14)
+    assert (
+        await functional_generic.pipe(
+            [1, 2, 3, 4],
+            functional_generic.filter(_is_even_async),
+            functional_generic.map(lambda x: x + 10),
+            tuple,
+        )
+        == (12, 14)
+    )
 
 
 async def test_wrap_str():
@@ -168,48 +181,70 @@ async def test_case_async():
 
 def test_partition_after():
     assert functional.partition_after(lambda x: x == 1, []) == ()
-    assert tuple(
-        functional.partition_after(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1]),
-    ) == ((1,), (1,), (2, 2, 1), (1,), (2, 1), (1,), (1,))
+    assert (
+        tuple(
+            functional.partition_after(
+                lambda x: x == 1,
+                [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+            ),
+        )
+        == ((1,), (1,), (2, 2, 1), (1,), (2, 1), (1,), (1,))
+    )
 
 
 def test_partition_before():
     assert functional.partition_before(lambda x: x == 1, []) == ()
-    assert tuple(
-        functional.partition_before(
-            lambda x: x == 1, [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
-        ),
-    ) == ((3,), (1,), (1, 2, 2), (1,), (1, 2), (1,), (1,), (1,))
+    assert (
+        tuple(
+            functional.partition_before(
+                lambda x: x == 1,
+                [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+            ),
+        )
+        == ((3,), (1,), (1, 2, 2), (1,), (1, 2), (1,), (1,), (1,))
+    )
 
 
 async def test_drop_last_while():
     assert tuple(functional.drop_last_while(lambda x: x == 1, [])) == ()
     assert tuple(functional.drop_last_while(lambda x: x == 1, [1])) == ()
     assert tuple(functional.drop_last_while(lambda x: x == 1, [2])) == (2,)
-    assert tuple(
-        functional.drop_last_while(lambda x: x == 1, [1, 1, 2, 2, 1, 1, 2, 1, 1, 1]),
-    ) == (1, 1, 2, 2, 1, 1, 2)
+    assert (
+        tuple(
+            functional.drop_last_while(
+                lambda x: x == 1,
+                [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+            ),
+        )
+        == (1, 1, 2, 2, 1, 1, 2)
+    )
 
 
 def test_apply_spec():
-    assert functional_generic.apply_spec(
-        {"identity": toolz.identity, "increment": lambda x: x + 1},
-    )(1) == {"identity": 1, "increment": 2}
+    assert (
+        functional_generic.apply_spec(
+            {"identity": toolz.identity, "increment": lambda x: x + 1},
+        )(1)
+        == {"identity": 1, "increment": 2}
+    )
 
 
 async def test_apply_spec_async():
     async def async_identity(x):
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.01)
         return x
 
-    assert await functional_generic.apply_spec(
-        {"identity": async_identity, "increment": lambda x: x + 1},
-    )(1) == {"identity": 1, "increment": 2}
+    assert (
+        await functional_generic.apply_spec(
+            {"identity": async_identity, "increment": lambda x: x + 1},
+        )(1)
+        == {"identity": 1, "increment": 2}
+    )
 
 
 async def test_apply_spec_async_recursive():
     async def async_identity(x):
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.01)
         return x
 
     f = functional_generic.apply_spec(
@@ -220,7 +255,7 @@ async def test_apply_spec_async_recursive():
 
 async def test_async_bifurcate():
     async def async_sum(x):
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.01)
         return sum(x)
 
     def gen():
@@ -259,3 +294,70 @@ def test_countby_many():
         "f": 1,
         "k": 1,
     }
+
+
+async def test_reduce_async():
+    async def slow_addition(x, y):
+        asyncio.sleep(0.1)
+        return x + y
+
+    assert await (functional_generic.reduce_curried(slow_addition, 0)([1, 2, 3])) == 6
+
+
+def test_reduce_aync():
+    def addition(x, y):
+        asyncio.sleep(0.01)
+        return x + y
+
+    assert functional_generic.reduce_curried(addition, 0)([1, 2, 3]) == 6
+
+
+def test_excepts_sync():
+    class SomeException(Exception):
+        pass
+
+    assert (
+        functional_generic.excepts(
+            SomeException,
+            functional.just(None),
+            toolz.identity,
+        )(1)
+        == 1
+    )
+    assert (
+        functional_generic.excepts(
+            SomeException,
+            functional.just(None),
+            functional.make_raise(SomeException),
+        )(1)
+        is None
+    )
+
+
+async def test_excepts_async():
+    class SomeException(Exception):
+        pass
+
+    async def slow_raise(x):
+        raise SomeException
+
+    async def slow_identity(x):
+        await asyncio.sleep(0.01)
+        return x
+
+    assert (
+        await functional_generic.excepts(
+            SomeException,
+            functional.just(None),
+            slow_identity,
+        )(1)
+        == 1
+    )
+    assert (
+        await functional_generic.excepts(
+            SomeException,
+            functional.just(None),
+            slow_raise,
+        )(1)
+        is None
+    )

@@ -17,7 +17,7 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional_utils
+from gamla import currying
 
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
@@ -33,7 +33,8 @@ def do_if(condition, fun):
 
 def check(condition, exception):
     return do_if(
-        toolz.complement(condition), toolz.compose_left(exception, just_raise),
+        toolz.complement(condition),
+        toolz.compose_left(exception, just_raise),
     )
 
 
@@ -92,7 +93,9 @@ def translate_exception(func, exc1, exc2):
 def compute_stable_json_hash(item) -> Text:
     return hashlib.sha1(
         json.dumps(
-            json.loads(item.to_json()), sort_keys=True, separators=(",", ":"),
+            json.loads(item.to_json()),
+            sort_keys=True,
+            separators=(",", ":"),
         ).encode("utf-8"),
     ).hexdigest()
 
@@ -256,13 +259,17 @@ def update_in(d, keys, func, default=None, factory=dict):
 
 @toolz.curry
 def dataclass_transform(
-    attr_name: Text, attr_transformer: Callable[[Any], Any], dataclass_instance,
+    attr_name: Text,
+    attr_transformer: Callable[[Any], Any],
+    dataclass_instance,
 ):
     return dataclasses.replace(
         dataclass_instance,
         **{
             attr_name: toolz.pipe(
-                dataclass_instance, operator.attrgetter(attr_name), attr_transformer,
+                dataclass_instance,
+                operator.attrgetter(attr_name),
+                attr_transformer,
             ),
         },
     )
@@ -279,7 +286,9 @@ _E = TypeVar("_E")
 
 @toolz.curry
 def reduce(
-    reducer: Callable[[_R, _E], _R], initial_value: _R, elements: Iterable[_E],
+    reducer: Callable[[_R, _E], _R],
+    initial_value: _R,
+    elements: Iterable[_E],
 ) -> _R:
     return functools.reduce(reducer, elements, initial_value)
 
@@ -314,13 +323,18 @@ def apply(*args, **kwargs):
 @toolz.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
     return toolz.pipe(
-        seq, reversed, toolz.curry(itertools.dropwhile)(predicate), tuple, reversed,
+        seq,
+        reversed,
+        toolz.curry(itertools.dropwhile)(predicate),
+        tuple,
+        reversed,
     )
 
 
 @toolz.curry
 def partition_after(
-    predicate: Callable[[Any], bool], seq: Sequence,
+    predicate: Callable[[Any], bool],
+    seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,))
@@ -333,7 +347,8 @@ def partition_after(
 
 @toolz.curry
 def partition_before(
-    predicate: Callable[[Any], bool], seq: Sequence,
+    predicate: Callable[[Any], bool],
+    seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,)) if not a or predicate(b) else (*a[:-1], (*a[-1], b)),
@@ -344,7 +359,8 @@ def partition_before(
 
 def get_all_n_grams(seq):
     return toolz.pipe(
-        range(1, len(seq) + 1), curried.mapcat(curried.sliding_window(seq=seq)),
+        range(1, len(seq) + 1),
+        curried.mapcat(curried.sliding_window(seq=seq)),
     )
 
 
@@ -360,7 +376,7 @@ def sample(n: int):
     return sample_inner
 
 
-@functional_utils.curry
+@currying.curry
 def eq_by(f, value_1, value_2):
     return f(value_1) == f(value_2)
 
@@ -390,7 +406,7 @@ def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
     return result
 
 
-@functional_utils.curry
+@currying.curry
 def countby_many(f, it):
     """Count elements of a collection by a function which returns a tuple of keys
     for single element.
