@@ -8,7 +8,7 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import data, functional
+from gamla import currying, data, functional
 
 
 def compose_left(*funcs):
@@ -76,12 +76,12 @@ def gamla_map(*args):
 map = gamla_map
 
 
-@toolz.curry
+@currying.curry
 def after(f1, f2):
     return compose(f1, f2)
 
 
-@toolz.curry
+@currying.curry
 def before(f1, f2):
     return compose_left(f1, f2)
 
@@ -374,7 +374,7 @@ def reduce_curried(
     return reduce
 
 
-@toolz.curry
+@currying.curry
 def excepts(
     exception: Union[Tuple[Exception, ...], Exception],
     handler: Callable[[Exception], Any],

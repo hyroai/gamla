@@ -83,7 +83,7 @@ def make_raise(exception):
     return ignore_input(inner)
 
 
-@toolz.curry
+@currying.curry
 def translate_exception(func, exc1, exc2):
     """`func` is assumed to be unary."""
     return toolz.excepts(exc1, func, make_raise(exc2))
@@ -112,7 +112,7 @@ def star(function: Callable) -> Callable:
     return star_and_run
 
 
-@toolz.curry
+@currying.curry
 def _assert_f_output_on_inp(f, inp):
     assert f(inp)
 
@@ -121,7 +121,7 @@ def assert_that(f):
     return curried.do(_assert_f_output_on_inp(f))
 
 
-@toolz.curry
+@currying.curry
 def pmap(f, n_workers, it):
     # The `tuple` is for callers convenience (even without it, the pool is eager).
     return tuple(futures.ThreadPoolExecutor(max_workers=n_workers).map(f, it))
@@ -150,7 +150,7 @@ def make_call_key(args, kwargs):
     return key
 
 
-@toolz.curry
+@currying.curry
 def top(iterable, key=toolz.identity):
     """Generates elements from max to min."""
     h = []
@@ -161,7 +161,7 @@ def top(iterable, key=toolz.identity):
         yield toolz.nth(2, heapq_max.heappop_max(h))
 
 
-@toolz.curry
+@currying.curry
 def bottom(iterable, key=toolz.identity):
     """Generates elements from min to max."""
     h = []
@@ -184,27 +184,27 @@ def profileit(func):
     return wrapper
 
 
-@toolz.curry
+@currying.curry
 def inside(val, container):
     return val in container
 
 
-@toolz.curry
+@currying.curry
 def len_equals(length: int, seq):
     return len(seq) == length
 
 
-@toolz.curry
+@currying.curry
 def len_greater(length: int, seq):
     return len(seq) > length
 
 
-@toolz.curry
+@currying.curry
 def len_smaller(length: int, seq):
     return len(seq) < length
 
 
-@toolz.curry
+@currying.curry
 def skip(n, seq):
     for i, x in enumerate(seq):
         if i < n:
@@ -220,12 +220,12 @@ def invoke(x):
     return x()
 
 
-@toolz.curry
+@currying.curry
 def assoc_in(d, keys, value, factory=dict):
     return update_in(d, keys, lambda x: value, value, factory)
 
 
-@toolz.curry
+@currying.curry
 def update_in(d, keys, func, default=None, factory=dict):
     ks = iter(keys)
     k = next(ks)
@@ -257,7 +257,7 @@ def update_in(d, keys, func, default=None, factory=dict):
     return rv
 
 
-@toolz.curry
+@currying.curry
 def dataclass_transform(
     attr_name: Text,
     attr_transformer: Callable[[Any], Any],
@@ -275,7 +275,7 @@ def dataclass_transform(
     )
 
 
-@toolz.curry
+@currying.curry
 def dataclass_replace(attr_name: Text, attr_value: Any, dataclass_instance):
     return dataclasses.replace(dataclass_instance, **{attr_name: attr_value})
 
@@ -284,7 +284,7 @@ _R = TypeVar("_R")
 _E = TypeVar("_E")
 
 
-@toolz.curry
+@currying.curry
 def reduce(
     reducer: Callable[[_R, _E], _R],
     initial_value: _R,
@@ -293,22 +293,22 @@ def reduce(
     return functools.reduce(reducer, elements, initial_value)
 
 
-@toolz.curry
+@currying.curry
 def suffix(val, it: Iterable):
     return itertools.chain(it, (val,))
 
 
-@toolz.curry
+@currying.curry
 def prefix(val, it: Iterable):
     return itertools.chain((val,), it)
 
 
-@toolz.curry
+@currying.curry
 def concat_with(new_it: Iterable, it: Iterable):
     return itertools.chain(it, new_it)
 
 
-@toolz.curry
+@currying.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
 
@@ -320,18 +320,18 @@ def apply(*args, **kwargs):
     return apply_inner
 
 
-@toolz.curry
+@currying.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
     return toolz.pipe(
         seq,
         reversed,
-        toolz.curry(itertools.dropwhile)(predicate),
+        currying.curry(itertools.dropwhile)(predicate),
         tuple,
         reversed,
     )
 
 
-@toolz.curry
+@currying.curry
 def partition_after(
     predicate: Callable[[Any], bool],
     seq: Sequence,
@@ -345,7 +345,7 @@ def partition_after(
     )
 
 
-@toolz.curry
+@currying.curry
 def partition_before(
     predicate: Callable[[Any], bool],
     seq: Sequence,
@@ -364,7 +364,7 @@ def get_all_n_grams(seq):
     )
 
 
-@toolz.curry
+@currying.curry
 def is_instance(the_type, the_value):
     return type(the_value) == the_type
 
@@ -384,7 +384,7 @@ def eq_by(f, value_1, value_2):
 eq_str_ignore_case = eq_by(str.lower)
 
 
-@toolz.curry
+@currying.curry
 def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
     """
     Group a collection by a key function, when the value is given by a reducer function.

@@ -8,7 +8,7 @@ import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional, functional_generic
+from gamla import currying, functional, functional_generic
 
 
 def _immutable(self, *args, **kws):
@@ -53,9 +53,11 @@ def _freeze_nonterminal(v):
 freeze_deep = functional_generic.map_dict(_freeze_nonterminal, toolz.identity)
 
 
-@toolz.curry
+@currying.curry
 def dict_to_csv(
-    table: Dict[Any, Tuple], titles: Optional[Tuple] = None, separator: Text = "\t",
+    table: Dict[Any, Tuple],
+    titles: Optional[Tuple] = None,
+    separator: Text = "\t",
 ) -> Text:
     return toolz.pipe(
         table,
@@ -71,9 +73,10 @@ dict_to_tuple_of_tuples = toolz.compose_left(
 )
 
 
-@toolz.curry
+@currying.curry
 def tuple_of_tuples_to_csv(
-    tuple_of_tuples: Tuple[Tuple[Any], ...], separator: Text = "\t",
+    tuple_of_tuples: Tuple[Tuple[Any], ...],
+    separator: Text = "\t",
 ) -> Text:
     return toolz.pipe(
         tuple_of_tuples,
@@ -90,10 +93,10 @@ _field_getters = toolz.compose_left(
 
 
 def match(dataclass_pattern):
-    """ creates a function that returns true if input matches dataclass_pattern.
-     Use data.Any as wildcard for field value.
-     Supports recursive patterns.
-     """
+    """creates a function that returns true if input matches dataclass_pattern.
+    Use data.Any as wildcard for field value.
+    Supports recursive patterns.
+    """
     # pattern -> ( (getter,...), pattern) -> ((getter,...), (value,...)) ->
     # ((getter,...), (eq(value),...)) -> alljuxt( compose_left(getter,eq(value)),... )
     return toolz.pipe(
