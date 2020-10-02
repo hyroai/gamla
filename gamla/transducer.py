@@ -1,5 +1,5 @@
 import functools
-from typing import Callable, Iterable, TypeVar
+from typing import Any, Callable, Iterable, TypeVar
 
 from gamla import currying, functional, functional_generic
 
@@ -30,12 +30,12 @@ def transjuxt(*funcs: Iterable[Transducer]) -> Transducer:
 
 
 @currying.curry
-def mapping(f, step: Reducer):
+def mapping(f: Callable[[Any], Any], step: Reducer):
     return lambda s, current: step(s, f(current))
 
 
 @currying.curry
-def filtering(f, step: Reducer):
+def filtering(f: Callable[[Any], bool], step: Reducer):
     return lambda s, x: step(s, x) if f(x) else s
 
 
@@ -43,5 +43,5 @@ def catting(step: Reducer):
     return lambda s, x: functools.reduce(step, x, s)
 
 
-def mapcatting(f):
+def mapcatting(f: Callable[[Any], Iterable[Any]]):
     return functional_generic.compose_left(mapping(f), catting)
