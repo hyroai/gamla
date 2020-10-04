@@ -9,6 +9,10 @@ Reducer = Callable[[_S, _X], _S]
 Transducer = Callable[[Reducer], Reducer]
 
 
+def transduce(transformation, step, initial, collection):
+    return functools.reduce(transformation(step), collection, initial)
+
+
 def _transform_nth(n: int, f: Reducer):
     @currying.curry
     def transform_nth(step, state, x):
@@ -29,19 +33,17 @@ def transjuxt(*funcs: Iterable[Transducer]) -> Transducer:
     )
 
 
-@currying.curry
-def mapping(f: Callable[[Any], Any], step: Reducer):
-    return lambda s, current: step(s, f(current))
+def map(f: Callable[[Any], Any]):
+    return lambda step: lambda s, current: step(s, f(current))
 
 
-@currying.curry
-def filtering(f: Callable[[Any], bool], step: Reducer):
-    return lambda s, x: step(s, x) if f(x) else s
+def filter(f: Callable[[Any], bool]):
+    return lambda step: lambda s, x: step(s, x) if f(x) else s
 
 
-def catting(step: Reducer):
+def concat(step: Reducer):
     return lambda s, x: functools.reduce(step, x, s)
 
 
-def mapcatting(f: Callable[[Any], Iterable[Any]]):
-    return functional_generic.compose_left(mapping(f), catting)
+def mapcat(f: Callable[[Any], Iterable[Any]]):
+    return functional_generic.compose_left(map(f), concat)
