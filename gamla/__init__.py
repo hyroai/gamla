@@ -1,6 +1,5 @@
 # flake8: noqa
 
-from . import transducer
 from .currying import *
 from .data import *
 from .functional import *
