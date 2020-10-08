@@ -2,9 +2,14 @@ from gamla import graph
 
 
 def test_get_connectivity_components():
-    assert list(
-        graph.get_connectivity_components({1: [2], 2: [1, 3], 3: [2], 4: [5], 5: [4]}),
-    ) == [frozenset({1, 2, 3}), frozenset({4, 5})]
+    assert (
+        list(
+            graph.get_connectivity_components(
+                {1: [2], 2: [1, 3], 3: [2], 4: [5], 5: [4]},
+            ),
+        )
+        == [frozenset({1, 2, 3}), frozenset({4, 5})]
+    )
 
 
 def test_cliques_to_graph():

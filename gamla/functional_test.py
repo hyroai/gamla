@@ -2,6 +2,7 @@ import asyncio
 
 import pytest
 import toolz
+from toolz import curried
 from toolz.curried import operator
 
 from gamla import currying, functional, functional_generic
@@ -360,4 +361,92 @@ async def test_excepts_async():
             slow_raise,
         )(1)
         is None
+    )
+
+
+def test_find():
+    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
+
+    assert (
+        functional_generic.find(
+            functional_generic.compose_left(curried.get("key"), operator.eq(2)),
+            iter(seq),
+        )
+        == {"key": 2}
+    )
+
+    assert (
+        functional_generic.find(
+            functional_generic.compose_left(curried.get("key"), operator.eq(4)),
+            iter(seq),
+        )
+        is None
+    )
+
+
+def test_find_index():
+    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
+
+    assert (
+        functional_generic.find_index(
+            functional_generic.compose_left(curried.get("key"), operator.eq(2)),
+            iter(seq),
+        )
+        == 1
+    )
+
+    assert (
+        functional_generic.find_index(
+            functional_generic.compose_left(curried.get("key"), operator.eq(4)),
+            iter(seq),
+        )
+        == -1
+    )
+
+
+def test_take_while():
+    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
+
+    assert (
+        tuple(
+            functional.take_while(
+                functional_generic.compose_left(curried.get("key"), operator.ne(3)),
+                iter(seq),
+            ),
+        )
+        == ({"key": 1}, {"key": 2})
+    )
+
+    assert (
+        tuple(
+            functional.take_while(
+                functional_generic.compose_left(curried.get("key"), operator.ne(4)),
+                iter(seq),
+            ),
+        )
+        == ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
+    )
+
+
+def test_take_last_while():
+    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2}, {"key": 4}, {"key": 5})
+
+    assert (
+        tuple(
+            functional.take_last_while(
+                functional_generic.compose_left(curried.get("key"), operator.ne(2)),
+                iter(seq),
+            ),
+        )
+        == ({"key": 4}, {"key": 5})
+    )
+
+    assert (
+        tuple(
+            functional.take_last_while(
+                functional_generic.compose_left(curried.get("key"), operator.ne(6)),
+                iter(seq),
+            ),
+        )
+        == ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2}, {"key": 4}, {"key": 5})
     )
