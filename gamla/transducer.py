@@ -1,4 +1,5 @@
 import functools
+import itertools
 from typing import Any, Callable, Iterable, TypeVar
 
 import toolz
@@ -55,12 +56,25 @@ def concat(step: Reducer):
 
 
 def mapcat(f: Callable[[Any], Iterable[Any]]):
-    return functional_generic.compose_left(map(f), concat)
+    return functional_generic.compose(map(f), concat)
 
 
 def groupby(key: Callable[[Any], Any], reducer: Reducer, initial):
+    return groupby_many(
+        functional_generic.compose_left(key, functional.wrap_tuple),
+        reducer,
+        initial,
+    )
+
+
+def groupby_many(keys: Callable[[Any], Iterable], reducer: Reducer, initial):
     return functional_generic.compose(
-        map(functional_generic.pair_with(key)),
+        mapcat(
+            functional_generic.compose_left(
+                functional_generic.juxt(keys, functional.wrap_tuple),
+                functional.star(itertools.product),
+            ),
+        ),
         lambda step: lambda s, x: step(
             toolz.assoc(s, x[0], reducer(s.get(x[0], initial), x[1])),
             x,
