@@ -51,7 +51,7 @@ def test_composition_of_3_functions():
 
 def test_juxt():
     s1, s2, s3 = transducer.transduce(
-        transducer.transjuxt(
+        transducer.juxt(
             _increment(_append_to_iterable),
             _increment(_append_to_iterable),
             lambda s, x: x + s,
@@ -63,3 +63,15 @@ def test_juxt():
     assert tuple(s1) == (2, 3, 4)
     assert tuple(s2) == (2, 3, 4)
     assert s3 == 6
+
+
+def test_groupby():
+    assert (
+        transducer.transduce(
+            transducer.groupby(lambda x: x % 2 == 0, lambda s, _: s + 1, 0),
+            lambda s, _: s,
+            {},
+            [1, 2, 3, 4, 5],
+        )
+        == {True: 2, False: 3}
+    )

@@ -1,6 +1,8 @@
 import functools
 from typing import Any, Callable, Iterable, TypeVar
 
+import toolz
+
 from gamla import currying, functional, functional_generic
 
 _S = TypeVar("_S")
@@ -24,7 +26,7 @@ def _transform_nth(n: int, f: Reducer):
     return transform_nth
 
 
-def transjuxt(*funcs: Iterable[Transducer]) -> Transducer:
+def juxt(*funcs: Iterable[Transducer]) -> Transducer:
     return functional_generic.pipe(
         funcs,
         enumerate,
@@ -47,3 +49,13 @@ def concat(step: Reducer):
 
 def mapcat(f: Callable[[Any], Iterable[Any]]):
     return functional_generic.compose_left(map(f), concat)
+
+
+def groupby(key: Callable[[Any], Any], reducer: Reducer, initial):
+    return functional_generic.compose(
+        map(functional_generic.pair_with(key)),
+        lambda step: lambda s, x: step(
+            toolz.assoc(s, x[0], reducer(s.get(x[0], initial), x[1])),
+            x,
+        ),
+    )
