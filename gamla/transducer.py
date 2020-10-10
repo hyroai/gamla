@@ -2,8 +2,9 @@ import functools
 from typing import Any, Callable, Iterable, TypeVar
 
 import toolz
+from toolz import curried
 
-from gamla import currying, functional, functional_generic
+from gamla import functional, functional_generic
 
 _S = TypeVar("_S")
 _X = TypeVar("_X")
@@ -15,24 +16,30 @@ def transduce(transformation, step, initial, collection):
     return functools.reduce(transformation(step), collection, initial)
 
 
-def _transform_nth(n: int, f: Reducer):
-    @currying.curry
-    def transform_nth(step, state, x):
-        new_state_specific = f(state[n], x)
-        new_state = (*state[:n], new_state_specific, *state[n + 1 :])
-        final_state = step(new_state, x)
-        return final_state
-
-    return transform_nth
-
-
-def juxt(*funcs: Iterable[Transducer]) -> Transducer:
-    return functional_generic.pipe(
-        funcs,
-        enumerate,
-        functional_generic.map(functional.star(_transform_nth)),
-        functional.star(functional_generic.compose),
+def _transform_by_key(injector):
+    return lambda key, reducer: lambda step: lambda s, x: step(
+        injector(s, key, reducer(s[key], x)),
+        x,
     )
+
+
+def _replace_index(the_tuple, index, value):
+    return (*the_tuple[:index], value, *the_tuple[index + 1 :])
+
+
+apply_spec = functional_generic.compose_left(
+    dict.items,
+    curried.map(functional.star(_transform_by_key(toolz.assoc))),
+    functional.star(functional_generic.compose),
+)
+
+
+juxt = functional_generic.compose_left(
+    functional.pack,
+    enumerate,
+    curried.map(functional.star(_transform_by_key(_replace_index))),
+    functional.star(functional_generic.compose),
+)
 
 
 def map(f: Callable[[Any], Any]):
