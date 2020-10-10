@@ -47,19 +47,18 @@ def test_composition_of_3_functions():
 
 
 def test_juxt():
-    s1, s2, s3 = transducer.transduce(
-        transducer.juxt(
-            _increment(_append_to_tuple),
-            _increment(_append_to_tuple),
-            lambda s, x: x + s,
-        ),
-        lambda s, _: s,
-        ((), (), 0),
-        [1, 2, 3],
+    assert (
+        transducer.transduce(
+            transducer.juxt(
+                _increment(_append_to_tuple),
+                lambda s, x: x + s,
+            ),
+            lambda s, _: s,
+            ((), 0),
+            [1, 2, 3],
+        )
+        == ((2, 3, 4), 6)
     )
-    assert tuple(s1) == (2, 3, 4)
-    assert tuple(s2) == (2, 3, 4)
-    assert s3 == 6
 
 
 def test_apply_spec():
@@ -67,16 +66,15 @@ def test_apply_spec():
         transducer.transduce(
             transducer.apply_spec(
                 {
-                    "incremented1": _increment(_append_to_tuple),
-                    "incremented2": _increment(_append_to_tuple),
+                    "incremented": _increment(_append_to_tuple),
                     "sum": lambda s, x: x + s,
                 },
             ),
             lambda s, _: s,
-            {"incremented1": (), "incremented2": (), "sum": 0},
+            {"incremented": (), "sum": 0},
             [1, 2, 3],
         )
-        == {"incremented1": (2, 3, 4), "incremented2": (2, 3, 4), "sum": 6}
+        == {"incremented": (2, 3, 4), "sum": 6}
     )
 
 
