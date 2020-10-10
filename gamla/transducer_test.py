@@ -83,10 +83,14 @@ def test_apply_spec():
 def test_groupby():
     assert (
         transducer.transduce(
-            transducer.groupby(lambda x: x % 2 == 0, lambda s, _: s + 1, 0),
+            transducer.groupby(
+                lambda x: "even" if x % 2 == 0 else "odd",
+                lambda s, _: s + 1,
+                0,
+            ),
             lambda s, _: s,
             {},
             [1, 2, 3, 4, 5],
         )
-        == {True: 2, False: 3}
+        == {"even": 2, "odd": 3}
     )
