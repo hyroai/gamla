@@ -78,13 +78,11 @@ def test_apply_spec():
     )
 
 
-def test_groupby():
+def test_countby():
     assert (
         transducer.transduce(
-            transducer.groupby(
-                lambda x: "even" if x % 2 == 0 else "odd",
-                lambda s, _: s + 1,
-                0,
+            transducer.count_by(
+                lambda x: ("even",) if x % 2 == 0 else ("odd",),
             ),
             lambda s, _: s,
             {},

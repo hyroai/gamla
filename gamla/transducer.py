@@ -80,3 +80,7 @@ def groupby_many(keys: Callable[[Any], Iterable], reducer: Reducer, initial):
             x,
         ),
     )
+
+
+def count_by(keys: Callable[[Any], Iterable]):
+    return groupby_many(keys, lambda s, _: s + 1, 0)
