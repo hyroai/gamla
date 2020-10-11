@@ -22,6 +22,10 @@ from gamla import currying
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
+def pack(*stuff):
+    return stuff
+
+
 def do_if(condition, fun):
     def inner_do_if(x):
         if condition(x):
