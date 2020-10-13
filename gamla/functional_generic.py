@@ -392,3 +392,25 @@ def excepts(
         return excepts
 
     return toolz.excepts(exception, function, handler)
+
+
+find = _compose_over_binary_curried(
+    compose(
+        after(excepts(StopIteration, functional.just(None), toolz.first)),
+        filter,
+    ),
+)
+
+find_index = _compose_over_binary_curried(
+    compose(
+        after(
+            compose_left(
+                functional.star(find),
+                ternary(toolz.identity, toolz.first, functional.just(-1)),
+            ),
+        ),
+        currying.curry(
+            lambda pred, seq: (compose_left(toolz.second, pred), enumerate(seq)),
+        ),
+    ),
+)

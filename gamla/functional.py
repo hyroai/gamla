@@ -440,3 +440,25 @@ def countby_many(f, it):
         curried.map(f),
         groupby_many_reduce(toolz.identity, lambda x, y: x + 1 if x else 1),
     )
+
+
+@currying.curry
+def take_while(pred, seq):
+    for x in seq:
+        if not pred(x):
+            return
+        yield x
+
+
+@currying.curry
+def take_last_while(pred, seq):
+    return toolz.pipe(
+        seq,
+        reduce(
+            lambda acc, elem: suffix(elem, acc) if pred(elem) else (),
+            (),
+        ),
+    )
+
+
+attrgetter = currying.curry(lambda attr, obj: operator.attrgetter(attr)(obj))
