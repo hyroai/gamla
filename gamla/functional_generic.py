@@ -215,7 +215,7 @@ class NoConditionMatched(Exception):
 def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     """Case with functions.
 
-    Handles async iff one of the predicates is async.
+    Handles async iff one of the predicates or one of the mappers is async.
     Raises `NoConditionMatched` if no condition matched.
     """
     predicates = (*predicates, functional.just(True))
@@ -229,6 +229,7 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
                 lazyjuxt(*predicates),
                 _first_truthy_index,
                 mappers.__getitem__,
+                to_awaitable if _any_is_async(mappers) else toolz.identity,
             ),
         ),
         functional.star(
