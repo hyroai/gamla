@@ -93,11 +93,18 @@ def translate_exception(func, exc1, exc2):
     return toolz.excepts(exc1, func, make_raise(exc2))
 
 
+def to_json(obj):
+    if isinstance(obj, Iterable):
+        return json.dumps(obj)
+    else:
+        return obj.to_json()
+
+
 @functools.lru_cache(maxsize=None)
 def compute_stable_json_hash(item) -> Text:
     return hashlib.sha1(
         json.dumps(
-            json.loads(item.to_json()),
+            json.loads(to_json(item)),
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8"),
@@ -263,9 +270,9 @@ def update_in(d, keys, func, default=None, factory=dict):
 
 @currying.curry
 def dataclass_transform(
-    attr_name: Text,
-    attr_transformer: Callable[[Any], Any],
-    dataclass_instance,
+        attr_name: Text,
+        attr_transformer: Callable[[Any], Any],
+        dataclass_instance,
 ):
     return dataclasses.replace(
         dataclass_instance,
@@ -290,9 +297,9 @@ _E = TypeVar("_E")
 
 @currying.curry
 def reduce(
-    reducer: Callable[[_R, _E], _R],
-    initial_value: _R,
-    elements: Iterable[_E],
+        reducer: Callable[[_R, _E], _R],
+        initial_value: _R,
+        elements: Iterable[_E],
 ) -> _R:
     return functools.reduce(reducer, elements, initial_value)
 
@@ -337,8 +344,8 @@ def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence
 
 @currying.curry
 def partition_after(
-    predicate: Callable[[Any], bool],
-    seq: Sequence,
+        predicate: Callable[[Any], bool],
+        seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,))
@@ -351,8 +358,8 @@ def partition_after(
 
 @currying.curry
 def partition_before(
-    predicate: Callable[[Any], bool],
-    seq: Sequence,
+        predicate: Callable[[Any], bool],
+        seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,)) if not a or predicate(b) else (*a[:-1], (*a[-1], b)),
