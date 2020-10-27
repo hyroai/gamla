@@ -1,7 +1,8 @@
 import dataclasses
 import itertools
 import json
-from typing import Any, Dict, Optional, Text, Tuple
+import csv
+from typing import Any, Dict, Optional, Text, Tuple, List
 
 import dataclasses_json
 import toolz
@@ -64,6 +65,11 @@ def dict_to_csv(
         dict_to_tuple_of_tuples,
         tuple_of_tuples_to_csv(titles=titles, separator=separator),
     )
+
+
+def csv_to_json(csv_file_path) -> List:
+    with open(csv_file_path, encoding='utf-8') as csvf:
+        return list(csv.DictReader(csvf))
 
 
 dict_to_tuple_of_tuples = toolz.compose_left(
