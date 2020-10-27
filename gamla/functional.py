@@ -94,10 +94,9 @@ def translate_exception(func, exc1, exc2):
 
 
 def to_json(obj):
-    if isinstance(obj, Iterable):
-        return json.dumps(obj)
-    else:
+    if hasattr(obj, "to_json"):
         return obj.to_json()
+    return json.dumps(obj)
 
 
 @functools.lru_cache(maxsize=None)
