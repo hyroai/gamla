@@ -2,13 +2,14 @@ import asyncio
 import functools
 import inspect
 import itertools
+import os
 from typing import Any, Callable, Iterable, Text, Tuple, Type, TypeVar, Union
 
 import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import currying, data, functional
+from gamla import currying, data, functional, introspection
 
 
 def compose_left(*funcs):
@@ -22,6 +23,16 @@ async def to_awaitable(value):
     if inspect.isawaitable(value):
         return await value
     return value
+
+
+_IS_DEBUG_MODE = not not os.environ.get("GAMLA_DEBUG_MODE")
+
+
+# Copying `toolz` convention.
+# TODO(uri): Far from a perfect id, but should work most of the time.
+# Improve by having higher order functions create meaningful names (e.g. `map`).
+def _get_name_for_function_group(funcs):
+    return "_of_".join(map(lambda x: x.__name__, funcs))
 
 
 def _acompose(*funcs):
@@ -47,10 +58,12 @@ def compose(*funcs):
                 kwargs = {}
             return toolz.first(args)
 
-    # TODO(uri): Far from a perfect id, but should work most of the time.
-    # Improve by having higher order functions create meaningful names (e.g. `map`).
-    # Copying `toolz` convention.
-    composed.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
+    name = _get_name_for_function_group(funcs)
+    if _IS_DEBUG_MODE:
+        if asyncio.iscoroutinefunction(composed):
+            return introspection.rename_async_function(name, composed)
+        return introspection.rename_function(name, composed)
+    composed.__name__ == name
     return composed
 
 
