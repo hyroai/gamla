@@ -4,7 +4,7 @@ import logging
 from typing import Callable, Dict, Text
 
 
-def _convert_extression_to_expression(expr) -> ast.Expression:
+def _convert_expression(expr) -> ast.Expression:
     expr.lineno = 0
     expr.col_offset = 0
     return ast.Expression(expr.value, lineno=0, col_offset=0)
@@ -28,7 +28,7 @@ def _exec_with_return(code: Text, globals_dict: Dict):
     if type(last_ast.body[0]) == ast.Expr:
         return eval(
             compile(
-                _convert_extression_to_expression(last_ast.body[0]),
+                _convert_expression(last_ast.body[0]),
                 "<ast>",
                 "eval",
             ),
