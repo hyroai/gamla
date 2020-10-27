@@ -3,15 +3,16 @@ import datetime
 import functools
 import logging
 import time
-from typing import Callable, Text
+from typing import Callable, Dict, Text
 
 import async_timeout
+import httpx
 import requests
 import requests.adapters
 import toolz
 from requests.packages.urllib3.util import retry
 
-from gamla import functional, functional_generic
+from gamla import currying, functional
 
 
 def _time_to_readable(time_s: float) -> datetime.datetime:
@@ -31,7 +32,7 @@ def _log_finish(req_id: Text, start: float):
     finish = time.time()
     elapsed = finish - start
     logging.info(
-        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}"
+        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}",
     )
 
 
@@ -72,29 +73,34 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(
         max_retries=retry.Retry(
-            total=retries, backoff_factor=0.1, status_forcelist=(500, 502, 504)
-        )
+            total=retries,
+            backoff_factor=0.1,
+            status_forcelist=(500, 502, 504),
+        ),
     )
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     return session
 
 
-def batch_calls(f):
+@currying.curry
+def batch_calls(max_batch_size: int, f: Callable):
     """Batches single call into one request.
 
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
     that gets a single request.
     """
-    queue = {}
+    queue: Dict = {}
 
     async def make_call():
         await asyncio.sleep(0.1)
         if not queue:
             return
-        promises = tuple(queue.values())
-        requests = tuple(queue.keys())
-        queue.clear()
+        slice_from_queue = tuple(toolz.take(max_batch_size, queue))
+        promises = tuple(map(queue.__getitem__, slice_from_queue))
+        requests = tuple(slice_from_queue)
+        for x in slice_from_queue:
+            del queue[x]
         try:
             for promise, result in zip(promises, await f(requests)):
                 # We check for possible mid-exception or timeouts.
@@ -141,8 +147,8 @@ def queue_identical_calls(f):
     return wrapped
 
 
-@toolz.curry
-def athrottle(limit, f):
+@currying.curry
+def throttle(limit, f):
     semaphore = asyncio.Semaphore(limit)
 
     @functools.wraps(f)
@@ -153,13 +159,9 @@ def athrottle(limit, f):
     return wrapped
 
 
-@functional_generic.curry
-async def throttled_amap(f, it, limit):
-    return await functional_generic.map(athrottle(limit, f), it)
-
-
 def timeout(seconds: float):
     def wrapper(corofunc):
+        @functools.wraps(corofunc)
         async def run(*args, **kwargs):
             with async_timeout.timeout(seconds):
                 return await corofunc(*args, **kwargs)
@@ -167,3 +169,26 @@ def timeout(seconds: float):
         return run
 
     return wrapper
+
+
+@currying.curry
+async def get_async(timeout: float, url: Text):
+    async with httpx.AsyncClient() as client:
+        return await client.get(url, timeout=timeout)
+
+
+@currying.curry
+async def post_json_with_extra_headers_async(
+    extra_headers: Dict[Text, Text], timeout: float, url: Text, payload
+):
+    """Expects payload to be a json object, and the response to be json as well."""
+    async with httpx.AsyncClient() as client:
+        return await client.post(
+            url=url,
+            json=payload,
+            headers=toolz.merge({"content_type": "application/json"}, extra_headers),
+            timeout=timeout,
+        )
+
+
+post_json_async = post_json_with_extra_headers_async({})

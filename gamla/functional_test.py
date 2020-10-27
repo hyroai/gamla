@@ -2,15 +2,17 @@ import asyncio
 
 import pytest
 import toolz
+from toolz import curried
+from toolz.curried import operator
 
-from gamla import functional, functional_generic
+from gamla import currying, functional, functional_generic
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
 
 
 async def _opposite_async(x):
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.01)
     return not x
 
 
@@ -19,7 +21,7 @@ def test_do_if():
 
 
 def test_currying():
-    @functional_generic.curry
+    @currying.curry
     def f(x, y, z):
         return x + y + z
 
@@ -32,9 +34,21 @@ def test_juxt():
     assert functional_generic.juxt(toolz.identity, lambda x: x + 1)(3) == (3, 4)
 
 
+def test_juxt_zero_params():
+    assert functional_generic.juxt(lambda: 1, lambda: 3)() == (1, 3)
+
+
+async def test_juxt_zero_params_async():
+    async def slow_1():
+        await asyncio.sleep(0.01)
+        return 1
+
+    assert await functional_generic.juxt(lambda: 3, slow_1)() == (3, 1)
+
+
 async def test_juxt_async():
     async def slow_identity(x):
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.01)
         return x
 
     assert await functional_generic.juxt(toolz.identity, slow_identity)(3) == (3, 3)
@@ -80,31 +94,41 @@ async def test_allmap_in_async_pipe():
         [True, True, False],
         functional_generic.allmap(_opposite_async),
         # Check that the `pipe` serves a value and not a future.
-        functional.check(lambda x: isinstance(x, bool), AssertionError),
+        functional.check(functional.is_instance(bool), AssertionError),
     )
 
 
 async def test_anymap_in_pipe():
     assert not functional_generic.pipe(
-        [True, True, False], functional_generic.allmap(lambda x: not x)
+        [True, True, False],
+        functional_generic.allmap(lambda x: not x),
     )
 
 
 async def test_itemmap_async_sync_mixed():
-    assert await functional_generic.pipe(
-        {True: True},
-        functional_generic.itemmap(
-            functional_generic.compose(tuple, functional_generic.map(_opposite_async))
-        ),
-        functional_generic.itemmap(
-            functional_generic.compose(tuple, functional_generic.map(lambda x: not x))
-        ),
-    ) == {True: True}
+    assert (
+        await functional_generic.pipe(
+            {True: True},
+            functional_generic.itemmap(
+                functional_generic.compose(
+                    tuple,
+                    functional_generic.map(_opposite_async),
+                ),
+            ),
+            functional_generic.itemmap(
+                functional_generic.compose(
+                    tuple,
+                    functional_generic.map(lambda x: not x),
+                ),
+            ),
+        )
+        == {True: True}
+    )
 
 
 async def test_keymap_async_curried():
     assert await functional_generic.keymap(_opposite_async)({True: True}) == {
-        False: True
+        False: True,
     }
 
 
@@ -118,13 +142,311 @@ async def _is_even_async(x):
 
 
 async def test_filter_curried_async_sync_mix():
-    assert await functional_generic.pipe(
-        [1, 2, 3, 4],
-        functional_generic.filter(_is_even_async),
-        functional_generic.map(lambda x: x + 10),
-        tuple,
-    ) == (12, 14)
+    assert (
+        await functional_generic.pipe(
+            [1, 2, 3, 4],
+            functional_generic.filter(_is_even_async),
+            functional_generic.map(lambda x: x + 10),
+            tuple,
+        )
+        == (12, 14)
+    )
 
 
-def test_wrap_str():
+async def test_wrap_str():
     assert toolz.pipe("john", functional.wrap_str("hi {}")) == "hi john"
+
+
+def test_case_single_predicate():
+    assert functional_generic.case_dict({toolz.identity: toolz.identity})(True)
+
+
+def test_case_multiple_predicates():
+    assert not functional_generic.case_dict(
+        {operator.not_: toolz.identity, toolz.identity: operator.not_},
+    )(True)
+
+
+def test_case_no_predicate():
+    with pytest.raises(functional_generic.NoConditionMatched):
+        functional_generic.case_dict(
+            {operator.not_: toolz.identity, operator.not_: toolz.identity},
+        )(True)
+
+
+async def test_case_async():
+    assert not await functional_generic.case_dict(
+        {_opposite_async: toolz.identity, toolz.identity: _opposite_async},
+    )(True)
+
+
+def test_partition_after():
+    assert functional.partition_after(lambda x: x == 1, []) == ()
+    assert (
+        tuple(
+            functional.partition_after(
+                lambda x: x == 1,
+                [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+            ),
+        )
+        == ((1,), (1,), (2, 2, 1), (1,), (2, 1), (1,), (1,))
+    )
+
+
+def test_partition_before():
+    assert functional.partition_before(lambda x: x == 1, []) == ()
+    assert (
+        tuple(
+            functional.partition_before(
+                lambda x: x == 1,
+                [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+            ),
+        )
+        == ((3,), (1,), (1, 2, 2), (1,), (1, 2), (1,), (1,), (1,))
+    )
+
+
+async def test_drop_last_while():
+    assert tuple(functional.drop_last_while(lambda x: x == 1, [])) == ()
+    assert tuple(functional.drop_last_while(lambda x: x == 1, [1])) == ()
+    assert tuple(functional.drop_last_while(lambda x: x == 1, [2])) == (2,)
+    assert (
+        tuple(
+            functional.drop_last_while(
+                lambda x: x == 1,
+                [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+            ),
+        )
+        == (1, 1, 2, 2, 1, 1, 2)
+    )
+
+
+def test_apply_spec():
+    assert (
+        functional_generic.apply_spec(
+            {"identity": toolz.identity, "increment": lambda x: x + 1},
+        )(1)
+        == {"identity": 1, "increment": 2}
+    )
+
+
+async def test_apply_spec_async():
+    async def async_identity(x):
+        await asyncio.sleep(0.01)
+        return x
+
+    assert (
+        await functional_generic.apply_spec(
+            {"identity": async_identity, "increment": lambda x: x + 1},
+        )(1)
+        == {"identity": 1, "increment": 2}
+    )
+
+
+async def test_apply_spec_async_recursive():
+    async def async_identity(x):
+        await asyncio.sleep(0.01)
+        return x
+
+    f = functional_generic.apply_spec(
+        {"identity": {"nested": async_identity}, "increment": lambda x: x + 1},
+    )
+    assert await f(1) == {"identity": {"nested": 1}, "increment": 2}
+
+
+async def test_async_bifurcate():
+    async def async_sum(x):
+        await asyncio.sleep(0.01)
+        return sum(x)
+
+    def gen():
+        yield 1
+        yield 2
+        yield 3
+
+    average = await functional_generic.pipe(
+        gen(),
+        functional_generic.bifurcate(async_sum, toolz.count),
+        functional.star(operator.truediv),
+    )
+
+    assert average == 2
+
+
+def test_average():
+    def gen():
+        yield 1
+        yield 2
+        yield 3
+
+    assert functional_generic.average(gen()) == 2
+
+
+def test_countby_many():
+    names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
+    assert functional.countby_many(lambda name: (name[0], name[-1]), names) == {
+        "a": 1,
+        "e": 3,
+        "b": 2,
+        "c": 1,
+        "d": 1,
+        "n": 1,
+        "h": 1,
+        "f": 1,
+        "k": 1,
+    }
+
+
+async def test_reduce_async():
+    async def slow_addition(x, y):
+        asyncio.sleep(0.1)
+        return x + y
+
+    assert await (functional_generic.reduce_curried(slow_addition, 0)([1, 2, 3])) == 6
+
+
+def test_reduce_aync():
+    def addition(x, y):
+        asyncio.sleep(0.01)
+        return x + y
+
+    assert functional_generic.reduce_curried(addition, 0)([1, 2, 3]) == 6
+
+
+def test_excepts_sync():
+    class SomeException(Exception):
+        pass
+
+    assert (
+        functional_generic.excepts(
+            SomeException,
+            functional.just(None),
+            toolz.identity,
+        )(1)
+        == 1
+    )
+    assert (
+        functional_generic.excepts(
+            SomeException,
+            functional.just(None),
+            functional.make_raise(SomeException),
+        )(1)
+        is None
+    )
+
+
+async def test_excepts_async():
+    class SomeException(Exception):
+        pass
+
+    async def slow_raise(x):
+        raise SomeException
+
+    async def slow_identity(x):
+        await asyncio.sleep(0.01)
+        return x
+
+    assert (
+        await functional_generic.excepts(
+            SomeException,
+            functional.just(None),
+            slow_identity,
+        )(1)
+        == 1
+    )
+    assert (
+        await functional_generic.excepts(
+            SomeException,
+            functional.just(None),
+            slow_raise,
+        )(1)
+        is None
+    )
+
+
+def test_find():
+    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
+
+    assert (
+        functional_generic.find(
+            functional_generic.compose_left(curried.get("key"), operator.eq(2)),
+            iter(seq),
+        )
+        == {"key": 2}
+    )
+
+    assert (
+        functional_generic.find(
+            functional_generic.compose_left(curried.get("key"), operator.eq(4)),
+            iter(seq),
+        )
+        is None
+    )
+
+
+def test_find_index():
+    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
+
+    assert (
+        functional_generic.find_index(
+            functional_generic.compose_left(curried.get("key"), operator.eq(2)),
+            iter(seq),
+        )
+        == 1
+    )
+
+    assert (
+        functional_generic.find_index(
+            functional_generic.compose_left(curried.get("key"), operator.eq(4)),
+            iter(seq),
+        )
+        == -1
+    )
+
+
+def test_take_while():
+    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
+
+    assert (
+        tuple(
+            functional.take_while(
+                functional_generic.compose_left(curried.get("key"), operator.ne(3)),
+                iter(seq),
+            ),
+        )
+        == ({"key": 1}, {"key": 2})
+    )
+
+    assert (
+        tuple(
+            functional.take_while(
+                functional_generic.compose_left(curried.get("key"), operator.ne(4)),
+                iter(seq),
+            ),
+        )
+        == ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
+    )
+
+
+def test_take_last_while():
+    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2}, {"key": 4}, {"key": 5})
+
+    assert (
+        tuple(
+            functional.take_last_while(
+                functional_generic.compose_left(curried.get("key"), operator.ne(2)),
+                iter(seq),
+            ),
+        )
+        == ({"key": 4}, {"key": 5})
+    )
+
+    assert (
+        tuple(
+            functional.take_last_while(
+                functional_generic.compose_left(curried.get("key"), operator.ne(6)),
+                iter(seq),
+            ),
+        )
+        == ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2}, {"key": 4}, {"key": 5})
+    )

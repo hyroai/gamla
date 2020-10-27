@@ -2,9 +2,14 @@ from gamla import graph
 
 
 def test_get_connectivity_components():
-    assert list(
-        graph.get_connectivity_components({1: [2], 2: [1, 3], 3: [2], 4: [5], 5: [4]})
-    ) == [frozenset({1, 2, 3}), frozenset({4, 5})]
+    assert (
+        list(
+            graph.get_connectivity_components(
+                {1: [2], 2: [1, 3], 3: [2], 4: [5], 5: [4]},
+            ),
+        )
+        == [frozenset({1, 2, 3}), frozenset({4, 5})]
+    )
 
 
 def test_cliques_to_graph():
@@ -33,3 +38,18 @@ def test_bfs_no_double_visit():
         assert n in result
 
     assert len(result) == len(set(result))
+
+
+def test_groupby_many():
+    names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
+    assert graph.groupby_many(lambda name: (name[0], name[-1]), names) == {
+        "a": frozenset({"alice"}),
+        "e": frozenset({"alice", "charlie", "edith"}),
+        "b": frozenset({"bob"}),
+        "c": frozenset({"charlie"}),
+        "d": frozenset({"dan"}),
+        "n": frozenset({"dan"}),
+        "h": frozenset({"edith"}),
+        "f": frozenset({"frank"}),
+        "k": frozenset({"frank"}),
+    }

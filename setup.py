@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gamla",
-    version="0.0.77",
+    version="32",
     long_description=_LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     packages=setuptools.find_namespace_packages(),
@@ -14,10 +14,10 @@ setuptools.setup(
         "async-timeout",
         "dataclasses_json",
         "heapq_max",
+        "httpx",
         "pytest-asyncio",
-        "pytest>=5.4.0",
+        "pytest",
         "requests",
         "toolz",
-        "frozendict",
     ],
 )
