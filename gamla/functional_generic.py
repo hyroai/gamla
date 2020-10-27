@@ -34,12 +34,11 @@ _get_name_for_composition = toolz.compose_left(
 _IS_DEBUG_MODE = not not os.environ.get("GAMLA_DEBUG_MODE")
 
 
+# Copying `toolz` convention.
 # TODO(uri): Far from a perfect id, but should work most of the time.
 # Improve by having higher order functions create meaningful names (e.g. `map`).
-def _fast_rename_function(funcs, f):
-    # Copying `toolz` convention.
-    f.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
-    return f
+def _get_name_for_function_group(funcs):
+    return "_of_".join(map(lambda x: x.__name__, funcs))
 
 
 def _acompose(*funcs):
@@ -65,11 +64,13 @@ def compose(*funcs):
                 kwargs = {}
             return toolz.first(args)
 
+    name = _get_name_for_function_group(funcs)
     if _IS_DEBUG_MODE:
         if asyncio.iscoroutinefunction(composed):
-            return introspection.rename_async_function(composed)
-        return introspection.rename_function(composed)
-    return _fast_rename_function(funcs, composed)
+            return introspection.rename_async_function(name, composed)
+        return introspection.rename_function(name, composed)
+    composed.__name__ == name
+    return composed
 
 
 def _make_amap(f):

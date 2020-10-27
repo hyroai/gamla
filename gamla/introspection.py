@@ -21,14 +21,16 @@ def _exec_with_return(code: Text, globals_dict: Dict):
     last_ast.body = code_ast.body[-1:]
 
     logging.warning(
-        "Giving true names for composition (this will slow things considerably)"
+        "Giving true names for composition (this will slow things considerably)",
     )
 
     exec(compile(init_ast, "<ast>", "exec"), globals_dict)
     if type(last_ast.body[0]) == ast.Expr:
         return eval(
             compile(
-                _convert_extression_to_expression(last_ast.body[0]), "<ast>", "eval"
+                _convert_extression_to_expression(last_ast.body[0]),
+                "<ast>",
+                "eval",
             ),
             globals_dict,
         )
@@ -37,13 +39,16 @@ def _exec_with_return(code: Text, globals_dict: Dict):
 
 def _clean_name_for_function(name: Text):
     # Lambdas appear as <lambda> which is not valid python function name.
-    return name.replace("<", "").replace(">", "")
+    name = name.replace("<", "").replace(">", "")
+    if name == "lambda":
+        return "some_lambda"
+    return name
 
 
 def rename_async_function(name: Text, f: Callable) -> Callable:
     name = _clean_name_for_function(name)
     return _exec_with_return(
-        f"async def {name}(*args, **kwargs): return await f(*args, **kwargs)\n{name}",
+        f"import functools\n@functools.wraps(f)\nasync def {name}(*args, **kwargs): return await f(*args, **kwargs)\n{name}",
         {"f": f},
     )
 
@@ -51,5 +56,6 @@ def rename_async_function(name: Text, f: Callable) -> Callable:
 def rename_function(name: Text, f: Callable) -> Callable:
     name = _clean_name_for_function(name)
     return _exec_with_return(
-        f"def {name}(*args, **kwargs): return f(*args, **kwargs)\n{name}", {"f": f}
+        f"import functools\n@functools.wraps(f)\ndef {name}(*args, **kwargs): return f(*args, **kwargs)\n{name}",
+        {"f": f},
     )
