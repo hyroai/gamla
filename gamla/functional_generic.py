@@ -25,12 +25,6 @@ async def to_awaitable(value):
     return value
 
 
-_get_name_for_composition = toolz.compose_left(
-    reversed,
-    curried.map(lambda f: f.__name__),
-    "_THEN_".join,
-)
-
 _IS_DEBUG_MODE = not not os.environ.get("GAMLA_DEBUG_MODE")
 
 
