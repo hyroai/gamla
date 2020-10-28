@@ -470,11 +470,11 @@ def take_last_while(pred, seq):
 attrgetter = currying.curry(lambda attr, obj: operator.attrgetter(attr)(obj))
 
 
-def eq(x):
-    def eq(y):
+def equals(x):
+    def equals(y):
         return x == y
 
-    return eq
+    return equals
 
 
 def contains(x):
