@@ -269,9 +269,9 @@ def update_in(d, keys, func, default=None, factory=dict):
 
 @currying.curry
 def dataclass_transform(
-        attr_name: Text,
-        attr_transformer: Callable[[Any], Any],
-        dataclass_instance,
+    attr_name: Text,
+    attr_transformer: Callable[[Any], Any],
+    dataclass_instance,
 ):
     return dataclasses.replace(
         dataclass_instance,
@@ -296,9 +296,9 @@ _E = TypeVar("_E")
 
 @currying.curry
 def reduce(
-        reducer: Callable[[_R, _E], _R],
-        initial_value: _R,
-        elements: Iterable[_E],
+    reducer: Callable[[_R, _E], _R],
+    initial_value: _R,
+    elements: Iterable[_E],
 ) -> _R:
     return functools.reduce(reducer, elements, initial_value)
 
@@ -343,8 +343,8 @@ def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence
 
 @currying.curry
 def partition_after(
-        predicate: Callable[[Any], bool],
-        seq: Sequence,
+    predicate: Callable[[Any], bool],
+    seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,))
@@ -357,8 +357,8 @@ def partition_after(
 
 @currying.curry
 def partition_before(
-        predicate: Callable[[Any], bool],
-        seq: Sequence,
+    predicate: Callable[[Any], bool],
+    seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,)) if not a or predicate(b) else (*a[:-1], (*a[-1], b)),
@@ -468,3 +468,17 @@ def take_last_while(pred, seq):
 
 
 attrgetter = currying.curry(lambda attr, obj: operator.attrgetter(attr)(obj))
+
+
+def eq(x):
+    def eq(y):
+        return x == y
+
+    return eq
+
+
+def contains(x):
+    def contains(y):
+        return x in y
+
+    return contains

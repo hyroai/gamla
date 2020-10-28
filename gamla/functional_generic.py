@@ -231,24 +231,30 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     Handles async iff one of the predicates or one of the mappers is async.
     Raises `NoConditionMatched` if no condition matched.
     """
-    predicates = (*predicates, functional.just(True))
-    mappers = (
-        *mappers,
-        compose_left(NoConditionMatched, functional.just_raise),
-    )
-    return compose_left(
-        pair_right(
-            compose_left(
-                lazyjuxt(*predicates),
-                _first_truthy_index,
-                mappers.__getitem__,
-                to_awaitable if _any_is_async(mappers) else toolz.identity,
-            ),
-        ),
-        functional.star(
-            lambda value, transformer: functional.apply(value)(transformer),
-        ),
-    )
+    predicates = tuple(predicates)
+    mappers = tuple(mappers)
+    if _any_is_async(mappers + predicates):
+        predicates = tuple(map(after(to_awaitable), predicates))
+        mappers = tuple(map(after(to_awaitable), mappers))
+
+        async def case_async(*args, **kwargs):
+            for is_matched, mapper in zip(
+                await asyncio.gather(*map(lambda f: f(*args, **kwargs), predicates)),
+                mappers,
+            ):
+                if is_matched:
+                    return await mapper(*args, *kwargs)
+            raise NoConditionMatched
+
+        return case_async
+
+    def case(*args, **kwargs):
+        for predicate, transformation in zip(predicates, mappers):
+            if predicate(*args, **kwargs):
+                return transformation(*args, **kwargs)
+        raise NoConditionMatched
+
+    return case
 
 
 def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
