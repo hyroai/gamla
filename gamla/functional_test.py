@@ -450,3 +450,29 @@ def test_take_last_while():
         )
         == ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2}, {"key": 4}, {"key": 5})
     )
+
+
+def test_compositions_have_name():
+    assert (
+        functional_generic.compose_left(
+            toolz.identity,
+            toolz.identity,
+            toolz.unique,
+        ).__name__
+        == "unique_of_identity_of_identity"
+    )
+
+
+def test_async_compositions_have_name():
+    async def async_identity(x):
+        asyncio.sleep(1)
+        return x
+
+    assert (
+        functional_generic.compose_left(
+            toolz.identity,
+            async_identity,
+            toolz.unique,
+        ).__name__
+        == "unique_of_async_identity_of_identity"
+    )
