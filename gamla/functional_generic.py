@@ -63,7 +63,7 @@ def compose(*funcs):
         if asyncio.iscoroutinefunction(composed):
             return introspection.rename_async_function(name, composed)
         return introspection.rename_function(name, composed)
-    composed.__name__ == name
+    composed.__name__ = name
     return composed
 
 
