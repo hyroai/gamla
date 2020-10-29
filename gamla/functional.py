@@ -485,6 +485,13 @@ def equals(x):
     return equals
 
 
+def not_equals(x):
+    def not_equals(y):
+        return x != y
+
+    return not_equals
+
+
 def contains(x):
     def contains(y):
         return y in x
