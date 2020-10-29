@@ -8,6 +8,7 @@ import inspect
 import itertools
 import json
 import logging
+import operator
 import random
 from concurrent import futures
 from typing import Any, Callable, Dict, Iterable, Sequence, Text, TypeVar
@@ -15,7 +16,6 @@ from typing import Any, Callable, Dict, Iterable, Sequence, Text, TypeVar
 import heapq_max
 import toolz
 from toolz import curried
-from toolz.curried import operator
 
 from gamla import currying
 
@@ -286,7 +286,7 @@ def dataclass_transform(
         **{
             attr_name: toolz.pipe(
                 dataclass_instance,
-                operator.attrgetter(attr_name),
+                attrgetter(attr_name),
                 attr_transformer,
             ),
         },
@@ -475,7 +475,11 @@ def take_last_while(pred, seq):
     )
 
 
-attrgetter = currying.curry(lambda attr, obj: operator.attrgetter(attr)(obj))
+def attrgetter(attr):
+    def attrgetter(obj):
+        return operator.attrgetter(attr, obj)
+
+    return attrgetter
 
 
 def equals(x):
