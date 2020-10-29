@@ -71,22 +71,22 @@ async def test_anyjuxt_async():
 
 
 async def test_anymap():
-    assert functional_generic.anymap(_opposite_async, [True, True, False])
+    assert functional_generic.anymap(_opposite_async)([True, True, False])
 
 
 async def test_allmap():
     def opposite(x):
         return not x
 
-    assert not functional_generic.allmap(opposite, [True, True, False])
+    assert not functional_generic.allmap(opposite)([True, True, False])
 
 
 async def test_anymap_async():
-    assert await functional_generic.anymap(_opposite_async, [True, True, False])
+    assert await functional_generic.anymap(_opposite_async)([True, True, False])
 
 
 async def test_allmap_async():
-    assert not await functional_generic.allmap(_opposite_async, [True, True, False])
+    assert not await functional_generic.allmap(_opposite_async)([True, True, False])
 
 
 async def test_allmap_in_async_pipe():
@@ -112,13 +112,13 @@ async def test_itemmap_async_sync_mixed():
             functional_generic.itemmap(
                 functional_generic.compose(
                     tuple,
-                    functional_generic.map(_opposite_async),
+                    functional_generic.curried_map(_opposite_async),
                 ),
             ),
             functional_generic.itemmap(
                 functional_generic.compose(
                     tuple,
-                    functional_generic.map(lambda x: not x),
+                    functional_generic.curried_map(lambda x: not x),
                 ),
             ),
         )
@@ -145,8 +145,8 @@ async def test_filter_curried_async_sync_mix():
     assert (
         await functional_generic.pipe(
             [1, 2, 3, 4],
-            functional_generic.filter(_is_even_async),
-            functional_generic.map(lambda x: x + 10),
+            functional_generic.curried_filter(_is_even_async),
+            functional_generic.curried_map(lambda x: x + 10),
             tuple,
         )
         == (12, 14)
@@ -370,6 +370,7 @@ def test_find():
     assert (
         functional_generic.find(
             functional_generic.compose_left(curried.get("key"), operator.eq(2)),
+        )(
             iter(seq),
         )
         == {"key": 2}
@@ -378,8 +379,7 @@ def test_find():
     assert (
         functional_generic.find(
             functional_generic.compose_left(curried.get("key"), operator.eq(4)),
-            iter(seq),
-        )
+        )(iter(seq))
         is None
     )
 
@@ -390,16 +390,14 @@ def test_find_index():
     assert (
         functional_generic.find_index(
             functional_generic.compose_left(curried.get("key"), operator.eq(2)),
-            iter(seq),
-        )
+        )(iter(seq))
         == 1
     )
 
     assert (
         functional_generic.find_index(
             functional_generic.compose_left(curried.get("key"), operator.eq(4)),
-            iter(seq),
-        )
+        )(iter(seq))
         == -1
     )
 

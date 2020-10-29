@@ -36,7 +36,7 @@ def _get_children(element):
             functional.is_instance(list): toolz.identity,
             functional.is_instance(dict): functional_generic.compose_left(
                 dict.items,
-                functional_generic.map(functional.star(_KeyValue)),
+                functional.curried_map_sync(functional.star(_KeyValue)),
             ),
             functional.is_instance(_KeyValue): functional_generic.compose_left(
                 lambda x: x.value,

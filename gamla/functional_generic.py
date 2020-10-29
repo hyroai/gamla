@@ -7,7 +7,6 @@ from typing import Any, Callable, Iterable, Text, Tuple, Type, TypeVar, Union
 
 import toolz
 from toolz import curried
-from toolz.curried import operator
 
 from gamla import currying, data, functional, introspection
 
@@ -16,7 +15,21 @@ def compose_left(*funcs):
     return compose(*reversed(funcs))
 
 
-_any_is_async = toolz.compose(any, curried.map(asyncio.iscoroutinefunction))
+def _async_curried_map(f):
+    async def async_curried_map(it):
+        return await asyncio.gather(*map(f, it))
+
+    return async_curried_map
+
+
+def curried_map(f):
+    if asyncio.iscoroutinefunction(f):
+        return _async_curried_map(f)
+    return functional.curried_map_sync(f)
+
+
+def _any_is_async(funcs):
+    return any(map(asyncio.iscoroutinefunction, funcs))
 
 
 async def to_awaitable(value):
@@ -67,28 +80,6 @@ def compose(*funcs):
     return composed
 
 
-def _make_amap(f):
-    async def amap_inner(it):
-        return await asyncio.gather(*curried.map(f, it))
-
-    return amap_inner
-
-
-def gamla_map(*args):
-    if len(args) == 2:
-        f, it = args
-        if asyncio.iscoroutinefunction(f):
-            return _make_amap(f)(it)
-        return curried.map(f, it)
-    [f] = args
-    if asyncio.iscoroutinefunction(f):
-        return _make_amap(f)
-    return curried.map(f)
-
-
-map = gamla_map
-
-
 @currying.curry
 def after(f1, f2):
     return compose(f1, f2)
@@ -102,24 +93,24 @@ def before(f1, f2):
 def lazyjuxt(*funcs):
     """Reverts to eager implementation if any of `funcs` is async."""
     if _any_is_async(funcs):
+        funcs = tuple(map(after(to_awaitable), funcs))
 
-        async def lazyjuxt_inner(*args, **kwargs):
-            return await toolz.pipe(
-                funcs,
-                curried.map(
-                    compose_left(functional.apply(*args, **kwargs), to_awaitable),
-                ),
-                functional.star(asyncio.gather),
-            )
+        async def lazyjuxt_async(*args, **kwargs):
+            return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
 
-        return lazyjuxt_inner
-    return compose_left(functional.apply, curried.map, functional.apply(funcs))
+        return lazyjuxt_async
+
+    def lazyjuxt(*args, **kwargs):
+        for f in funcs:
+            yield f(*args, **kwargs)
+
+    return lazyjuxt
 
 
 juxt = compose(after(tuple), lazyjuxt)
 alljuxt = compose(after(all), lazyjuxt)
 anyjuxt = compose(after(any), lazyjuxt)
-juxtcat = compose(after(toolz.concat), lazyjuxt)
+juxtcat = compose(after(itertools.chain.from_iterable), lazyjuxt)
 
 
 def ternary(condition, f_true, f_false):
@@ -175,49 +166,49 @@ def pipe(val, *funcs):
     return compose_left(*funcs)(val)
 
 
-def _compose_over_binary_curried(composer):
-    def composition_over_binary_curried(*args):
-        f = composer(args[0])
-        if len(args) == 2:
-            return f(args[1])
-        return f
-
-    return composition_over_binary_curried
+allmap = compose(after(all), curried_map)
+anymap = compose(after(any), curried_map)
 
 
-allmap = _compose_over_binary_curried(compose(after(all), gamla_map))
-anymap = _compose_over_binary_curried(compose(after(any), gamla_map))
-
-
-itemmap = _compose_over_binary_curried(
-    compose(after(dict), before(dict.items), gamla_map),
+itemmap = compose(after(dict), before(dict.items), curried_map)
+keymap = compose(
+    itemmap,
+    lambda f: juxt(f, toolz.second),
+    before(toolz.first),
 )
-keymap = _compose_over_binary_curried(
-    compose(itemmap, lambda f: juxt(f, toolz.second), before(toolz.first)),
-)
-
-valmap = _compose_over_binary_curried(
-    compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second)),
+valmap = compose(
+    itemmap,
+    lambda f: juxt(toolz.first, f),
+    before(toolz.second),
 )
 
 
-pair_with = _compose_over_binary_curried(lambda f: juxt(f, toolz.identity))
-pair_right = _compose_over_binary_curried(lambda f: juxt(toolz.identity, f))
+def pair_with(f):
+    return juxt(f, toolz.identity)
 
-filter = _compose_over_binary_curried(
-    compose(
-        after(compose(curried.map(toolz.second), curried.filter(toolz.first))),
-        gamla_map,
-        pair_with,
+
+def pair_right(f):
+    return juxt(toolz.identity, f)
+
+
+def _sync_curried_filter(f):
+    def curried_filter(it):
+        for x in it:
+            if f(x):
+                yield x
+
+    return curried_filter
+
+
+curried_filter = compose(
+    after(
+        compose(
+            functional.curried_map_sync(toolz.second),
+            _sync_curried_filter(toolz.first),
+        ),
     ),
-)
-
-
-_first_truthy_index = compose_left(
-    enumerate,
-    curried.filter(toolz.second),
-    curried.map(toolz.first),
-    toolz.excepts(StopIteration, toolz.first),
+    curried_map,
+    pair_with,
 )
 
 
@@ -275,23 +266,25 @@ async def _await_dict(value):
             valmap(_await_dict),
         )
     if isinstance(value, Iterable):
-        return await pipe(value, gamla_map(_await_dict), type(value))
+        return await pipe(value, _async_curried_map(_await_dict), type(value))
     return await to_awaitable(value)
 
 
 def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
     def map_dict_inner(value):
         if isinstance(value, dict) or isinstance(value, data.frozendict):
-            return toolz.pipe(
+            return pipe(
                 value,
                 dict,  # In case input is a `frozendict`.
-                curried.valmap(map_dict(nonterminal_mapper, terminal_mapper)),
+                valmap(map_dict(nonterminal_mapper, terminal_mapper)),
                 nonterminal_mapper,
             )
         if isinstance(value, Iterable) and not isinstance(value, str):
-            return toolz.pipe(
+            return pipe(
                 value,
-                curried.map(map_dict(nonterminal_mapper, terminal_mapper)),
+                functional.curried_map_sync(
+                    map_dict(nonterminal_mapper, terminal_mapper),
+                ),
                 type(value),  # Keep the same format as input.
                 nonterminal_mapper,
             )
@@ -342,7 +335,9 @@ def apply_spec(spec):
 # Similar to juxt, only zips with the incoming iterable.
 stack = compose_left(
     enumerate,
-    map(functional.star(lambda i, f: compose(f, curried.nth(i)))),
+    functional.curried_map_sync(
+        functional.star(lambda i, f: compose(f, curried.nth(i))),
+    ),
     functional.star(juxt),
 )
 
@@ -352,9 +347,9 @@ def bifurcate(*funcs):
     return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
 
 
-average = toolz.compose_left(
+average = compose_left(
     bifurcate(sum, toolz.count),
-    toolz.excepts(ZeroDivisionError, functional.star(operator.truediv), lambda _: 0),
+    toolz.excepts(ZeroDivisionError, functional.star(lambda x, y: x / y), lambda _: 0),
 )
 
 
@@ -414,23 +409,14 @@ def excepts(
     return toolz.excepts(exception, function, handler)
 
 
-find = _compose_over_binary_curried(
-    compose(
-        after(excepts(StopIteration, functional.just(None), toolz.first)),
-        filter,
-    ),
+find = compose(
+    after(excepts(StopIteration, functional.just(None), toolz.first)),
+    curried_filter,
 )
 
-find_index = _compose_over_binary_curried(
-    compose(
-        after(
-            compose_left(
-                functional.star(find),
-                ternary(toolz.identity, toolz.first, functional.just(-1)),
-            ),
-        ),
-        currying.curry(
-            lambda pred, seq: (compose_left(toolz.second, pred), enumerate(seq)),
-        ),
-    ),
+find_index = compose_left(
+    before(toolz.second),
+    find,
+    before(enumerate),
+    after(ternary(functional.equals(None), functional.just(-1), toolz.first)),
 )
