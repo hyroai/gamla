@@ -4,7 +4,6 @@ import time
 import pytest
 import toolz
 from toolz import curried
-from toolz.curried import operator
 
 from gamla import currying, functional, functional_generic
 
@@ -164,14 +163,14 @@ def test_case_single_predicate():
 
 def test_case_multiple_predicates():
     assert not functional_generic.case_dict(
-        {operator.not_: toolz.identity, toolz.identity: operator.not_},
+        {lambda x: not x: toolz.identity, toolz.identity: lambda x: not x},
     )(True)
 
 
 def test_case_no_predicate():
     with pytest.raises(functional_generic.NoConditionMatched):
         functional_generic.case_dict(
-            {operator.not_: toolz.identity, operator.not_: toolz.identity},
+            {lambda x: not x: toolz.identity, lambda x: not x: toolz.identity},
         )(True)
 
 
@@ -268,7 +267,7 @@ async def test_async_bifurcate():
     average = await functional_generic.pipe(
         gen(),
         functional_generic.bifurcate(async_sum, toolz.count),
-        functional.star(operator.truediv),
+        functional.star(lambda x, y: x / y),
     )
 
     assert average == 2
@@ -370,7 +369,7 @@ def test_find():
 
     assert (
         functional_generic.find(
-            functional_generic.compose_left(curried.get("key"), operator.eq(2)),
+            functional_generic.compose_left(curried.get("key"), functional.equals(2)),
         )(
             iter(seq),
         )
@@ -379,7 +378,7 @@ def test_find():
 
     assert (
         functional_generic.find(
-            functional_generic.compose_left(curried.get("key"), operator.eq(4)),
+            functional_generic.compose_left(curried.get("key"), functional.equals(4)),
         )(iter(seq))
         is None
     )
@@ -390,14 +389,14 @@ def test_find_index():
 
     assert (
         functional_generic.find_index(
-            functional_generic.compose_left(curried.get("key"), operator.eq(2)),
+            functional_generic.compose_left(curried.get("key"), functional.equals(2)),
         )(iter(seq))
         == 1
     )
 
     assert (
         functional_generic.find_index(
-            functional_generic.compose_left(curried.get("key"), operator.eq(4)),
+            functional_generic.compose_left(curried.get("key"), functional.equals(4)),
         )(iter(seq))
         == -1
     )
@@ -409,7 +408,10 @@ def test_take_while():
     assert (
         tuple(
             functional.take_while(
-                functional_generic.compose_left(curried.get("key"), operator.ne(3)),
+                functional_generic.compose_left(
+                    curried.get("key"),
+                    functional.not_equals(3),
+                ),
                 iter(seq),
             ),
         )
@@ -419,7 +421,10 @@ def test_take_while():
     assert (
         tuple(
             functional.take_while(
-                functional_generic.compose_left(curried.get("key"), operator.ne(4)),
+                functional_generic.compose_left(
+                    curried.get("key"),
+                    functional.not_equals(4),
+                ),
                 iter(seq),
             ),
         )
@@ -433,7 +438,10 @@ def test_take_last_while():
     assert (
         tuple(
             functional.take_last_while(
-                functional_generic.compose_left(curried.get("key"), operator.ne(2)),
+                functional_generic.compose_left(
+                    curried.get("key"),
+                    functional.not_equals(2),
+                ),
                 iter(seq),
             ),
         )
@@ -443,7 +451,10 @@ def test_take_last_while():
     assert (
         tuple(
             functional.take_last_while(
-                functional_generic.compose_left(curried.get("key"), operator.ne(6)),
+                functional_generic.compose_left(
+                    curried.get("key"),
+                    functional.not_equals(6),
+                ),
                 iter(seq),
             ),
         )
@@ -475,6 +486,10 @@ def test_async_compositions_have_name():
         ).__name__
         == "unique_of_async_identity_of_identity"
     )
+
+
+def test_attrgetter():
+    assert functional.attrgetter("lower")("ASD")() == "asd"
 
 
 def test_latency():

@@ -8,7 +8,6 @@ import inspect
 import itertools
 import json
 import logging
-import operator
 import random
 from concurrent import futures
 from typing import Any, Callable, Dict, Iterable, Sequence, Text, TypeVar
@@ -477,7 +476,7 @@ def take_last_while(pred, seq):
 
 def attrgetter(attr):
     def attrgetter(obj):
-        return operator.attrgetter(attr, obj)
+        return getattr(obj, attr)
 
     return attrgetter
 
