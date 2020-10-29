@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import pytest
 import toolz
@@ -474,3 +475,16 @@ def test_async_compositions_have_name():
         ).__name__
         == "unique_of_async_identity_of_identity"
     )
+
+
+def test_latency():
+    start_time = time.time()
+    for _ in range(1000):
+        functional_generic.pipe(
+            True,
+            functional_generic.juxt(functional.equals(True), functional.equals(False)),
+            toolz.first,
+            lambda x: "bla",
+            functional.attrgetter("lower"),
+        )
+    assert time.time() - start_time < 0.1
