@@ -184,11 +184,11 @@ valmap = compose(
 
 
 def pair_with(f):
-    return juxt(f, functional.identity)
+    return juxt(f, toolz.identity)
 
 
 def pair_right(f):
-    return juxt(functional.identity, f)
+    return juxt(toolz.identity, f)
 
 
 def _sync_curried_filter(f):
@@ -298,7 +298,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
 
 def _iterdict(d):
     results = []
-    map_dict(functional.identity, results.append)(d)
+    map_dict(toolz.identity, results.append)(d)
     return results
 
 
@@ -319,14 +319,14 @@ def apply_spec(spec):
 
         async def apply_spec_async(*args, **kwargs):
             return await map_dict(
-                functional.identity,
+                toolz.identity,
                 compose_left(functional.apply(*args, **kwargs), to_awaitable),
             )(spec)
 
         return apply_spec_async
     return compose_left(
         functional.apply,
-        lambda applier: map_dict(functional.identity, applier),
+        lambda applier: map_dict(toolz.identity, applier),
         functional.apply(spec),
     )
 
