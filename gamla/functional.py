@@ -479,6 +479,6 @@ def equals(x):
 
 def contains(x):
     def contains(y):
-        return x in y
+        return y in x
 
     return contains
