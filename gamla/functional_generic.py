@@ -86,9 +86,6 @@ def gamla_map(*args):
     return curried.map(f)
 
 
-map = gamla_map
-
-
 @currying.curry
 def after(f1, f2):
     return compose(f1, f2)
@@ -102,18 +99,18 @@ def before(f1, f2):
 def lazyjuxt(*funcs):
     """Reverts to eager implementation if any of `funcs` is async."""
     if _any_is_async(funcs):
+        funcs = tuple(map(after(to_awaitable), funcs))
 
-        async def lazyjuxt_inner(*args, **kwargs):
-            return await toolz.pipe(
-                funcs,
-                curried.map(
-                    compose_left(functional.apply(*args, **kwargs), to_awaitable),
-                ),
-                functional.star(asyncio.gather),
-            )
+        async def lazyjuxt_async(*args, **kwargs):
+            return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
 
-        return lazyjuxt_inner
-    return compose_left(functional.apply, curried.map, functional.apply(funcs))
+        return lazyjuxt_async
+
+    def lazyjuxt(*args, **kwargs):
+        for f in funcs:
+            yield f(*args, **kwargs)
+
+    return lazyjuxt
 
 
 juxt = compose(after(tuple), lazyjuxt)
@@ -342,7 +339,7 @@ def apply_spec(spec):
 # Similar to juxt, only zips with the incoming iterable.
 stack = compose_left(
     enumerate,
-    map(functional.star(lambda i, f: compose(f, curried.nth(i)))),
+    gamla_map(functional.star(lambda i, f: compose(f, curried.nth(i)))),
     functional.star(juxt),
 )
 
@@ -434,3 +431,5 @@ find_index = _compose_over_binary_curried(
         ),
     ),
 )
+
+map = gamla_map
