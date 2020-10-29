@@ -1,8 +1,8 @@
+import csv
 import dataclasses
 import itertools
 import json
-import csv
-from typing import Any, Dict, Optional, Text, Tuple, List
+from typing import Any, Dict, List, Optional, Text, Tuple
 
 import dataclasses_json
 import toolz
@@ -68,7 +68,7 @@ def dict_to_csv(
 
 
 def csv_to_json(csv_file_path) -> List:
-    with open(csv_file_path, encoding='utf-8') as csvf:
+    with open(csv_file_path, encoding="utf-8") as csvf:
         return list(csv.DictReader(csvf))
 
 

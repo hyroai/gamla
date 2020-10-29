@@ -9,3 +9,6 @@ from .graph import *
 from .graph_async import *
 from .io_utils import *
 from .tree import *
+
+map = functional_generic.curried_map
+filter = functional_generic.curried_filter
