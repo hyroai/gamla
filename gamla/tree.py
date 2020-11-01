@@ -4,13 +4,14 @@ from typing import Any, Callable
 import toolz
 from toolz import curried
 
-from gamla import functional, functional_generic, functional_utils
+from gamla import currying, functional, functional_generic
 
 
-@functional_utils.curry
+@currying.curry
 def _tree_reduce(get_children, reduce_fn, tree_node):
     return reduce_fn(
-        tree_node, map(_tree_reduce(get_children, reduce_fn), get_children(tree_node)),
+        tree_node,
+        map(_tree_reduce(get_children, reduce_fn), get_children(tree_node)),
     )
 
 
@@ -31,15 +32,18 @@ def _get_children(element):
     return functional_generic.case_dict(
         {
             _is_terminal: functional.just(()),
-            functional.is_instance(tuple): toolz.identity,
-            functional.is_instance(list): toolz.identity,
+            functional.is_instance(tuple): functional.identity,
+            functional.is_instance(list): functional.identity,
             functional.is_instance(dict): functional_generic.compose_left(
-                dict.items, functional_generic.map(functional.star(_KeyValue)),
+                dict.items,
+                functional.curried_map_sync(functional.star(_KeyValue)),
             ),
             functional.is_instance(_KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
                 functional_generic.ternary(
-                    _is_terminal, functional.wrap_tuple, _get_children,
+                    _is_terminal,
+                    functional.wrap_tuple,
+                    _get_children,
                 ),
             ),
         },
@@ -72,7 +76,7 @@ _merge_children = functional_generic.compose_left(
 )
 
 
-@functional_utils.curry
+@currying.curry
 def _get_anywhere_reducer(predicate: Callable, node, children):
     if isinstance(node, str):
         return _make_matched_unmatched((), (node,))
@@ -84,11 +88,12 @@ def _get_anywhere_reducer(predicate: Callable, node, children):
 def get_leaves_by_ancestor_predicate(predicate: Callable):
     """Gets leafs with ancestor nodes passing the predicate."""
     return functional_generic.compose_left(
-        _tree_reduce(_get_children, _get_anywhere_reducer(predicate)), _get_matched,
+        _tree_reduce(_get_children, _get_anywhere_reducer(predicate)),
+        _get_matched,
     )
 
 
-@functional_utils.curry
+@currying.curry
 def _filter_leaves_reducer(predicate, node, children):
     if _is_terminal(node) and predicate(node):
         return (node,)

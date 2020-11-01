@@ -2,20 +2,35 @@ import asyncio
 import functools
 import inspect
 import itertools
-from typing import Callable, Iterable, Text, Tuple, Type
+import operator
+import os
+from typing import Any, Callable, Iterable, Text, Tuple, Type, TypeVar, Union
 
 import toolz
 from toolz import curried
-from toolz.curried import operator
 
-from gamla import data, functional
+from gamla import currying, data, functional, introspection
 
 
 def compose_left(*funcs):
     return compose(*reversed(funcs))
 
 
-_any_is_async = toolz.compose(any, curried.map(asyncio.iscoroutinefunction))
+def _async_curried_map(f):
+    async def async_curried_map(it):
+        return await asyncio.gather(*map(f, it))
+
+    return async_curried_map
+
+
+def curried_map(f):
+    if asyncio.iscoroutinefunction(f):
+        return _async_curried_map(f)
+    return functional.curried_map_sync(f)
+
+
+def _any_is_async(funcs):
+    return any(map(asyncio.iscoroutinefunction, funcs))
 
 
 async def to_awaitable(value):
@@ -24,7 +39,17 @@ async def to_awaitable(value):
     return value
 
 
-def _acompose(*funcs):
+_DEBUG_MODE = os.environ.get("GAMLA_DEBUG_MODE")
+
+
+# Copying `toolz` convention.
+# TODO(uri): Far from a perfect id, but should work most of the time.
+# Improve by having higher order functions create meaningful names (e.g. `map`).
+def _get_name_for_function_group(funcs):
+    return "_of_".join(map(lambda x: x.__name__, funcs))
+
+
+def _compose_async(*funcs):
     @functools.wraps(toolz.last(funcs))
     async def async_composed(*args, **kwargs):
         for f in reversed(funcs):
@@ -35,53 +60,42 @@ def _acompose(*funcs):
     return async_composed
 
 
-def compose(*funcs):
-    if _any_is_async(funcs):
-        composed = _acompose(*funcs)
-    else:
+def compose_sync(*funcs):
+    @functools.wraps(toolz.last(funcs))
+    def composed(*args, **kwargs):
+        for f in reversed(funcs):
+            args = [f(*args, **kwargs)]
+            kwargs = {}
+        return toolz.first(args)
 
-        @functools.wraps(toolz.last(funcs))
-        def composed(*args, **kwargs):
-            for f in reversed(funcs):
-                args = [f(*args, **kwargs)]
-                kwargs = {}
-            return toolz.first(args)
-
-    # TODO(uri): Far from a perfect id, but should work most of the time.
-    # Improve by having higher order functions create meaningful names (e.g. `map`).
-    # Copying `toolz` convention.
-    composed.__name__ = "_of_".join(map(lambda x: x.__name__, funcs))
     return composed
 
 
-def _make_amap(f):
-    async def amap_inner(it):
-        return await asyncio.gather(*curried.map(f, it))
-
-    return amap_inner
-
-
-def gamla_map(*args):
-    if len(args) == 2:
-        f, it = args
-        if asyncio.iscoroutinefunction(f):
-            return _make_amap(f)(it)
-        return curried.map(f, it)
-    [f] = args
-    if asyncio.iscoroutinefunction(f):
-        return _make_amap(f)
-    return curried.map(f)
-
-
-map = gamla_map
+def compose(*funcs):
+    if _any_is_async(funcs):
+        composed = _compose_async(*funcs)
+    else:
+        composed = compose_sync(*funcs)
+    name = _get_name_for_function_group(funcs)
+    if _DEBUG_MODE:
+        if _DEBUG_MODE == "2":
+            frame_info = inspect.getframeinfo(inspect.stack()[1][0])
+            filename = frame_info.filename.replace(".", "").split("/")[-1]
+            name = f"{filename}_{frame_info.lineno}_COMPOSITION_" + name
+        if asyncio.iscoroutinefunction(composed):
+            composed = introspection.rename_async_function(name, composed)
+        else:
+            composed = introspection.rename_function(name, composed)
+    composed.__name__ = name
+    return composed
 
 
-@toolz.curry
+@currying.curry
 def after(f1, f2):
     return compose(f1, f2)
 
 
-@toolz.curry
+@currying.curry
 def before(f1, f2):
     return compose_left(f1, f2)
 
@@ -89,24 +103,24 @@ def before(f1, f2):
 def lazyjuxt(*funcs):
     """Reverts to eager implementation if any of `funcs` is async."""
     if _any_is_async(funcs):
+        funcs = tuple(map(after(to_awaitable), funcs))
 
-        async def lazyjuxt_inner(*args, **kwargs):
-            return await toolz.pipe(
-                funcs,
-                curried.map(
-                    compose_left(functional.apply(*args, **kwargs), to_awaitable),
-                ),
-                functional.star(asyncio.gather),
-            )
+        async def lazyjuxt_async(*args, **kwargs):
+            return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
 
-        return lazyjuxt_inner
-    return compose_left(functional.apply, curried.map, functional.apply(funcs))
+        return lazyjuxt_async
+
+    def lazyjuxt(*args, **kwargs):
+        for f in funcs:
+            yield f(*args, **kwargs)
+
+    return lazyjuxt
 
 
 juxt = compose(after(tuple), lazyjuxt)
 alljuxt = compose(after(all), lazyjuxt)
 anyjuxt = compose(after(any), lazyjuxt)
-juxtcat = compose(after(toolz.concat), lazyjuxt)
+juxtcat = compose(after(itertools.chain.from_iterable), lazyjuxt)
 
 
 def ternary(condition, f_true, f_false):
@@ -162,50 +176,54 @@ def pipe(val, *funcs):
     return compose_left(*funcs)(val)
 
 
-def _compose_over_binary_curried(composer):
-    def composition_over_binary_curried(*args):
-        f = composer(args[0])
-        if len(args) == 2:
-            return f(args[1])
-        return f
-
-    return composition_over_binary_curried
+allmap = compose(after(all), curried_map)
+anymap = compose(after(any), curried_map)
 
 
-allmap = _compose_over_binary_curried(compose(after(all), gamla_map))
-anymap = _compose_over_binary_curried(compose(after(any), gamla_map))
-
-
-itemmap = _compose_over_binary_curried(
-    compose(after(dict), before(dict.items), gamla_map),
+itemmap = compose(after(dict), before(dict.items), curried_map)
+keymap = compose(
+    itemmap,
+    lambda f: juxt(f, toolz.second),
+    before(toolz.first),
 )
-keymap = _compose_over_binary_curried(
-    compose(itemmap, lambda f: juxt(f, toolz.second), before(toolz.first)),
-)
-
-valmap = _compose_over_binary_curried(
-    compose(itemmap, lambda f: juxt(toolz.first, f), before(toolz.second)),
+valmap = compose(
+    itemmap,
+    lambda f: juxt(toolz.first, f),
+    before(toolz.second),
 )
 
 
-pair_with = _compose_over_binary_curried(lambda f: juxt(f, toolz.identity))
-pair_right = _compose_over_binary_curried(lambda f: juxt(toolz.identity, f))
+def pair_with(f):
+    return juxt(f, functional.identity)
 
-filter = _compose_over_binary_curried(
-    compose(
-        after(compose(curried.map(toolz.second), curried.filter(toolz.first))),
-        gamla_map,
-        pair_with,
+
+def pair_right(f):
+    return juxt(functional.identity, f)
+
+
+def _sync_curried_filter(f):
+    def curried_filter(it):
+        for x in it:
+            if f(x):
+                yield x
+
+    return curried_filter
+
+
+curried_filter = compose(
+    after(
+        compose(
+            functional.curried_map_sync(toolz.second),
+            _sync_curried_filter(toolz.first),
+        ),
     ),
+    curried_map,
+    pair_with,
 )
 
+complement = after(operator.not_)
 
-_first_truthy_index = compose_left(
-    enumerate,
-    curried.filter(toolz.second),
-    curried.map(toolz.first),
-    toolz.excepts(StopIteration, toolz.first),
-)
+remove = compose(curried_filter, complement)
 
 
 class NoConditionMatched(Exception):
@@ -215,24 +233,33 @@ class NoConditionMatched(Exception):
 def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     """Case with functions.
 
-    Handles async iff one of the predicates is async.
+    Handles async iff one of the predicates or one of the mappers is async.
     Raises `NoConditionMatched` if no condition matched.
     """
-    predicates = (*predicates, functional.just(True))
-    mappers = (
-        *mappers,
-        compose_left(NoConditionMatched, functional.just_raise),
-    )
-    return compose_left(
-        pair_right(
-            compose_left(
-                lazyjuxt(*predicates), _first_truthy_index, mappers.__getitem__,
-            ),
-        ),
-        functional.star(
-            lambda value, transformer: functional.apply(value)(transformer),
-        ),
-    )
+    predicates = tuple(predicates)
+    mappers = tuple(mappers)
+    if _any_is_async(mappers + predicates):
+        predicates = tuple(map(after(to_awaitable), predicates))
+        mappers = tuple(map(after(to_awaitable), mappers))
+
+        async def case_async(*args, **kwargs):
+            for is_matched, mapper in zip(
+                await asyncio.gather(*map(lambda f: f(*args, **kwargs), predicates)),
+                mappers,
+            ):
+                if is_matched:
+                    return await mapper(*args, *kwargs)
+            raise NoConditionMatched
+
+        return case_async
+
+    def case(*args, **kwargs):
+        for predicate, transformation in zip(predicates, mappers):
+            if predicate(*args, **kwargs):
+                return transformation(*args, **kwargs)
+        raise NoConditionMatched
+
+    return case
 
 
 def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
@@ -253,23 +280,25 @@ async def _await_dict(value):
             valmap(_await_dict),
         )
     if isinstance(value, Iterable):
-        return await pipe(value, gamla_map(_await_dict), type(value))
+        return await pipe(value, _async_curried_map(_await_dict), type(value))
     return await to_awaitable(value)
 
 
 def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
     def map_dict_inner(value):
         if isinstance(value, dict) or isinstance(value, data.frozendict):
-            return toolz.pipe(
+            return pipe(
                 value,
                 dict,  # In case input is a `frozendict`.
-                curried.valmap(map_dict(nonterminal_mapper, terminal_mapper)),
+                valmap(map_dict(nonterminal_mapper, terminal_mapper)),
                 nonterminal_mapper,
             )
         if isinstance(value, Iterable) and not isinstance(value, str):
-            return toolz.pipe(
+            return pipe(
                 value,
-                curried.map(map_dict(nonterminal_mapper, terminal_mapper)),
+                functional.curried_map_sync(
+                    map_dict(nonterminal_mapper, terminal_mapper),
+                ),
                 type(value),  # Keep the same format as input.
                 nonterminal_mapper,
             )
@@ -283,7 +312,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
 
 def _iterdict(d):
     results = []
-    map_dict(toolz.identity, results.append)(d)
+    map_dict(functional.identity, results.append)(d)
     return results
 
 
@@ -304,14 +333,14 @@ def apply_spec(spec):
 
         async def apply_spec_async(*args, **kwargs):
             return await map_dict(
-                toolz.identity,
+                functional.identity,
                 compose_left(functional.apply(*args, **kwargs), to_awaitable),
             )(spec)
 
         return apply_spec_async
     return compose_left(
         functional.apply,
-        lambda applier: map_dict(toolz.identity, applier),
+        lambda applier: map_dict(functional.identity, applier),
         functional.apply(spec),
     )
 
@@ -320,7 +349,9 @@ def apply_spec(spec):
 # Similar to juxt, only zips with the incoming iterable.
 stack = compose_left(
     enumerate,
-    map(functional.star(lambda i, f: compose(f, curried.nth(i)))),
+    functional.curried_map_sync(
+        functional.star(lambda i, f: compose(f, curried.nth(i))),
+    ),
     functional.star(juxt),
 )
 
@@ -330,13 +361,116 @@ def bifurcate(*funcs):
     return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
 
 
-average = toolz.compose_left(
+average = compose_left(
     bifurcate(sum, toolz.count),
-    toolz.excepts(ZeroDivisionError, functional.star(operator.truediv), lambda _: 0),
+    toolz.excepts(ZeroDivisionError, functional.star(lambda x, y: x / y), lambda _: 0),
 )
 
 
 def value_to_dict(key: Text):
     return compose_left(
-        functional.wrap_tuple, functional.prefix(key), functional.wrap_tuple, dict,
+        functional.wrap_tuple,
+        functional.prefix(key),
+        functional.wrap_tuple,
+        dict,
+    )
+
+
+_R = TypeVar("_R")
+_E = TypeVar("_E")
+
+
+def reduce_curried(
+    reducer: Callable[[_R, _E], _R],
+    initial_value: _R,
+) -> Callable[[Iterable[_E]], _R]:
+    if asyncio.iscoroutinefunction(reducer):
+
+        async def reduce_async(elements):
+            state = initial_value
+            for element in elements:
+                state = await reducer(state, element)
+            return state
+
+        return reduce_async
+
+    def reduce(elements):
+        state = initial_value
+        for element in elements:
+            state = reducer(state, element)
+        return state
+
+    return reduce
+
+
+@currying.curry
+def excepts(
+    exception: Union[Tuple[Exception, ...], Exception],
+    handler: Callable[[Exception], Any],
+    function: Callable,
+):
+    if asyncio.iscoroutinefunction(function):
+
+        @functools.wraps(function)
+        async def excepts(*args, **kwargs):
+            try:
+                return await function(*args, **kwargs)
+            except exception as error:
+                return handler(error)
+
+        return excepts
+
+    return toolz.excepts(exception, function, handler)
+
+
+find = compose(
+    after(excepts(StopIteration, functional.just(None), toolz.first)),
+    curried_filter,
+)
+
+find_index = compose_left(
+    before(toolz.second),
+    find,
+    before(enumerate),
+    after(ternary(functional.equals(None), functional.just(-1), toolz.first)),
+)
+
+
+def check(condition, exception):
+    return functional.do_if(
+        complement(condition),
+        functional.make_raise(exception),
+    )
+
+
+def countby_many(f):
+    """Count elements of a collection by a function which returns a tuple of keys
+    for single element.
+
+    Parameters:
+    f (Callable): Key function (given object in collection outputs tuple of keys).
+    it (Iterable): Collection.
+
+    Returns:
+    Dict[Text, Any]: Dictionary where key has been computed by the `f` key function
+    and value is the frequency of this key.
+
+    >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
+    >>> countby_many(lambda name: (name[0], name[-1]), names)
+    {'a': 1,
+     'e': 3,
+     'b': 2,
+     'c': 1,
+     'd': 1,
+     'n': 1,
+     'h': 1,
+     'f': 1,
+     'k': 1}
+    """
+    return compose_left(
+        curried_map(f),
+        functional.groupby_many_reduce(
+            functional.identity,
+            lambda x, y: x + 1 if x else 1,
+        ),
     )

@@ -1,14 +1,15 @@
+import csv
 import dataclasses
 import itertools
 import json
-from typing import Any, Dict, Optional, Text, Tuple
+from typing import Any, Dict, List, Optional, Text, Tuple
 
 import dataclasses_json
 import toolz
 from toolz import curried
 from toolz.curried import operator
 
-from gamla import functional, functional_generic
+from gamla import currying, functional, functional_generic
 
 
 def _immutable(self, *args, **kws):
@@ -50,60 +51,82 @@ def _freeze_nonterminal(v):
     return tuple(v)
 
 
-freeze_deep = functional_generic.map_dict(_freeze_nonterminal, toolz.identity)
+freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identity)
 
 
-@toolz.curry
+@currying.curry
 def dict_to_csv(
-    table: Dict[Any, Tuple], titles: Optional[Tuple] = None, separator: Text = "\t",
+    table: Dict[Any, Tuple],
+    titles: Optional[Tuple] = None,
+    separator: Text = "\t",
 ) -> Text:
-    return toolz.pipe(
+    return functional_generic.pipe(
         table,
         dict_to_tuple_of_tuples,
         tuple_of_tuples_to_csv(titles=titles, separator=separator),
     )
 
 
-dict_to_tuple_of_tuples = toolz.compose_left(
+def csv_to_json(csv_file_path) -> List:
+    with open(csv_file_path, encoding="utf-8") as csvf:
+        return list(csv.DictReader(csvf))
+
+
+dict_to_tuple_of_tuples = functional_generic.compose_left(
     dict.items,
-    curried.map(curried.compose_left(lambda x: (x[0], *x[1]), curried.map(str), tuple)),
+    functional_generic.curried_map(
+        functional_generic.compose_left(
+            lambda x: (x[0], *x[1]),
+            functional_generic.curried_map(str),
+            tuple,
+        ),
+    ),
     tuple,
 )
 
 
-@toolz.curry
+@currying.curry
 def tuple_of_tuples_to_csv(
-    tuple_of_tuples: Tuple[Tuple[Any], ...], separator: Text = "\t",
+    tuple_of_tuples: Tuple[Tuple[Any], ...],
+    separator: Text = "\t",
 ) -> Text:
-    return toolz.pipe(
+    return functional_generic.pipe(
         tuple_of_tuples,
-        curried.map(toolz.compose_left(curried.map(str), tuple, separator.join)),
+        curried.map(
+            functional_generic.compose_left(
+                functional_generic.curried_map(str),
+                tuple,
+                separator.join,
+            ),
+        ),
         "\n".join,
     )
 
 
-_field_getters = toolz.compose_left(
+_field_getters = functional_generic.compose_left(
     dataclasses.fields,
-    curried.map(toolz.compose_left(lambda f: f.name, operator.attrgetter)),
+    functional_generic.curried_map(
+        functional_generic.compose_left(lambda f: f.name, functional.attrgetter),
+    ),
     tuple,
 )
 
 
 def match(dataclass_pattern):
-    """ creates a function that returns true if input matches dataclass_pattern.
-     Use data.Any as wildcard for field value.
-     Supports recursive patterns.
-     """
+    """creates a function that returns true if input matches dataclass_pattern.
+    Use data.Any as wildcard for field value.
+    Supports recursive patterns.
+    """
     # pattern -> ( (getter,...), pattern) -> ((getter,...), (value,...)) ->
     # ((getter,...), (eq(value),...)) -> alljuxt( compose_left(getter,eq(value)),... )
-    return toolz.pipe(
+    return functional_generic.pipe(
         dataclass_pattern,
-        toolz.juxt(_field_getters, itertools.repeat),
-        toolz.juxt(
+        functional_generic.juxt(_field_getters, itertools.repeat),
+        functional_generic.juxt(
             toolz.first,
             functional.star(
                 curried.map(
-                    toolz.compose_left(
+                    functional_generic.compose_left(
                         toolz.apply,
                         functional_generic.case(
                             (
@@ -119,7 +142,9 @@ def match(dataclass_pattern):
                 ),
             ),
         ),
-        functional.star(curried.map(toolz.compose_left)),
+        functional.star(
+            curried.map(functional_generic.compose_left),
+        ),
         functional.prefix(lambda dc: type(dc) == type(dataclass_pattern)),
         functional.star(functional_generic.alljuxt),
     )

@@ -12,14 +12,15 @@ import requests.adapters
 import toolz
 from requests.packages.urllib3.util import retry
 
-from gamla import functional, functional_utils
+from gamla import currying, functional
 
 
 def _time_to_readable(time_s: float) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(time_s)
 
 
-def _request_id(name: Text, args, kwargs) -> Text:
+def _request_id(f: Callable, args, kwargs) -> Text:
+    name = f.__name__
     params_str = f", args: {args}, kwargs: {kwargs}"
     together = name + params_str
     if len(together) > 100:
@@ -44,7 +45,7 @@ def _log_start(req_id: Text) -> float:
 def _async_timeit(f):
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
-        req_id = _request_id(f.__name__, args, kwargs)
+        req_id = _request_id(f, args, kwargs)
         start = _log_start(req_id)
         result = await f(*args, **kwargs)
         _log_finish(req_id, start)
@@ -59,7 +60,7 @@ def timeit(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        req_id = _request_id(f.__name__, args, kwargs)
+        req_id = _request_id(f, args, kwargs)
         start = _log_start(req_id)
         result = f(*args, **kwargs)
         _log_finish(req_id, start)
@@ -72,7 +73,9 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(
         max_retries=retry.Retry(
-            total=retries, backoff_factor=0.1, status_forcelist=(500, 502, 504),
+            total=retries,
+            backoff_factor=0.1,
+            status_forcelist=(500, 502, 504),
         ),
     )
     session.mount("http://", adapter)
@@ -80,7 +83,7 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     return session
 
 
-@functional_utils.curry
+@currying.curry
 def batch_calls(max_batch_size: int, f: Callable):
     """Batches single call into one request.
 
@@ -144,7 +147,7 @@ def queue_identical_calls(f):
     return wrapped
 
 
-@functional_utils.curry
+@currying.curry
 def throttle(limit, f):
     semaphore = asyncio.Semaphore(limit)
 
@@ -168,13 +171,13 @@ def timeout(seconds: float):
     return wrapper
 
 
-@functional_utils.curry
+@currying.curry
 async def get_async(timeout: float, url: Text):
     async with httpx.AsyncClient() as client:
         return await client.get(url, timeout=timeout)
 
 
-@functional_utils.curry
+@currying.curry
 async def post_json_with_extra_headers_async(
     extra_headers: Dict[Text, Text], timeout: float, url: Text, payload
 ):

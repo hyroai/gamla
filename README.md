@@ -4,7 +4,13 @@
 
 `pip install gamla`
 
-## `async` just works
+## Debugging anonymous compositions
+
+`gamla.compose(x, y, z)` produces a new function which doesn't have a proper name. If `x` raises an exception, it is sometimes hard to figure out where this occurred. To overcome this, set the env variable `GAMLA_DEBUG_MODE` (to anything). This will cause the composition functions to give a name for the anonymous composition. The name would be a concatenation of its constituents' names, e.g. `x_of_y_of_z`. The name is given in a way that persists to the stack exceptions.
+
+This is turned on only by flag because it incurs significant overhead so things might get slow.
+
+## Mixing asynchronous and synchronous code
 
 Most functions in this lib will work seamlessly with `async` and regular functions, and allow the developer to focus on the logic instead of deciding where to place an `await`.
 

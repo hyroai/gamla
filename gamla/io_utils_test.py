@@ -72,7 +72,7 @@ async def test_with_and_without_deduper():
         return x
 
     # Without.
-    assert inputs == tuple(await gamla.map(identity_with_spying_and_delay, inputs))
+    assert inputs == tuple(await gamla.map(identity_with_spying_and_delay)(inputs))
 
     assert len(called) == len(inputs)
 
@@ -80,8 +80,8 @@ async def test_with_and_without_deduper():
 
     # With.
     assert inputs == tuple(
-        await gamla.map(
-            io_utils.queue_identical_calls(identity_with_spying_and_delay), inputs,
+        await gamla.map(io_utils.queue_identical_calls(identity_with_spying_and_delay))(
+            inputs,
         ),
     )
 

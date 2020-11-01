@@ -8,18 +8,35 @@ import inspect
 import itertools
 import json
 import logging
+import operator
 import random
 from concurrent import futures
-from typing import Any, Callable, Iterable, Sequence, Text, TypeVar
+from typing import Any, Callable, Dict, Iterable, Sequence, Text, TypeVar
 
 import heapq_max
 import toolz
 from toolz import curried
-from toolz.curried import operator
 
-from gamla import functional_utils
+from gamla import currying
+
+
+def identity(x):
+    return x
+
 
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
+
+
+def curried_map_sync(f):
+    def curried_map(it):
+        for x in it:
+            yield f(x)
+
+    return curried_map
+
+
+def pack(*stuff):
+    return stuff
 
 
 def do_if(condition, fun):
@@ -29,12 +46,6 @@ def do_if(condition, fun):
         return x
 
     return inner_do_if
-
-
-def check(condition, exception):
-    return do_if(
-        toolz.complement(condition), toolz.compose_left(exception, just_raise),
-    )
 
 
 def singleize(func: Callable) -> Callable:
@@ -82,17 +93,25 @@ def make_raise(exception):
     return ignore_input(inner)
 
 
-@toolz.curry
+@currying.curry
 def translate_exception(func, exc1, exc2):
     """`func` is assumed to be unary."""
     return toolz.excepts(exc1, func, make_raise(exc2))
+
+
+def to_json(obj):
+    if hasattr(obj, "to_json"):
+        return obj.to_json()
+    return json.dumps(obj)
 
 
 @functools.lru_cache(maxsize=None)
 def compute_stable_json_hash(item) -> Text:
     return hashlib.sha1(
         json.dumps(
-            json.loads(item.to_json()), sort_keys=True, separators=(",", ":"),
+            json.loads(to_json(item)),
+            sort_keys=True,
+            separators=(",", ":"),
         ).encode("utf-8"),
     ).hexdigest()
 
@@ -109,7 +128,7 @@ def star(function: Callable) -> Callable:
     return star_and_run
 
 
-@toolz.curry
+@currying.curry
 def _assert_f_output_on_inp(f, inp):
     assert f(inp)
 
@@ -118,7 +137,7 @@ def assert_that(f):
     return curried.do(_assert_f_output_on_inp(f))
 
 
-@toolz.curry
+@currying.curry
 def pmap(f, n_workers, it):
     # The `tuple` is for callers convenience (even without it, the pool is eager).
     return tuple(futures.ThreadPoolExecutor(max_workers=n_workers).map(f, it))
@@ -147,8 +166,8 @@ def make_call_key(args, kwargs):
     return key
 
 
-@toolz.curry
-def top(iterable, key=toolz.identity):
+@currying.curry
+def top(iterable, key=identity):
     """Generates elements from max to min."""
     h = []
     for i, value in enumerate(iterable):
@@ -158,8 +177,8 @@ def top(iterable, key=toolz.identity):
         yield toolz.nth(2, heapq_max.heappop_max(h))
 
 
-@toolz.curry
-def bottom(iterable, key=toolz.identity):
+@currying.curry
+def bottom(iterable, key=identity):
     """Generates elements from min to max."""
     h = []
     for i, value in enumerate(iterable):
@@ -181,27 +200,27 @@ def profileit(func):
     return wrapper
 
 
-@toolz.curry
+@currying.curry
 def inside(val, container):
     return val in container
 
 
-@toolz.curry
+@currying.curry
 def len_equals(length: int, seq):
     return len(seq) == length
 
 
-@toolz.curry
+@currying.curry
 def len_greater(length: int, seq):
     return len(seq) > length
 
 
-@toolz.curry
+@currying.curry
 def len_smaller(length: int, seq):
     return len(seq) < length
 
 
-@toolz.curry
+@currying.curry
 def skip(n, seq):
     for i, x in enumerate(seq):
         if i < n:
@@ -217,12 +236,12 @@ def invoke(x):
     return x()
 
 
-@toolz.curry
+@currying.curry
 def assoc_in(d, keys, value, factory=dict):
     return update_in(d, keys, lambda x: value, value, factory)
 
 
-@toolz.curry
+@currying.curry
 def update_in(d, keys, func, default=None, factory=dict):
     ks = iter(keys)
     k = next(ks)
@@ -254,21 +273,25 @@ def update_in(d, keys, func, default=None, factory=dict):
     return rv
 
 
-@toolz.curry
+@currying.curry
 def dataclass_transform(
-    attr_name: Text, attr_transformer: Callable[[Any], Any], dataclass_instance,
+    attr_name: Text,
+    attr_transformer: Callable[[Any], Any],
+    dataclass_instance,
 ):
     return dataclasses.replace(
         dataclass_instance,
         **{
             attr_name: toolz.pipe(
-                dataclass_instance, operator.attrgetter(attr_name), attr_transformer,
+                dataclass_instance,
+                attrgetter(attr_name),
+                attr_transformer,
             ),
         },
     )
 
 
-@toolz.curry
+@currying.curry
 def dataclass_replace(attr_name: Text, attr_value: Any, dataclass_instance):
     return dataclasses.replace(dataclass_instance, **{attr_name: attr_value})
 
@@ -277,29 +300,31 @@ _R = TypeVar("_R")
 _E = TypeVar("_E")
 
 
-@toolz.curry
+@currying.curry
 def reduce(
-    reducer: Callable[[_R, _E], _R], initial_value: _R, elements: Iterable[_E],
+    reducer: Callable[[_R, _E], _R],
+    initial_value: _R,
+    elements: Iterable[_E],
 ) -> _R:
     return functools.reduce(reducer, elements, initial_value)
 
 
-@toolz.curry
+@currying.curry
 def suffix(val, it: Iterable):
     return itertools.chain(it, (val,))
 
 
-@toolz.curry
+@currying.curry
 def prefix(val, it: Iterable):
     return itertools.chain((val,), it)
 
 
-@toolz.curry
+@currying.curry
 def concat_with(new_it: Iterable, it: Iterable):
     return itertools.chain(it, new_it)
 
 
-@toolz.curry
+@currying.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
 
@@ -311,16 +336,21 @@ def apply(*args, **kwargs):
     return apply_inner
 
 
-@toolz.curry
+@currying.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
     return toolz.pipe(
-        seq, reversed, toolz.curry(itertools.dropwhile)(predicate), tuple, reversed,
+        seq,
+        reversed,
+        currying.curry(itertools.dropwhile)(predicate),
+        tuple,
+        reversed,
     )
 
 
-@toolz.curry
+@currying.curry
 def partition_after(
-    predicate: Callable[[Any], bool], seq: Sequence,
+    predicate: Callable[[Any], bool],
+    seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,))
@@ -331,9 +361,10 @@ def partition_after(
     )
 
 
-@toolz.curry
+@currying.curry
 def partition_before(
-    predicate: Callable[[Any], bool], seq: Sequence,
+    predicate: Callable[[Any], bool],
+    seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
         lambda a, b: (*a, (b,)) if not a or predicate(b) else (*a[:-1], (*a[-1], b)),
@@ -344,11 +375,12 @@ def partition_before(
 
 def get_all_n_grams(seq):
     return toolz.pipe(
-        range(1, len(seq) + 1), curried.mapcat(curried.sliding_window(seq=seq)),
+        range(1, len(seq) + 1),
+        curried.mapcat(curried.sliding_window(seq=seq)),
     )
 
 
-@toolz.curry
+@currying.curry
 def is_instance(the_type, the_value):
     return type(the_value) == the_type
 
@@ -360,9 +392,134 @@ def sample(n: int):
     return sample_inner
 
 
-@functional_utils.curry
+@currying.curry
 def eq_by(f, value_1, value_2):
     return f(value_1) == f(value_2)
 
 
 eq_str_ignore_case = eq_by(str.lower)
+
+
+@currying.curry
+def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
+    """
+    Group a collection by a key function, when the value is given by a reducer function.
+
+    Parameters:
+    key (Callable): Key function (given object in collection outputs key).
+    reducer (Callable): Reducer function (given object in collection outputs new value).
+    seq (Iterable): Collection.
+
+    Returns:
+    Dict[Text, Any]: Dictionary where key has been computed by the `key` function
+    and value by the `reducer` function.
+
+    """
+    result: Dict[Any, Any] = {}
+    for element in seq:
+        for key_result in key(element):
+            result[key_result] = reducer(result.get(key_result, None), element)
+    return result
+
+
+@currying.curry
+def take_while(pred, seq):
+    for x in seq:
+        if not pred(x):
+            return
+        yield x
+
+
+@currying.curry
+def take_last_while(pred, seq):
+    return toolz.pipe(
+        seq,
+        reduce(
+            lambda acc, elem: suffix(elem, acc) if pred(elem) else (),
+            (),
+        ),
+    )
+
+
+def attrgetter(attr):
+    def attrgetter(obj):
+        return getattr(obj, attr)
+
+    return attrgetter
+
+
+def itemgetter(attr):
+    def itemgetter(obj):
+        return operator.getitem(obj, attr)
+
+    return itemgetter
+
+
+def equals(x):
+    def equals(y):
+        return x == y
+
+    return equals
+
+
+def not_equals(x):
+    def not_equals(y):
+        return x != y
+
+    return not_equals
+
+
+def contains(x):
+    def contains(y):
+        return y in x
+
+    return contains
+
+
+def add(x):
+    def add(y):
+        return y + x
+
+    return add
+
+
+def greater_than(x):
+    def greater_than(y):
+        return y > x
+
+    return greater_than
+
+
+def greater_equals(x):
+    def greater_equals(y):
+        return y >= x
+
+    return greater_equals
+
+
+def less_than(x):
+    def less_than(y):
+        return y < x
+
+    return less_than
+
+
+def less_equals(x):
+    def less_equals(y):
+        return y <= x
+
+    return less_equals
+
+
+def multiply(x):
+    def multiply(y):
+        return y * x
+
+    return multiply
+
+
+def divide_by(x):
+    def divide_by(y):
+        return y / x
+
+    return divide_by
