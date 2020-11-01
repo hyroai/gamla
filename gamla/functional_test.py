@@ -504,6 +504,10 @@ def test_attrgetter():
     assert functional.attrgetter("lower")("ASD")() == "asd"
 
 
+def test_itemgetter():
+    assert functional.itemgetter("a")({"a": 1}) == 1
+
+
 def test_latency():
     start_time = time.time()
     for _ in range(1000):

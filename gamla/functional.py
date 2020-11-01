@@ -450,7 +450,7 @@ def attrgetter(attr):
 
 def itemgetter(attr):
     def itemgetter(obj):
-        return operator.itemgetter(obj, attr)
+        return operator.getitem(obj, attr)
 
     return itemgetter
 

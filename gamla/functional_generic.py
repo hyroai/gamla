@@ -39,7 +39,7 @@ async def to_awaitable(value):
     return value
 
 
-_IS_DEBUG_MODE = not not os.environ.get("GAMLA_DEBUG_MODE")
+_DEBUG_MODE = os.environ.get("GAMLA_DEBUG_MODE")
 
 
 # Copying `toolz` convention.
@@ -77,7 +77,11 @@ def compose(*funcs):
     else:
         composed = compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
-    if _IS_DEBUG_MODE:
+    if _DEBUG_MODE:
+        if _DEBUG_MODE == "2":
+            frame_info = inspect.getframeinfo(inspect.stack()[1][0])
+            filename = frame_info.filename.replace(".", "").split("/")[-1]
+            name = f"{filename}_{frame_info.lineno}_COMPOSITION_" + name
         if asyncio.iscoroutinefunction(composed):
             composed = introspection.rename_async_function(name, composed)
         else:
