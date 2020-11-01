@@ -60,7 +60,7 @@ def dict_to_csv(
     titles: Optional[Tuple] = None,
     separator: Text = "\t",
 ) -> Text:
-    return toolz.pipe(
+    return functional_generic.pipe(
         table,
         dict_to_tuple_of_tuples,
         tuple_of_tuples_to_csv(titles=titles, separator=separator),
@@ -90,7 +90,7 @@ def tuple_of_tuples_to_csv(
     tuple_of_tuples: Tuple[Tuple[Any], ...],
     separator: Text = "\t",
 ) -> Text:
-    return toolz.pipe(
+    return functional_generic.pipe(
         tuple_of_tuples,
         curried.map(
             functional_generic.compose_left(
@@ -119,7 +119,7 @@ def match(dataclass_pattern):
     """
     # pattern -> ( (getter,...), pattern) -> ((getter,...), (value,...)) ->
     # ((getter,...), (eq(value),...)) -> alljuxt( compose_left(getter,eq(value)),... )
-    return toolz.pipe(
+    return functional_generic.pipe(
         dataclass_pattern,
         functional_generic.juxt(_field_getters, itertools.repeat),
         functional_generic.juxt(
