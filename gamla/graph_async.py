@@ -27,7 +27,7 @@ async def agroupby_many(f, it):
 async def agraph_traverse(
     source: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],
-    key: Callable = toolz.identity,
+    key: Callable = functional.identity,
 ) -> AsyncGenerator:
     async for s in agraph_traverse_many(
         [source],
@@ -41,7 +41,7 @@ async def agraph_traverse(
 async def agraph_traverse_many(
     sources: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],
-    key: Callable = toolz.identity,
+    key: Callable = functional.identity,
 ) -> AsyncGenerator[Any, None]:
     """BFS over a graph, yielding unique nodes.
 
@@ -63,7 +63,7 @@ async def atraverse_graph_by_radius(
     source: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],
     radius: int,
-    key: Callable = toolz.identity,
+    key: Callable = functional.identity,
 ) -> AsyncGenerator[Any, None]:
     """Like `agraph_traverse`, but does not traverse farther from given `radius`."""
 

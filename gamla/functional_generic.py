@@ -436,3 +436,36 @@ def check(condition, exception):
         complement(condition),
         functional.make_raise(exception),
     )
+
+
+def countby_many(f):
+    """Count elements of a collection by a function which returns a tuple of keys
+    for single element.
+
+    Parameters:
+    f (Callable): Key function (given object in collection outputs tuple of keys).
+    it (Iterable): Collection.
+
+    Returns:
+    Dict[Text, Any]: Dictionary where key has been computed by the `f` key function
+    and value is the frequency of this key.
+
+    >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
+    >>> countby_many(lambda name: (name[0], name[-1]), names)
+    {'a': 1,
+     'e': 3,
+     'b': 2,
+     'c': 1,
+     'd': 1,
+     'n': 1,
+     'h': 1,
+     'f': 1,
+     'k': 1}
+    """
+    return compose_left(
+        curried_map(f),
+        functional.groupby_many_reduce(
+            functional.identity,
+            lambda x, y: x + 1 if x else 1,
+        ),
+    )

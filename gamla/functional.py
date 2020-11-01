@@ -167,7 +167,7 @@ def make_call_key(args, kwargs):
 
 
 @currying.curry
-def top(iterable, key=toolz.identity):
+def top(iterable, key=identity):
     """Generates elements from max to min."""
     h = []
     for i, value in enumerate(iterable):
@@ -178,7 +178,7 @@ def top(iterable, key=toolz.identity):
 
 
 @currying.curry
-def bottom(iterable, key=toolz.identity):
+def bottom(iterable, key=identity):
     """Generates elements from min to max."""
     h = []
     for i, value in enumerate(iterable):
@@ -420,38 +420,6 @@ def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
         for key_result in key(element):
             result[key_result] = reducer(result.get(key_result, None), element)
     return result
-
-
-@currying.curry
-def countby_many(f, it):
-    """Count elements of a collection by a function which returns a tuple of keys
-    for single element.
-
-    Parameters:
-    f (Callable): Key function (given object in collection outputs tuple of keys).
-    it (Iterable): Collection.
-
-    Returns:
-    Dict[Text, Any]: Dictionary where key has been computed by the `f` key function
-    and value is the frequency of this key.
-
-    >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
-    >>> countby_many(lambda name: (name[0], name[-1]), names)
-    {'a': 1,
-     'e': 3,
-     'b': 2,
-     'c': 1,
-     'd': 1,
-     'n': 1,
-     'h': 1,
-     'f': 1,
-     'k': 1}
-    """
-    return toolz.pipe(
-        it,
-        curried.map(f),
-        groupby_many_reduce(toolz.identity, lambda x, y: x + 1 if x else 1),
-    )
 
 
 @currying.curry

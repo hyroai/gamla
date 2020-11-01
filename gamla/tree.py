@@ -32,8 +32,8 @@ def _get_children(element):
     return functional_generic.case_dict(
         {
             _is_terminal: functional.just(()),
-            functional.is_instance(tuple): toolz.identity,
-            functional.is_instance(list): toolz.identity,
+            functional.is_instance(tuple): functional.identity,
+            functional.is_instance(list): functional.identity,
             functional.is_instance(dict): functional_generic.compose_left(
                 dict.items,
                 functional.curried_map_sync(functional.star(_KeyValue)),

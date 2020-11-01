@@ -296,7 +296,7 @@ def test_average():
 
 def test_countby_many():
     names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
-    assert functional.countby_many(lambda name: (name[0], name[-1]), names) == {
+    assert functional_generic.countby_many(lambda name: (name[0], name[-1]))(names) == {
         "a": 1,
         "e": 3,
         "b": 2,
