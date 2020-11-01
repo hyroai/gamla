@@ -31,7 +31,7 @@ def test_currying():
 
 
 def test_juxt():
-    assert functional_generic.juxt(toolz.identity, lambda x: x + 1)(3) == (3, 4)
+    assert functional_generic.juxt(functional.identity, lambda x: x + 1)(3) == (3, 4)
 
 
 def test_juxt_zero_params():
@@ -51,7 +51,10 @@ async def test_juxt_async():
         await asyncio.sleep(0.01)
         return x
 
-    assert await functional_generic.juxt(toolz.identity, slow_identity)(3) == (3, 3)
+    assert await functional_generic.juxt(functional.identity, slow_identity)(3) == (
+        3,
+        3,
+    )
 
 
 def test_anyjuxt():
@@ -63,11 +66,13 @@ def test_alljuxt():
 
 
 async def test_alljuxt_async():
-    assert not await functional_generic.alljuxt(_opposite_async, toolz.identity)(True)
+    assert not await functional_generic.alljuxt(_opposite_async, functional.identity)(
+        True,
+    )
 
 
 async def test_anyjuxt_async():
-    assert await functional_generic.anyjuxt(_opposite_async, toolz.identity)(True)
+    assert await functional_generic.anyjuxt(_opposite_async, functional.identity)(True)
 
 
 async def test_anymap():
@@ -158,25 +163,30 @@ async def test_wrap_str():
 
 
 def test_case_single_predicate():
-    assert functional_generic.case_dict({toolz.identity: toolz.identity})(True)
+    assert functional_generic.case_dict({functional.identity: functional.identity})(
+        True,
+    )
 
 
 def test_case_multiple_predicates():
     assert not functional_generic.case_dict(
-        {lambda x: not x: toolz.identity, toolz.identity: lambda x: not x},
+        {lambda x: not x: functional.identity, functional.identity: lambda x: not x},
     )(True)
 
 
 def test_case_no_predicate():
     with pytest.raises(functional_generic.NoConditionMatched):
         functional_generic.case_dict(
-            {lambda x: not x: toolz.identity, lambda x: not x: toolz.identity},
+            {
+                lambda x: not x: functional.identity,
+                lambda x: not x: functional.identity,
+            },
         )(True)
 
 
 async def test_case_async():
     assert not await functional_generic.case_dict(
-        {_opposite_async: toolz.identity, toolz.identity: _opposite_async},
+        {_opposite_async: functional.identity, functional.identity: _opposite_async},
     )(True)
 
 
@@ -224,7 +234,7 @@ async def test_drop_last_while():
 def test_apply_spec():
     assert (
         functional_generic.apply_spec(
-            {"identity": toolz.identity, "increment": lambda x: x + 1},
+            {"identity": functional.identity, "increment": lambda x: x + 1},
         )(1)
         == {"identity": 1, "increment": 2}
     )
@@ -321,7 +331,7 @@ def test_excepts_sync():
         functional_generic.excepts(
             SomeException,
             functional.just(None),
-            toolz.identity,
+            functional.identity,
         )(1)
         == 1
     )
@@ -465,8 +475,8 @@ def test_take_last_while():
 def test_compositions_have_name():
     assert (
         functional_generic.compose_left(
-            toolz.identity,
-            toolz.identity,
+            functional.identity,
+            functional.identity,
             toolz.unique,
         ).__name__
         == "unique_of_identity_of_identity"
@@ -480,7 +490,7 @@ def test_async_compositions_have_name():
 
     assert (
         functional_generic.compose_left(
-            toolz.identity,
+            functional.identity,
             async_identity,
             toolz.unique,
         ).__name__

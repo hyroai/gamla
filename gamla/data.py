@@ -51,7 +51,7 @@ def _freeze_nonterminal(v):
     return tuple(v)
 
 
-freeze_deep = functional_generic.map_dict(_freeze_nonterminal, toolz.identity)
+freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identity)
 
 
 @currying.curry
@@ -72,9 +72,15 @@ def csv_to_json(csv_file_path) -> List:
         return list(csv.DictReader(csvf))
 
 
-dict_to_tuple_of_tuples = toolz.compose_left(
+dict_to_tuple_of_tuples = functional_generic.compose_left(
     dict.items,
-    curried.map(curried.compose_left(lambda x: (x[0], *x[1]), curried.map(str), tuple)),
+    functional_generic.curried_map(
+        functional_generic.compose_left(
+            lambda x: (x[0], *x[1]),
+            functional_generic.curried_map(str),
+            tuple,
+        ),
+    ),
     tuple,
 )
 
@@ -86,14 +92,22 @@ def tuple_of_tuples_to_csv(
 ) -> Text:
     return toolz.pipe(
         tuple_of_tuples,
-        curried.map(toolz.compose_left(curried.map(str), tuple, separator.join)),
+        curried.map(
+            functional_generic.compose_left(
+                functional_generic.curried_map(str),
+                tuple,
+                separator.join,
+            ),
+        ),
         "\n".join,
     )
 
 
-_field_getters = toolz.compose_left(
+_field_getters = functional_generic.compose_left(
     dataclasses.fields,
-    curried.map(toolz.compose_left(lambda f: f.name, operator.attrgetter)),
+    functional_generic.curried_map(
+        functional_generic.compose_left(lambda f: f.name, operator.attrgetter),
+    ),
     tuple,
 )
 
@@ -107,12 +121,12 @@ def match(dataclass_pattern):
     # ((getter,...), (eq(value),...)) -> alljuxt( compose_left(getter,eq(value)),... )
     return toolz.pipe(
         dataclass_pattern,
-        toolz.juxt(_field_getters, itertools.repeat),
-        toolz.juxt(
+        functional_generic.juxt(_field_getters, itertools.repeat),
+        functional_generic.juxt(
             toolz.first,
             functional.star(
                 curried.map(
-                    toolz.compose_left(
+                    functional_generic.compose_left(
                         toolz.apply,
                         functional_generic.case(
                             (
@@ -128,7 +142,9 @@ def match(dataclass_pattern):
                 ),
             ),
         ),
-        functional.star(curried.map(toolz.compose_left)),
+        functional.star(
+            functional_generic.curried_map(functional_generic.compose_left),
+        ),
         functional.prefix(lambda dc: type(dc) == type(dataclass_pattern)),
         functional.star(functional_generic.alljuxt),
     )

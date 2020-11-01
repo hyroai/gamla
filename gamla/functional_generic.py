@@ -2,6 +2,7 @@ import asyncio
 import functools
 import inspect
 import itertools
+import operator
 import os
 from typing import Any, Callable, Iterable, Text, Tuple, Type, TypeVar, Union
 
@@ -48,7 +49,7 @@ def _get_name_for_function_group(funcs):
     return "_of_".join(map(lambda x: x.__name__, funcs))
 
 
-def _acompose(*funcs):
+def _compose_async(*funcs):
     @functools.wraps(toolz.last(funcs))
     async def async_composed(*args, **kwargs):
         for f in reversed(funcs):
@@ -59,18 +60,22 @@ def _acompose(*funcs):
     return async_composed
 
 
+def compose_sync(*funcs):
+    @functools.wraps(toolz.last(funcs))
+    def composed(*args, **kwargs):
+        for f in reversed(funcs):
+            args = [f(*args, **kwargs)]
+            kwargs = {}
+        return toolz.first(args)
+
+    return composed
+
+
 def compose(*funcs):
     if _any_is_async(funcs):
-        composed = _acompose(*funcs)
+        composed = _compose_async(*funcs)
     else:
-
-        @functools.wraps(toolz.last(funcs))
-        def composed(*args, **kwargs):
-            for f in reversed(funcs):
-                args = [f(*args, **kwargs)]
-                kwargs = {}
-            return toolz.first(args)
-
+        composed = compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
     if _IS_DEBUG_MODE:
         if asyncio.iscoroutinefunction(composed):
@@ -184,11 +189,11 @@ valmap = compose(
 
 
 def pair_with(f):
-    return juxt(f, toolz.identity)
+    return juxt(f, functional.identity)
 
 
 def pair_right(f):
-    return juxt(toolz.identity, f)
+    return juxt(functional.identity, f)
 
 
 def _sync_curried_filter(f):
@@ -210,6 +215,10 @@ curried_filter = compose(
     curried_map,
     pair_with,
 )
+
+complement = after(operator.not_)
+
+remove = compose(curried_filter, complement)
 
 
 class NoConditionMatched(Exception):
@@ -298,7 +307,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
 
 def _iterdict(d):
     results = []
-    map_dict(toolz.identity, results.append)(d)
+    map_dict(functional.identity, results.append)(d)
     return results
 
 
@@ -319,14 +328,14 @@ def apply_spec(spec):
 
         async def apply_spec_async(*args, **kwargs):
             return await map_dict(
-                toolz.identity,
+                functional.identity,
                 compose_left(functional.apply(*args, **kwargs), to_awaitable),
             )(spec)
 
         return apply_spec_async
     return compose_left(
         functional.apply,
-        lambda applier: map_dict(toolz.identity, applier),
+        lambda applier: map_dict(functional.identity, applier),
         functional.apply(spec),
     )
 
@@ -420,3 +429,10 @@ find_index = compose_left(
     before(enumerate),
     after(ternary(functional.equals(None), functional.just(-1), toolz.first)),
 )
+
+
+def check(condition, exception):
+    return functional.do_if(
+        complement(condition),
+        compose_left(exception, functional.just_raise),
+    )

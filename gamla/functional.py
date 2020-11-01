@@ -18,6 +18,11 @@ from toolz import curried
 
 from gamla import currying
 
+
+def identity(x):
+    return x
+
+
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
@@ -40,13 +45,6 @@ def do_if(condition, fun):
         return x
 
     return inner_do_if
-
-
-def check(condition, exception):
-    return do_if(
-        toolz.complement(condition),
-        toolz.compose_left(exception, just_raise),
-    )
 
 
 def singleize(func: Callable) -> Callable:
@@ -500,3 +498,38 @@ def contains(x):
         return y in x
 
     return contains
+
+
+def add(x):
+    def add(y):
+        return y + x
+
+    return add
+
+
+def greater_than(x):
+    def greater_than(y):
+        return y > x
+
+    return greater_than
+
+
+def greater_equals(x):
+    def greater_equals(y):
+        return y >= x
+
+    return greater_equals
+
+
+def less_than(x):
+    def less_than(y):
+        return y < x
+
+    return less_than
+
+
+def less_equals(x):
+    def less_equals(y):
+        return y <= x
+
+    return less_equals
