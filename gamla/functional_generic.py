@@ -434,5 +434,5 @@ find_index = compose_left(
 def check(condition, exception):
     return functional.do_if(
         complement(condition),
-        compose_left(exception, functional.just_raise),
+        functional.make_raise(exception),
     )
