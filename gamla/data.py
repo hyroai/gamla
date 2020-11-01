@@ -106,7 +106,7 @@ def tuple_of_tuples_to_csv(
 _field_getters = functional_generic.compose_left(
     dataclasses.fields,
     functional_generic.curried_map(
-        functional_generic.compose_left(lambda f: f.name, operator.attrgetter),
+        functional_generic.compose_left(lambda f: f.name, functional.attrgetter),
     ),
     tuple,
 )
@@ -143,7 +143,7 @@ def match(dataclass_pattern):
             ),
         ),
         functional.star(
-            functional_generic.curried_map(functional_generic.compose_left),
+            curried.map(functional_generic.compose_left),
         ),
         functional.prefix(lambda dc: type(dc) == type(dataclass_pattern)),
         functional.star(functional_generic.alljuxt),
