@@ -3,7 +3,6 @@ from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
 import toolz
 from toolz import curried
-from toolz.curried import operator
 
 from gamla import currying, functional, functional_generic
 
@@ -12,7 +11,7 @@ from gamla import currying, functional, functional_generic
 def graph_traverse(
     source: Any,
     get_neighbors: Callable,
-    key: Callable = toolz.identity,
+    key: Callable = functional.identity,
 ) -> Iterable:
     yield from graph_traverse_many([source], get_neighbors=get_neighbors, key=key)
 
@@ -21,13 +20,16 @@ def graph_traverse(
 def graph_traverse_many(
     sources: Any,
     get_neighbors: Callable,
-    key: Callable = toolz.identity,
+    key: Callable = functional.identity,
 ) -> Iterable:
     """BFS over a graph, yielding unique nodes.
     Note: `get_neighbors` must return elements without duplicates."""
     seen_set: Set = set()
-    remember = toolz.compose_left(key, seen_set.add)
-    should_traverse = toolz.compose_left(key, toolz.complement(seen_set.__contains__))
+    remember = functional_generic.compose_left(key, seen_set.add)
+    should_traverse = functional_generic.compose_left(
+        key,
+        functional_generic.complement(functional.contains(seen_set)),
+    )
     yield from general_graph_traverse_many(
         sources,
         get_neighbors,
@@ -82,24 +84,29 @@ def traverse_graph_by_radius(
     )
 
 
-edges_to_graph = toolz.compose(
-    curried.valmap(toolz.compose(frozenset, curried.map(toolz.second))),
+edges_to_graph = functional_generic.compose(
+    functional_generic.valmap(
+        functional_generic.compose(
+            frozenset,
+            functional_generic.curried_map(toolz.second),
+        ),
+    ),
     curried.groupby(toolz.first),
 )
 
-graph_to_edges = toolz.compose_left(
-    curried.keymap(lambda x: (x,)),
+graph_to_edges = functional_generic.compose_left(
+    functional_generic.keymap(functional.wrap_tuple),
     dict.items,
     curried.mapcat(functional.star(itertools.product)),
 )
 
-reverse_graph = toolz.compose_left(
+reverse_graph = functional_generic.compose_left(
     graph_to_edges,
-    curried.map(toolz.compose_left(reversed, tuple)),
+    functional_generic.curried_map(functional_generic.compose_left(reversed, tuple)),
     edges_to_graph,
 )
 
-cliques_to_graph = toolz.compose_left(
+cliques_to_graph = functional_generic.compose_left(
     curried.mapcat(lambda clique: itertools.permutations(clique, r=2)),
     edges_to_graph,
 )
@@ -112,8 +119,8 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
         result = frozenset(
             graph_traverse(
                 source=toolz.first(nodes_left),
-                get_neighbors=toolz.compose(
-                    curried.filter(operator.contains(nodes_left)),
+                get_neighbors=functional_generic.compose(
+                    functional_generic.curried_filter(functional.contains(nodes_left)),
                     graph.get,
                 ),
             ),
@@ -145,10 +152,10 @@ def groupby_many(f, it):
      'f': frozenset({'frank'}),
      'k': frozenset({'frank'})}
     """
-    return toolz.pipe(
+    return functional_generic.pipe(
         it,
         curried.mapcat(
-            toolz.compose_left(
+            functional_generic.compose_left(
                 lambda element: (f(element), [element]),
                 functional.star(itertools.product),
             ),
@@ -164,7 +171,7 @@ def _has_cycle(sourced, get_neighbors, visited, node):
     if node in visited:
         return False
     visited.add(node)
-    return toolz.pipe(
+    return functional_generic.pipe(
         node,
         get_neighbors,
         functional_generic.anymap(_has_cycle(sourced | {node}, get_neighbors, visited)),
@@ -172,9 +179,11 @@ def _has_cycle(sourced, get_neighbors, visited, node):
 
 
 def has_cycle(graph):
-    return toolz.pipe(
+    return functional_generic.pipe(
         graph,
         dict.keys,
-        curried.map(_has_cycle(frozenset(), curried.get(seq=graph, default=()), set())),
+        functional_generic.curried_map(
+            _has_cycle(frozenset(), curried.get(seq=graph, default=()), set()),
+        ),
         any,
     )

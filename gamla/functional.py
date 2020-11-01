@@ -8,6 +8,7 @@ import inspect
 import itertools
 import json
 import logging
+import operator
 import random
 from concurrent import futures
 from typing import Any, Callable, Dict, Iterable, Sequence, Text, TypeVar
@@ -17,6 +18,11 @@ import toolz
 from toolz import curried
 
 from gamla import currying
+
+
+def identity(x):
+    return x
+
 
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
@@ -40,13 +46,6 @@ def do_if(condition, fun):
         return x
 
     return inner_do_if
-
-
-def check(condition, exception):
-    return do_if(
-        toolz.complement(condition),
-        toolz.compose_left(exception, just_raise),
-    )
 
 
 def singleize(func: Callable) -> Callable:
@@ -168,7 +167,7 @@ def make_call_key(args, kwargs):
 
 
 @currying.curry
-def top(iterable, key=toolz.identity):
+def top(iterable, key=identity):
     """Generates elements from max to min."""
     h = []
     for i, value in enumerate(iterable):
@@ -179,7 +178,7 @@ def top(iterable, key=toolz.identity):
 
 
 @currying.curry
-def bottom(iterable, key=toolz.identity):
+def bottom(iterable, key=identity):
     """Generates elements from min to max."""
     h = []
     for i, value in enumerate(iterable):
@@ -424,38 +423,6 @@ def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
 
 
 @currying.curry
-def countby_many(f, it):
-    """Count elements of a collection by a function which returns a tuple of keys
-    for single element.
-
-    Parameters:
-    f (Callable): Key function (given object in collection outputs tuple of keys).
-    it (Iterable): Collection.
-
-    Returns:
-    Dict[Text, Any]: Dictionary where key has been computed by the `f` key function
-    and value is the frequency of this key.
-
-    >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
-    >>> countby_many(lambda name: (name[0], name[-1]), names)
-    {'a': 1,
-     'e': 3,
-     'b': 2,
-     'c': 1,
-     'd': 1,
-     'n': 1,
-     'h': 1,
-     'f': 1,
-     'k': 1}
-    """
-    return toolz.pipe(
-        it,
-        curried.map(f),
-        groupby_many_reduce(toolz.identity, lambda x, y: x + 1 if x else 1),
-    )
-
-
-@currying.curry
 def take_while(pred, seq):
     for x in seq:
         if not pred(x):
@@ -481,6 +448,13 @@ def attrgetter(attr):
     return attrgetter
 
 
+def itemgetter(attr):
+    def itemgetter(obj):
+        return operator.itemgetter(obj, attr)
+
+    return itemgetter
+
+
 def equals(x):
     def equals(y):
         return x == y
@@ -500,3 +474,52 @@ def contains(x):
         return y in x
 
     return contains
+
+
+def add(x):
+    def add(y):
+        return y + x
+
+    return add
+
+
+def greater_than(x):
+    def greater_than(y):
+        return y > x
+
+    return greater_than
+
+
+def greater_equals(x):
+    def greater_equals(y):
+        return y >= x
+
+    return greater_equals
+
+
+def less_than(x):
+    def less_than(y):
+        return y < x
+
+    return less_than
+
+
+def less_equals(x):
+    def less_equals(y):
+        return y <= x
+
+    return less_equals
+
+
+def multiply(x):
+    def multiply(y):
+        return y * x
+
+    return multiply
+
+
+def divide_by(x):
+    def divide_by(y):
+        return y / x
+
+    return divide_by
