@@ -541,3 +541,17 @@ def less_equals(x):
         return y <= x
 
     return less_equals
+
+
+def multiply(x):
+    def multiply(y):
+        return y * x
+
+    return multiply
+
+
+def divide_by(x):
+    def divide_by(y):
+        return y / x
+
+    return divide_by
