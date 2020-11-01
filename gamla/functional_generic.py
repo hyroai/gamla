@@ -79,8 +79,9 @@ def compose(*funcs):
     name = _get_name_for_function_group(funcs)
     if _IS_DEBUG_MODE:
         if asyncio.iscoroutinefunction(composed):
-            return introspection.rename_async_function(name, composed)
-        return introspection.rename_function(name, composed)
+            composed = introspection.rename_async_function(name, composed)
+        else:
+            composed = introspection.rename_function(name, composed)
     composed.__name__ = name
     return composed
 
