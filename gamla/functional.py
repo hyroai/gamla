@@ -8,6 +8,7 @@ import inspect
 import itertools
 import json
 import logging
+import operator
 import random
 from concurrent import futures
 from typing import Any, Callable, Dict, Iterable, Sequence, Text, TypeVar
@@ -477,6 +478,13 @@ def attrgetter(attr):
         return getattr(obj, attr)
 
     return attrgetter
+
+
+def itemgetter(attr):
+    def itemgetter(obj):
+        return operator.itemgetter(obj, attr)
+
+    return itemgetter
 
 
 def equals(x):
