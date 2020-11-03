@@ -27,6 +27,11 @@ def identity(x):
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
+count = toolz.count
+
+sorted = currying.curry(sorted)
+
+
 def curried_map_sync(f):
     def curried_map(it):
         for x in it:
