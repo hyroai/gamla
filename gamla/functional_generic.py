@@ -436,6 +436,14 @@ find_index = compose_left(
 )
 
 
+def itemgetter_default(default, attr):
+    return excepts(
+        (KeyError, IndexError),
+        functional.just(default),
+        functional.itemgetter(attr),
+    )
+
+
 def check(condition, exception):
     return functional.do_if(
         complement(condition),

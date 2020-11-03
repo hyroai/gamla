@@ -381,7 +381,9 @@ def test_find():
 
     assert (
         functional_generic.find(
-            functional_generic.compose_left(curried.get("key"), functional.equals(2)),
+            functional_generic.compose_left(
+                functional.itemgetter("key"), functional.equals(2)
+            ),
         )(
             iter(seq),
         )
@@ -390,7 +392,9 @@ def test_find():
 
     assert (
         functional_generic.find(
-            functional_generic.compose_left(curried.get("key"), functional.equals(4)),
+            functional_generic.compose_left(
+                functional.itemgetter("key"), functional.equals(4)
+            ),
         )(iter(seq))
         is None
     )
@@ -401,14 +405,18 @@ def test_find_index():
 
     assert (
         functional_generic.find_index(
-            functional_generic.compose_left(curried.get("key"), functional.equals(2)),
+            functional_generic.compose_left(
+                functional.itemgetter("key"), functional.equals(2)
+            ),
         )(iter(seq))
         == 1
     )
 
     assert (
         functional_generic.find_index(
-            functional_generic.compose_left(curried.get("key"), functional.equals(4)),
+            functional_generic.compose_left(
+                functional.itemgetter("key"), functional.equals(4)
+            ),
         )(iter(seq))
         == -1
     )
@@ -421,7 +429,7 @@ def test_take_while():
         tuple(
             functional.take_while(
                 functional_generic.compose_left(
-                    curried.get("key"),
+                    functional.itemgetter("key"),
                     functional.not_equals(3),
                 ),
                 iter(seq),
@@ -434,7 +442,7 @@ def test_take_while():
         tuple(
             functional.take_while(
                 functional_generic.compose_left(
-                    curried.get("key"),
+                    functional.itemgetter("key"),
                     functional.not_equals(4),
                 ),
                 iter(seq),
@@ -451,7 +459,7 @@ def test_take_last_while():
         tuple(
             functional.take_last_while(
                 functional_generic.compose_left(
-                    curried.get("key"),
+                    functional.itemgetter("key"),
                     functional.not_equals(2),
                 ),
                 iter(seq),
@@ -464,7 +472,7 @@ def test_take_last_while():
         tuple(
             functional.take_last_while(
                 functional_generic.compose_left(
-                    curried.get("key"),
+                    functional.itemgetter("key"),
                     functional.not_equals(6),
                 ),
                 iter(seq),
