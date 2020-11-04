@@ -474,3 +474,21 @@ def countby_many(f):
             lambda x, y: x + 1 if x else 1,
         ),
     )
+
+
+def merge(*dicts):
+    result_dict = {}
+    for d in dicts:
+        result_dict.update(d)
+    return result_dict
+
+
+def merge_with(func, *dicts):
+    result = {}
+    for d in dicts:
+        for k, v in d.items():
+            if k not in result:
+                result[k] = [v]
+            else:
+                result[k].append(v)
+    return valmap(func, result)
