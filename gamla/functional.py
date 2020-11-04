@@ -455,6 +455,13 @@ def itemgetter(attr):
     return itemgetter
 
 
+def itemgetter_or_none(attr):
+    def itemgetter_or_none(obj):
+        return obj.get(attr, None)
+
+    return itemgetter_or_none
+
+
 def equals(x):
     def equals(y):
         return x == y
@@ -523,3 +530,25 @@ def divide_by(x):
         return y / x
 
     return divide_by
+
+
+_GET_IN_EXCEPTIONS = (KeyError, IndexError, TypeError)
+
+
+def get_in(keys):
+    def get_in(coll):
+        return functools.reduce(operator.getitem, keys, coll)
+
+    return get_in
+
+
+def get_in_with_default(keys, default):
+    return toolz.excepts(_GET_IN_EXCEPTIONS, get_in(keys), just(default))
+
+
+def get_in_or_none(keys):
+    return get_in_with_default(keys, None)
+
+
+def get_in_or_none_uncurried(keys, coll):
+    return get_in_or_none(keys)(coll)
