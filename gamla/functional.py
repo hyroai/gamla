@@ -476,6 +476,14 @@ def itemgetter(attr):
     return itemgetter
 
 
+def itemgetter_with_default(default, attr):
+    return toolz.excepts(
+        (KeyError, IndexError),
+        just(default),
+        itemgetter(attr),
+    )
+
+
 def equals(x):
     def equals(y):
         return x == y
