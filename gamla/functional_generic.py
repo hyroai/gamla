@@ -474,22 +474,3 @@ def countby_many(f):
             lambda x, y: x + 1 if x else 1,
         ),
     )
-
-
-def unique_by(f):
-    """Return only unique elements of a sequence defined by function f
-
-    >>> tuple(unique_by(['cat', 'mouse', 'dog', 'hen'], f=len))
-    ('cat', 'mouse')
-    """
-
-    def unique(seq):
-        seen = set()
-        seen_add = seen.add
-        for item in seq:
-            val = f(item)
-            if val not in seen:
-                seen_add(val)
-                yield item
-
-    return unique

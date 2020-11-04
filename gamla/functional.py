@@ -441,6 +441,27 @@ def take_last_while(pred, seq):
     )
 
 
+def unique_by(f):
+    """Return only unique elements of a sequence defined by function f
+
+    >>> tuple(unique_by(['cat', 'mouse', 'dog', 'hen'], f=len))
+    ('cat', 'mouse')
+    """
+
+    def unique(seq):
+        seen = set()
+        for item in seq:
+            val = f(item)
+            if val not in seen:
+                seen.add(val)
+                yield item
+
+    return unique
+
+
+unique = unique_by(identity)
+
+
 def attrgetter(attr):
     def attrgetter(obj):
         return getattr(obj, attr)

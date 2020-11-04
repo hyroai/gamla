@@ -522,9 +522,15 @@ def test_latency():
 
 
 def test_unique_by():
-    assert tuple(
-        functional_generic.unique_by(lambda x: x[0])(["a", "ab", "abc", "bc", "c"])
-    ) == ("a", "bc", "c")
-    assert tuple(
-        functional_generic.unique_by(functional.identity)(["a", "a", "a", "bc", "a"])
-    ) == ("a", "bc")
+    assert (
+        tuple(
+            functional.unique_by(lambda x: x[0])(["a", "ab", "abc", "bc", "c"]),
+        )
+        == ("a", "bc", "c")
+    )
+    assert (
+        tuple(
+            functional.unique_by(functional.identity)(["a", "a", "a", "bc", "a"]),
+        )
+        == ("a", "bc")
+    )
