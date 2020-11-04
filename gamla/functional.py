@@ -523,3 +523,24 @@ def divide_by(x):
         return y / x
 
     return divide_by
+
+
+_GET_IN_EXCEPTIONS = (KeyError, IndexError, TypeError)
+
+
+def get_in(keys):
+    def get_in(coll):
+        return functools.reduce(operator.getitem, keys, coll)
+
+    return get_in
+
+
+def get_in_or_none_uncurried(keys, coll):
+    try:
+        return functools.reduce(operator.getitem, keys, coll)
+    except _GET_IN_EXCEPTIONS:
+        return None
+
+
+def get_in_or_none(keys):
+    return toolz.excepts(_GET_IN_EXCEPTIONS, get_in(keys))
