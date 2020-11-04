@@ -56,3 +56,9 @@ repos:
       - id: codespell
         entry: codespell --ignore-words=.codespell_ignore --quiet-level=4 --check-filenames
         exclude: \.(csv|json|txt)$
+
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+      - id: autoflake
+        entry: autoflake -i --remove-all-unused-imports

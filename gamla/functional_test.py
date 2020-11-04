@@ -508,6 +508,10 @@ def test_itemgetter():
     assert functional.itemgetter("a")({"a": 1}) == 1
 
 
+def test_itemgetter_or_none():
+    assert functional.itemgetter_or_none("b")({"a": 1}) is None
+
+
 def test_latency():
     start_time = time.time()
     for _ in range(1000):
@@ -528,9 +532,25 @@ def test_unique_by():
         )
         == ("a", "bc", "c")
     )
+    assert tuple(functional.unique(["a", "a", "a", "bc", "a"])) == ("a", "bc")
+
+
+def test_get_in():
+    assert functional.get_in(["a", "b", "c", 1])({"a": {"b": {"c": [0, 1, 2]}}}) == 1
+
+
+def test_get_in_or_none():
     assert (
-        tuple(
-            functional.unique_by(functional.identity)(["a", "a", "a", "bc", "a"]),
+        functional.get_in_or_none(["a", "b", "d", 1])({"a": {"b": {"c": [0, 1, 2]}}})
+        is None
+    )
+
+
+def test_get_in_or_none_uncurried():
+    assert (
+        functional.get_in_or_none_uncurried(
+            ["a", "b", "c", 1],
+            {"a": {"b": {"c": [0, 1, 2]}}},
         )
-        == ("a", "bc")
+        == 1
     )
