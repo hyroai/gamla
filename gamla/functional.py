@@ -30,18 +30,22 @@ do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 count = toolz.count
 
 
-def sort(key: Callable):
-    def inner(seq: Iterable):
+def sort_by(key: Callable):
+    def sort_by(seq: Iterable):
         return sorted(seq, key=key)
 
-    return inner
+    return sort_by
 
 
-def sort_reversed(key: Callable):
-    def inner(seq: Iterable):
+def sort_by_reversed(key: Callable):
+    def sort_by_reversed(seq: Iterable):
         return sorted(seq, key=key, reverse=True)
 
-    return inner
+    return sort_by_reversed
+
+
+sort = sort_by(identity)
+sort_reversed = sort_by_reversed(identity)
 
 
 def curried_map_sync(f):
