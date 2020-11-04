@@ -519,3 +519,24 @@ def test_latency():
             functional.attrgetter("lower"),
         )
     assert time.time() - start_time < 0.1
+
+
+def test_get_in():
+    assert functional.get_in(["a", "b", "c", 1])({"a": {"b": {"c": [0, 1, 2]}}}) == 1
+
+
+def test_get_in_or_none():
+    assert (
+        functional.get_in_or_none(["a", "b", "d", 1])({"a": {"b": {"c": [0, 1, 2]}}})
+        is None
+    )
+
+
+def test_get_in_or_none_uncurried():
+    assert (
+        functional.get_in_or_none_uncurried(
+            ["a", "b", "c", 1],
+            {"a": {"b": {"c": [0, 1, 2]}}},
+        )
+        == 1
+    )
