@@ -507,8 +507,8 @@ def itemgetter_or_none(attr):
 def itemgetter_with_default(default, attr):
     return toolz.excepts(
         (KeyError, IndexError),
-        just(default),
         itemgetter(attr),
+        just(default),
     )
 
 

@@ -516,6 +516,10 @@ def test_itemgetter():
     assert functional.itemgetter("a")({"a": 1}) == 1
 
 
+def test_itemgetter_with_default():
+    assert functional.itemgetter_with_default(2, "b")({"a": 1}) == 2
+
+
 def test_itemgetter_or_none():
     assert functional.itemgetter_or_none("b")({"a": 1}) is None
 
