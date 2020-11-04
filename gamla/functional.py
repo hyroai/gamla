@@ -455,6 +455,13 @@ def itemgetter(attr):
     return itemgetter
 
 
+def itemgetter_or_none(attr):
+    def itemgetter_or_none(obj):
+        return obj.get(attr, None)
+
+    return itemgetter_or_none
+
+
 def equals(x):
     def equals(y):
         return x == y

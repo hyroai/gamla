@@ -508,6 +508,10 @@ def test_itemgetter():
     assert functional.itemgetter("a")({"a": 1}) == 1
 
 
+def test_itemgetter_or_none():
+    assert functional.itemgetter_or_none("b")({"a": 1}) is None
+
+
 def test_latency():
     start_time = time.time()
     for _ in range(1000):
