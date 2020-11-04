@@ -525,6 +525,16 @@ def test_latency():
     assert time.time() - start_time < 0.1
 
 
+def test_unique_by():
+    assert (
+        tuple(
+            functional.unique_by(lambda x: x[0])(["a", "ab", "abc", "bc", "c"]),
+        )
+        == ("a", "bc", "c")
+    )
+    assert tuple(functional.unique(["a", "a", "a", "bc", "a"])) == ("a", "bc")
+
+
 def test_get_in():
     assert functional.get_in(["a", "b", "c", 1])({"a": {"b": {"c": [0, 1, 2]}}}) == 1
 
