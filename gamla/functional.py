@@ -27,6 +27,27 @@ def identity(x):
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
+count = toolz.count
+
+
+def sort_by(key: Callable):
+    def sort_by(seq: Iterable):
+        return sorted(seq, key=key)
+
+    return sort_by
+
+
+def sort_by_reversed(key: Callable):
+    def sort_by_reversed(seq: Iterable):
+        return sorted(seq, key=key, reverse=True)
+
+    return sort_by_reversed
+
+
+sort = sort_by(identity)
+sort_reversed = sort_by_reversed(identity)
+
+
 def curried_map_sync(f):
     def curried_map(it):
         for x in it:
@@ -481,6 +502,14 @@ def itemgetter_or_none(attr):
         return obj.get(attr, None)
 
     return itemgetter_or_none
+
+
+def itemgetter_with_default(default, attr):
+    return toolz.excepts(
+        (KeyError, IndexError),
+        itemgetter(attr),
+        just(default),
+    )
 
 
 def equals(x):
