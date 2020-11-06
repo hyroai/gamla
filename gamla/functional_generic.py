@@ -4,7 +4,7 @@ import inspect
 import itertools
 import operator
 import os
-from typing import Any, Callable, Iterable, Text, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar, Union
 
 import toolz
 from toolz import curried
@@ -477,6 +477,8 @@ def countby_many(f):
 
 
 def merge(*dicts):
+    if len(dicts) == 1 and not isinstance(dicts[0], Mapping):
+        dicts = dicts[0]
     result_dict = {}
     for d in dicts:
         result_dict.update(d)
