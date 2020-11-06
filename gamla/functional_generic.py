@@ -491,4 +491,4 @@ def merge_with(func, *dicts):
                 result[k] = [v]
             else:
                 result[k].append(v)
-    return valmap(func, result)
+    return valmap(func)(result)
