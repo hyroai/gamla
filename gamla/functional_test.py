@@ -589,3 +589,17 @@ def test_merge_with():
         )
         == {"1": 1, "2": 2, "3": 3}
     )
+
+
+async def test_async_merge_with():
+    async def async_first(x):
+        await asyncio.sleep(0.01)
+        return x[0]
+
+    assert (
+        await functional_generic.merge_with(async_first)(
+            {"1": 1, "2": 2},
+            {"2": 3, "3": 3},
+        )
+        == {"1": 1, "2": 2, "3": 3}
+    )
