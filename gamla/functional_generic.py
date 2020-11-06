@@ -476,18 +476,20 @@ def countby_many(f):
     )
 
 
-@currying.curry
-def merge_with(func, *dicts):
-    if len(dicts) == 1 and not isinstance(dicts[0], Mapping):
-        dicts = dicts[0]
-    result = {}
-    for d in dicts:
-        for k, v in d.items():
-            if k not in result:
-                result[k] = [v]
-            else:
-                result[k].append(v)
-    return valmap(func)(result)
+def merge_with(function):
+    def inner(*dicts):
+        if len(dicts) == 1 and not isinstance(dicts[0], Mapping):
+            dicts = dicts[0]
+        result = {}
+        for d in dicts:
+            for k, v in d.items():
+                if k not in result:
+                    result[k] = [v]
+                else:
+                    result[k].append(v)
+        return valmap(function)(result)
+
+    return inner
 
 
 merge = merge_with(toolz.last)

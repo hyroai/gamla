@@ -583,8 +583,7 @@ def test_merge():
 
 def test_merge_with():
     assert (
-        functional_generic.merge_with(
-            lambda x: x[0],
+        functional_generic.merge_with(toolz.first)(
             {"1": 1, "2": 2},
             {"2": 3, "3": 3},
         )
