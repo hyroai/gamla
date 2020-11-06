@@ -4,7 +4,6 @@ import time
 
 import pytest
 import toolz
-from toolz import curried
 
 from gamla import currying, functional, functional_generic
 
@@ -382,7 +381,8 @@ def test_find():
     assert (
         functional_generic.find(
             functional_generic.compose_left(
-                functional.itemgetter("key"), functional.equals(2)
+                functional.itemgetter("key"),
+                functional.equals(2),
             ),
         )(
             iter(seq),
@@ -393,7 +393,8 @@ def test_find():
     assert (
         functional_generic.find(
             functional_generic.compose_left(
-                functional.itemgetter("key"), functional.equals(4)
+                functional.itemgetter("key"),
+                functional.equals(4),
             ),
         )(iter(seq))
         is None
@@ -406,7 +407,8 @@ def test_find_index():
     assert (
         functional_generic.find_index(
             functional_generic.compose_left(
-                functional.itemgetter("key"), functional.equals(2)
+                functional.itemgetter("key"),
+                functional.equals(2),
             ),
         )(iter(seq))
         == 1
@@ -415,7 +417,8 @@ def test_find_index():
     assert (
         functional_generic.find_index(
             functional_generic.compose_left(
-                functional.itemgetter("key"), functional.equals(4)
+                functional.itemgetter("key"),
+                functional.equals(4),
             ),
         )(iter(seq))
         == -1
@@ -565,4 +568,25 @@ def test_get_in_or_none_uncurried():
             {"a": {"b": {"c": [0, 1, 2]}}},
         )
         == 1
+    )
+
+
+def test_merge():
+    assert (
+        functional_generic.merge(
+            {"1": 1, "2": 2},
+            {"2": 3, "3": 3},
+        )
+        == {"1": 1, "2": 3, "3": 3}
+    )
+
+
+def test_merge_with():
+    assert (
+        functional_generic.merge(
+            lambda x: x[0],
+            {"1": 1, "2": 2},
+            {"2": 3, "3": 3},
+        )
+        == {"1": 1, "2": 2, "3": 3}
     )
