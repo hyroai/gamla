@@ -183,7 +183,11 @@ def has_cycle(graph):
         graph,
         dict.keys,
         functional_generic.curried_map(
-            _has_cycle(frozenset(), curried.get(seq=graph, default=()), set()),
+            _has_cycle(
+                frozenset(),
+                lambda node: functional.itemgetter_with_default((), node)(graph),
+                set(),
+            ),
         ),
         any,
     )

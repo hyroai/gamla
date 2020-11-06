@@ -27,6 +27,27 @@ def identity(x):
 do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
+count = toolz.count
+
+
+def sort_by(key: Callable):
+    def sort_by(seq: Iterable):
+        return sorted(seq, key=key)
+
+    return sort_by
+
+
+def sort_by_reversed(key: Callable):
+    def sort_by_reversed(seq: Iterable):
+        return sorted(seq, key=key, reverse=True)
+
+    return sort_by_reversed
+
+
+sort = sort_by(identity)
+sort_reversed = sort_by_reversed(identity)
+
+
 def curried_map_sync(f):
     def curried_map(it):
         for x in it:
@@ -441,6 +462,27 @@ def take_last_while(pred, seq):
     )
 
 
+def unique_by(f):
+    """Return only unique elements of a sequence defined by function f
+
+    >>> tuple(unique_by(['cat', 'mouse', 'dog', 'hen'], f=len))
+    ('cat', 'mouse')
+    """
+
+    def unique(seq):
+        seen = set()
+        for item in seq:
+            val = f(item)
+            if val not in seen:
+                seen.add(val)
+                yield item
+
+    return unique
+
+
+unique = unique_by(identity)
+
+
 def attrgetter(attr):
     def attrgetter(obj):
         return getattr(obj, attr)
@@ -453,6 +495,21 @@ def itemgetter(attr):
         return operator.getitem(obj, attr)
 
     return itemgetter
+
+
+def itemgetter_or_none(attr):
+    def itemgetter_or_none(obj):
+        return obj.get(attr, None)
+
+    return itemgetter_or_none
+
+
+def itemgetter_with_default(default, attr):
+    return toolz.excepts(
+        (KeyError, IndexError),
+        itemgetter(attr),
+        just(default),
+    )
 
 
 def equals(x):
@@ -523,3 +580,25 @@ def divide_by(x):
         return y / x
 
     return divide_by
+
+
+_GET_IN_EXCEPTIONS = (KeyError, IndexError, TypeError)
+
+
+def get_in(keys):
+    def get_in(coll):
+        return functools.reduce(operator.getitem, keys, coll)
+
+    return get_in
+
+
+def get_in_with_default(keys, default):
+    return toolz.excepts(_GET_IN_EXCEPTIONS, get_in(keys), just(default))
+
+
+def get_in_or_none(keys):
+    return get_in_with_default(keys, None)
+
+
+def get_in_or_none_uncurried(keys, coll):
+    return get_in_or_none(keys)(coll)
