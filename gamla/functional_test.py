@@ -16,6 +16,11 @@ async def _opposite_async(x):
     return not x
 
 
+async def _equals(x, y):
+    await asyncio.sleep(0.01)
+    return x == y
+
+
 def test_do_if():
     assert functional.do_if(functional.just(True), functional.just(2))(1) == 1
 
@@ -131,14 +136,41 @@ async def test_itemmap_async_sync_mixed():
     )
 
 
+async def test_itemfilter_async_sync_mixed():
+    assert (
+        await functional_generic.pipe(
+            {1: 1, 2: 1, 3: 3},
+            functional_generic.itemfilter(
+                functional.star(_equals),
+            ),
+            functional_generic.itemfilter(
+                functional.star(lambda key, val: val == 1),
+            ),
+        )
+        == {1: 1}
+    )
+
+
 async def test_keymap_async_curried():
     assert await functional_generic.keymap(_opposite_async)({True: True}) == {
         False: True,
     }
 
 
+async def test_keyfilter_sync_curried():
+    assert functional_generic.keyfilter(functional.identity)(
+        {False: True, True: False}
+    ) == {True: False}
+
+
 async def test_valmap_sync_curried():
     assert functional_generic.valmap(operator.not_)({True: True}) == {True: False}
+
+
+async def test_valfilter_sync_curried():
+    assert functional_generic.valfilter(functional.identity)(
+        {False: True, True: False}
+    ) == {False: True}
 
 
 async def _is_even_async(x):
