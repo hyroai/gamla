@@ -474,3 +474,7 @@ def countby_many(f):
             lambda x, y: x + 1 if x else 1,
         ),
     )
+
+
+concat = itertools.chain.from_iterable
+mapcat = compose_left(curried_map, after(concat))
