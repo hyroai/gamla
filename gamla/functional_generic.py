@@ -226,7 +226,10 @@ keyfilter = compose(
     itemfilter,
     before(toolz.first),
 )
-
+valfilter = compose(
+    itemfilter,
+    before(toolz.second),
+)
 
 complement = after(operator.not_)
 
