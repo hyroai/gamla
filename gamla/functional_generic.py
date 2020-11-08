@@ -222,6 +222,10 @@ curried_filter = compose(
 )
 
 itemfilter = compose(after(dict), before(dict.items), curried_filter)
+keyfilter = compose(
+    itemfilter,
+    before(toolz.first),
+)
 
 
 complement = after(operator.not_)
