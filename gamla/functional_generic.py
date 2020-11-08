@@ -221,6 +221,9 @@ curried_filter = compose(
     pair_with,
 )
 
+itemfilter = compose(after(dict), before(dict.items), curried_filter)
+
+
 complement = after(operator.not_)
 
 remove = compose(curried_filter, complement)
