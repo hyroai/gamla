@@ -603,6 +603,10 @@ def get_in_or_none(keys):
 def get_in_or_none_uncurried(keys, coll):
     return get_in_or_none(keys)(coll)
 
+def interpose(el):
+    def interpose_inner(seq):
+        return toolz.interpose(el, seq)
+
 head = toolz.first
 second = toolz.second
 last = toolz.last
