@@ -315,11 +315,6 @@ def dataclass_transform(
 @currying.curry
 def dataclass_replace(attr_name: Text, attr_value: Any, dataclass_instance):
     return dataclasses.replace(dataclass_instance, **{attr_name: attr_value})
-    
-@currying.curry
-def dataclass_replace_existing(attr_name: Text, get_attr_value: Callable, dataclass_instance):
-    new_value = get_attr_value(dataclass_instance[attr_name])
-    return dataclasses.replace(dataclass_instance, **{attr_name: new_value})
 
 
 _R = TypeVar("_R")
