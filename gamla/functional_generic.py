@@ -4,7 +4,7 @@ import inspect
 import itertools
 import operator
 import os
-from typing import Any, Callable, Iterable, Text, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar, Union
 
 import toolz
 from toolz import curried
@@ -474,3 +474,37 @@ def countby_many(f):
             lambda x, y: x + 1 if x else 1,
         ),
     )
+
+
+def _inner_merge_with(dicts):
+    if len(dicts) == 1 and not isinstance(dicts[0], Mapping):
+        dicts = dicts[0]
+    result = {}
+    for d in dicts:
+        for k, v in d.items():
+            if k in result:
+                result[k].append(v)
+            else:
+                result[k] = [v]
+    return result
+
+
+def merge_with(f):
+    if asyncio.iscoroutinefunction(f):
+
+        async def merge_with(*dicts):
+            result = _inner_merge_with(dicts)
+            return await valmap(f)(result)
+
+        return merge_with
+
+    def merge_with(*dicts):
+        result = _inner_merge_with(dicts)
+        return valmap(f)(result)
+
+    return merge_with
+
+
+merge = merge_with(toolz.last)
+concat = itertools.chain.from_iterable
+mapcat = compose_left(curried_map, after(concat))

@@ -55,7 +55,7 @@ Two reasons:
 ### Function mapping and common gotchas (written in blood):
 - `curried.(filter|map|valmap|itemmap|keymap)` -> `gamla.$1` (make sure the call is with a single argument)
 - `toolz.identity` -> `gamla.identity`
-- `toolz.contains` -> `gamla.contains
+- `toolz.contains` -> `gamla.contains`
 - `toolz.lt` -> `gamla.greater_than`
 - `toolz.gt` -> `gamla.less_than`
 - `toolz.ge` -> `gamla.less_equals`
