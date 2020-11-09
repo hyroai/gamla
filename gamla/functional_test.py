@@ -569,3 +569,37 @@ def test_get_in_or_none_uncurried():
         )
         == 1
     )
+
+
+def test_merge():
+    assert (
+        functional_generic.merge(
+            {"1": 1, "2": 2},
+            {"2": 3, "3": 3},
+        )
+        == {"1": 1, "2": 3, "3": 3}
+    )
+
+
+def test_merge_with():
+    assert (
+        functional_generic.merge_with(toolz.first)(
+            {"1": 1, "2": 2},
+            {"2": 3, "3": 3},
+        )
+        == {"1": 1, "2": 2, "3": 3}
+    )
+
+
+async def test_async_merge_with():
+    async def async_first(x):
+        await asyncio.sleep(0.01)
+        return x[0]
+
+    assert (
+        await functional_generic.merge_with(async_first)(
+            {"1": 1, "2": 2},
+            {"2": 3, "3": 3},
+        )
+        == {"1": 1, "2": 2, "3": 3}
+    )
