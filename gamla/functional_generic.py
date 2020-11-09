@@ -94,7 +94,7 @@ def compose(*funcs):
 def after(f1, f2):
     return compose(f1, f2)
 
-
+    
 @currying.curry
 def before(f1, f2):
     return compose_left(f1, f2)
@@ -487,6 +487,9 @@ def _inner_merge_with(dicts):
             else:
                 result[k] = [v]
     return result
+
+
+map_filter_empty = compose_left(curried_map, after(curried_filter(toolz.identity)))
 
 
 def merge_with(f):
