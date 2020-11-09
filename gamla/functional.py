@@ -315,6 +315,11 @@ def dataclass_transform(
 @currying.curry
 def dataclass_replace(attr_name: Text, attr_value: Any, dataclass_instance):
     return dataclasses.replace(dataclass_instance, **{attr_name: attr_value})
+    
+@currying.curry
+def dataclass_replace_existing(attr_name: Text, get_attr_value: Callable, dataclass_instance):
+    new_value = get_attr_value(dataclass_instance[attr_name])
+    return dataclasses.replace(dataclass_instance, **{attr_name: new_value})
 
 
 _R = TypeVar("_R")
@@ -602,6 +607,10 @@ def get_in_or_none(keys):
 
 def get_in_or_none_uncurried(keys, coll):
     return get_in_or_none(keys)(coll)
+
+def interpose(el):
+    def interpose_inner(seq):
+        return toolz.interpose(el, seq)
 
 head = toolz.first
 second = toolz.second

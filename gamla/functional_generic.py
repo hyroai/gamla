@@ -489,6 +489,10 @@ def _inner_merge_with(dicts):
     return result
 
 
+def map_filter_empty(f):
+    return compose_left(curried_map(f), curried_filter(toolz.identity))
+
+
 def merge_with(f):
     if asyncio.iscoroutinefunction(f):
 
