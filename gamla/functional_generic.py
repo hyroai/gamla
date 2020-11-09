@@ -506,3 +506,5 @@ def merge_with(f):
 
 
 merge = merge_with(toolz.last)
+concat = itertools.chain.from_iterable
+mapcat = compose_left(curried_map, after(concat))

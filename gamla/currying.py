@@ -45,6 +45,7 @@ def _infer_defaults(f):
 
 def curry(f):
     f_len_args = inspect.signature(f).parameters
+    assert len(f_len_args) > 1, f"Curry function must have at least 2 parameters, {f} has {len(f_len_args)}"
     defaults = _infer_defaults(f)
     is_coroutine = asyncio.iscoroutinefunction(f)
 

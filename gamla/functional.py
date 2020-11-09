@@ -602,3 +602,7 @@ def get_in_or_none(keys):
 
 def get_in_or_none_uncurried(keys, coll):
     return get_in_or_none(keys)(coll)
+
+head = toolz.first
+second = toolz.second
+last = toolz.last
