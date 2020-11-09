@@ -476,33 +476,33 @@ def countby_many(f):
     )
 
 
-def _inner_merge_with(*dicts):
+def _inner_merge_with(dicts):
     if len(dicts) == 1 and not isinstance(dicts[0], Mapping):
         dicts = dicts[0]
     result = {}
     for d in dicts:
         for k, v in d.items():
-            if k not in result:
-                result[k] = [v]
-            else:
+            if k in result:
                 result[k].append(v)
+            else:
+                result[k] = [v]
     return result
 
 
 def merge_with(f):
     if asyncio.iscoroutinefunction(f):
 
-        async def inner_async(*dicts):
+        async def merge_with(*dicts):
             result = _inner_merge_with(dicts)
             return await valmap(f)(result)
 
-        return inner_async
+        return merge_with
 
-    def inner(*dicts):
+    def merge_with(*dicts):
         result = _inner_merge_with(dicts)
         return valmap(f)(result)
 
-    return inner
+    return merge_with
 
 
 merge = merge_with(toolz.last)
