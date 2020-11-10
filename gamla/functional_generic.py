@@ -29,6 +29,12 @@ def curried_map(f):
     return functional.curried_map_sync(f)
 
 
+def curried_to_binary(f):
+    def internal(param1, param2):
+        f(param1)(param2)
+    return internal
+
+
 def _any_is_async(funcs):
     return any(map(asyncio.iscoroutinefunction, funcs))
 
