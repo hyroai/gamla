@@ -240,6 +240,16 @@ curried_filter = compose(
     pair_with,
 )
 
+itemfilter = compose(after(dict), before(dict.items), curried_filter)
+keyfilter = compose(
+    itemfilter,
+    before(toolz.first),
+)
+valfilter = compose(
+    itemfilter,
+    before(toolz.second),
+)
+
 complement = after(operator.not_)
 
 remove = compose(curried_filter, complement)
