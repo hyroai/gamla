@@ -615,11 +615,13 @@ async def test_async_when():
     assert await functional_generic.when(async_equals_1, functional.just(True))(2) == 2
 
 
-async def test_unless():
+async def test_unless1():
     assert (
         functional_generic.unless(functional.equals(1), functional.just(True))(1) == 1
     )
 
+
+async def test_unless2():
     assert functional_generic.unless(functional.equals(1), functional.just(True))(2)
 
 
