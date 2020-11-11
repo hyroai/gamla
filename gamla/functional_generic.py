@@ -32,6 +32,7 @@ def curried_map(f):
 def curried_to_binary(f):
     def internal(param1, param2):
         f(param1)(param2)
+
     return internal
 
 
@@ -152,6 +153,14 @@ def ternary(condition, f_true, f_false):
 
 
 curried_ternary = ternary
+
+
+def when(condition, f_true):
+    return ternary(condition, f_true, functional.identity)
+
+
+def unless(condition, f_false):
+    return ternary(condition, functional.identity, f_false)
 
 
 def first(*funcs, exception_type: Type[Exception]):

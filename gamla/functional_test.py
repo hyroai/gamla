@@ -603,3 +603,21 @@ async def test_async_merge_with():
         )
         == {"1": 1, "2": 2, "3": 3}
     )
+
+
+async def test_async_when():
+    async def async_equals_1(x):
+        await asyncio.sleep(0.01)
+        return x == 1
+
+    assert await functional_generic.when(async_equals_1, functional.just(True))(1)
+
+    assert await functional_generic.when(async_equals_1, functional.just(True))(2) == 2
+
+
+async def test_unless():
+    assert (
+        functional_generic.unless(functional.equals(1), functional.just(True))(1) == 1
+    )
+
+    assert functional_generic.unless(functional.equals(1), functional.just(True))(2)
