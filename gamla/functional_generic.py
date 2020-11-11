@@ -97,6 +97,10 @@ def compose(*funcs):
     return composed
 
 
+def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
+    return compose_left(juxt(*incoming), functional.star(f))
+
+
 @currying.curry
 def after(f1, f2):
     return compose(f1, f2)

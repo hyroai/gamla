@@ -621,3 +621,12 @@ async def test_unless():
     )
 
     assert functional_generic.unless(functional.equals(1), functional.just(True))(2)
+
+
+def test_compose_many_to_one():
+    assert (
+        functional_generic.compose_many_to_one([sum, sum], lambda x, y: x + y)(
+            [1, 2, 3],
+        )
+        == 12
+    )
