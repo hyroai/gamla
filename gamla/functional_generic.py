@@ -29,6 +29,13 @@ def curried_map(f):
     return functional.curried_map_sync(f)
 
 
+def curried_to_binary(f):
+    def internal(param1, param2):
+        f(param1)(param2)
+
+    return internal
+
+
 def _any_is_async(funcs):
     return any(map(asyncio.iscoroutinefunction, funcs))
 
@@ -90,11 +97,15 @@ def compose(*funcs):
     return composed
 
 
+def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
+    return compose_left(juxt(*incoming), functional.star(f))
+
+
 @currying.curry
 def after(f1, f2):
     return compose(f1, f2)
 
-    
+
 @currying.curry
 def before(f1, f2):
     return compose_left(f1, f2)
@@ -146,6 +157,14 @@ def ternary(condition, f_true, f_false):
 
 
 curried_ternary = ternary
+
+
+def when(condition, f_true):
+    return ternary(condition, f_true, functional.identity)
+
+
+def unless(condition, f_false):
+    return ternary(condition, functional.identity, f_false)
 
 
 def first(*funcs, exception_type: Type[Exception]):
@@ -219,6 +238,16 @@ curried_filter = compose(
     ),
     curried_map,
     pair_with,
+)
+
+itemfilter = compose(after(dict), before(dict.items), curried_filter)
+keyfilter = compose(
+    itemfilter,
+    before(toolz.first),
+)
+valfilter = compose(
+    itemfilter,
+    before(toolz.second),
 )
 
 complement = after(operator.not_)

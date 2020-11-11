@@ -16,6 +16,11 @@ async def _opposite_async(x):
     return not x
 
 
+async def _equals(x, y):
+    await asyncio.sleep(0.01)
+    return x == y
+
+
 def test_do_if():
     assert functional.do_if(functional.just(True), functional.just(2))(1) == 1
 
@@ -131,14 +136,41 @@ async def test_itemmap_async_sync_mixed():
     )
 
 
+async def test_itemfilter_async_sync_mixed():
+    assert (
+        await functional_generic.pipe(
+            {1: 1, 2: 1, 3: 3},
+            functional_generic.itemfilter(
+                functional.star(_equals),
+            ),
+            functional_generic.itemfilter(
+                functional.star(lambda key, val: val == 1),
+            ),
+        )
+        == {1: 1}
+    )
+
+
 async def test_keymap_async_curried():
     assert await functional_generic.keymap(_opposite_async)({True: True}) == {
         False: True,
     }
 
 
+async def test_keyfilter_sync_curried():
+    assert functional_generic.keyfilter(functional.identity)(
+        {False: True, True: False}
+    ) == {True: False}
+
+
 async def test_valmap_sync_curried():
     assert functional_generic.valmap(operator.not_)({True: True}) == {True: False}
+
+
+async def test_valfilter_sync_curried():
+    assert functional_generic.valfilter(functional.identity)(
+        {False: True, True: False}
+    ) == {False: True}
 
 
 async def _is_even_async(x):
@@ -602,4 +634,33 @@ async def test_async_merge_with():
             {"2": 3, "3": 3},
         )
         == {"1": 1, "2": 2, "3": 3}
+    )
+
+
+async def test_async_when():
+    async def async_equals_1(x):
+        await asyncio.sleep(0.01)
+        return x == 1
+
+    assert await functional_generic.when(async_equals_1, functional.just(True))(1)
+
+    assert await functional_generic.when(async_equals_1, functional.just(True))(2) == 2
+
+
+async def test_unless1():
+    assert (
+        functional_generic.unless(functional.equals(1), functional.just(True))(1) == 1
+    )
+
+
+async def test_unless2():
+    assert functional_generic.unless(functional.equals(1), functional.just(True))(2)
+
+
+def test_compose_many_to_one():
+    assert (
+        functional_generic.compose_many_to_one([sum, sum], lambda x, y: x + y)(
+            [1, 2, 3],
+        )
+        == 12
     )
