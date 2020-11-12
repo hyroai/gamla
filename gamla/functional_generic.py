@@ -31,7 +31,7 @@ def curried_map(f):
 
 def curried_to_binary(f):
     def internal(param1, param2):
-        f(param1)(param2)
+        return f(param1)(param2)
 
     return internal
 
@@ -238,6 +238,16 @@ curried_filter = compose(
     ),
     curried_map,
     pair_with,
+)
+
+itemfilter = compose(after(dict), before(dict.items), curried_filter)
+keyfilter = compose(
+    itemfilter,
+    before(toolz.first),
+)
+valfilter = compose(
+    itemfilter,
+    before(toolz.second),
 )
 
 complement = after(operator.not_)
