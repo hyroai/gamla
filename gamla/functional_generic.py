@@ -31,7 +31,7 @@ def curried_map(f):
 
 def curried_to_binary(f):
     def internal(param1, param2):
-        f(param1)(param2)
+        return f(param1)(param2)
 
     return internal
 
