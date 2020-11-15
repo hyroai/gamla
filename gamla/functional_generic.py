@@ -2,14 +2,12 @@ import asyncio
 import functools
 import inspect
 import itertools
+import logging
 import operator
 import os
-from typing import Any, Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar, Union
+from typing import Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar
 
-import toolz
-from toolz import curried
-
-from gamla import currying, data, functional, introspection
+from gamla import currying, data, excepts, functional
 
 
 def compose_left(*funcs):
@@ -57,23 +55,23 @@ def _get_name_for_function_group(funcs):
 
 
 def _compose_async(*funcs):
-    @functools.wraps(toolz.last(funcs))
+    @functools.wraps(functional.last(funcs))
     async def async_composed(*args, **kwargs):
         for f in reversed(funcs):
             args = [await to_awaitable(f(*args, **kwargs))]
             kwargs = {}
-        return toolz.first(args)
+        return functional.head(args)
 
     return async_composed
 
 
 def compose_sync(*funcs):
-    @functools.wraps(toolz.last(funcs))
+    @functools.wraps(functional.last(funcs))
     def composed(*args, **kwargs):
         for f in reversed(funcs):
             args = [f(*args, **kwargs)]
             kwargs = {}
-        return toolz.first(args)
+        return functional.head(args)
 
     return composed
 
@@ -85,14 +83,17 @@ def compose(*funcs):
         composed = compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
     if _DEBUG_MODE:
-        if _DEBUG_MODE == "2":
-            frame_info = inspect.getframeinfo(inspect.stack()[1][0])
-            filename = frame_info.filename.replace(".", "").split("/")[-1]
-            name = f"{filename}_{frame_info.lineno}_COMPOSITION_" + name
-        if asyncio.iscoroutinefunction(composed):
-            composed = introspection.rename_async_function(name, composed)
-        else:
-            composed = introspection.rename_function(name, composed)
+        logging.info("DEBUG MODE - expect slower performance")
+        frames = inspect.stack()
+
+        def reraise_and_log(e):
+            raise type(e)(
+                "\n".join(
+                    map(lambda frame: f"{frame.filename}:{frame.lineno}", frames),
+                ),
+            )
+
+        composed = excepts.excepts(Exception, reraise_and_log, composed)
     composed.__name__ = name
     return composed
 
@@ -202,13 +203,13 @@ anymap = compose(after(any), curried_map)
 itemmap = compose(after(dict), before(dict.items), curried_map)
 keymap = compose(
     itemmap,
-    lambda f: juxt(f, toolz.second),
-    before(toolz.first),
+    lambda f: juxt(f, functional.second),
+    before(functional.head),
 )
 valmap = compose(
     itemmap,
-    lambda f: juxt(toolz.first, f),
-    before(toolz.second),
+    lambda f: juxt(functional.head, f),
+    before(functional.second),
 )
 
 
@@ -232,8 +233,8 @@ def _sync_curried_filter(f):
 curried_filter = compose(
     after(
         compose(
-            functional.curried_map_sync(toolz.second),
-            _sync_curried_filter(toolz.first),
+            functional.curried_map_sync(functional.second),
+            _sync_curried_filter(functional.head),
         ),
     ),
     curried_map,
@@ -243,11 +244,11 @@ curried_filter = compose(
 itemfilter = compose(after(dict), before(dict.items), curried_filter)
 keyfilter = compose(
     itemfilter,
-    before(toolz.first),
+    before(functional.head),
 )
 valfilter = compose(
     itemfilter,
-    before(toolz.second),
+    before(functional.second),
 )
 
 complement = after(operator.not_)
@@ -292,8 +293,8 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
 
 
 def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
-    predicates = tuple(map(toolz.first, predicates_and_mappers))
-    mappers = tuple(map(toolz.second, predicates_and_mappers))
+    predicates = tuple(map(functional.head, predicates_and_mappers))
+    mappers = tuple(map(functional.second, predicates_and_mappers))
     return _case(predicates, mappers)
 
 
@@ -379,7 +380,7 @@ def apply_spec(spec):
 stack = compose_left(
     enumerate,
     functional.curried_map_sync(
-        functional.star(lambda i, f: compose(f, curried.nth(i))),
+        functional.star(lambda i, f: compose(f, lambda x: x[i])),
     ),
     functional.star(juxt),
 )
@@ -391,8 +392,12 @@ def bifurcate(*funcs):
 
 
 average = compose_left(
-    bifurcate(sum, toolz.count),
-    toolz.excepts(ZeroDivisionError, functional.star(lambda x, y: x / y), lambda _: 0),
+    bifurcate(sum, functional.count),
+    excepts.excepts(
+        ZeroDivisionError,
+        lambda _: 0,
+        functional.star(lambda x, y: x / y),
+    ),
 )
 
 
@@ -432,36 +437,16 @@ def reduce_curried(
     return reduce
 
 
-@currying.curry
-def excepts(
-    exception: Union[Tuple[Exception, ...], Exception],
-    handler: Callable[[Exception], Any],
-    function: Callable,
-):
-    if asyncio.iscoroutinefunction(function):
-
-        @functools.wraps(function)
-        async def excepts(*args, **kwargs):
-            try:
-                return await function(*args, **kwargs)
-            except exception as error:
-                return handler(error)
-
-        return excepts
-
-    return toolz.excepts(exception, function, handler)
-
-
 find = compose(
-    after(excepts(StopIteration, functional.just(None), toolz.first)),
+    after(excepts.excepts(StopIteration, functional.just(None), functional.head)),
     curried_filter,
 )
 
 find_index = compose_left(
-    before(toolz.second),
+    before(functional.second),
     find,
     before(enumerate),
-    after(ternary(functional.equals(None), functional.just(-1), toolz.first)),
+    after(ternary(functional.equals(None), functional.just(-1), functional.head)),
 )
 
 
@@ -518,7 +503,7 @@ def _inner_merge_with(dicts):
     return result
 
 
-map_filter_empty = compose_left(curried_map, after(curried_filter(toolz.identity)))
+map_filter_empty = compose_left(curried_map, after(curried_filter(functional.identity)))
 
 
 def merge_with(f):
@@ -537,6 +522,6 @@ def merge_with(f):
     return merge_with
 
 
-merge = merge_with(toolz.last)
+merge = merge_with(functional.last)
 concat = itertools.chain.from_iterable
 mapcat = compose_left(curried_map, after(concat))

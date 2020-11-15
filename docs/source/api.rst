@@ -1,8 +1,5 @@
 API
 ===
-This page contains a comprehensive list of all functions within ``gamla``.
-Docstrings should provide sufficient understanding for any individual function.
-
 
 data
 ----
