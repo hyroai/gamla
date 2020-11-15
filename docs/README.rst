@@ -5,7 +5,7 @@
    :alt: Build Status
 
 
-גamla is a functional programming library for python which is performant and supports ``async``.
+גamla is a performant functional programming library for python which supports async.
 
 Installation
 ------------
