@@ -64,17 +64,5 @@ graph
 Definitions
 -----------
 
-.. automodule:: gamla.data
-   :members:
-
-.. automodule:: gamla.functional
-   :members:
-
-.. automodule:: gamla.functional_async
-   :members:
-
-.. automodule:: gamla.functional_generic
-   :members:
-
-.. automodule:: gamla.graph
+.. automodule:: gamla
    :members:
