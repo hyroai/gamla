@@ -76,6 +76,9 @@ def compose_sync(*funcs):
     return composed
 
 
+_DEBUG_MESSAGE_PREFIX = "GAMLA_DEBUG_MESSAGE:"
+
+
 def compose(*funcs):
     if _any_is_async(funcs):
         composed = _compose_async(*funcs)
@@ -88,10 +91,10 @@ def compose(*funcs):
 
         def reraise_and_log(e):
             if hasattr(e, "msg"):
-                if "GAMLA_DEBUG_MESSAGE:" in e.msg:
+                if _DEBUG_MESSAGE_PREFIX in e.msg:
                     raise e
             raise type(e)(
-                "GAMLA_DEBUG_MESSAGE:"
+                _DEBUG_MESSAGE_PREFIX
                 + "\n".join(
                     map(lambda frame: f"{frame.filename}:{frame.lineno}", frames),
                 ),
