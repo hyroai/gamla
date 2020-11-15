@@ -66,3 +66,18 @@ Definitions
 
 .. automodule:: gamla
    :members:
+
+.. automodule:: gamla.functional
+   :members:
+
+.. automodule:: gamla.functional_async
+   :members:
+
+.. automodule:: gamla.functional_generic
+   :members:
+
+.. automodule:: gamla.graph
+   :members:
+
+.. automodule:: gamla.transducer
+   :members:
