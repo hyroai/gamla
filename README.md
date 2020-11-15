@@ -8,9 +8,7 @@
 
 ## Debugging anonymous compositions
 
-`gamla.compose(x, y, z)` produces a new function which doesn't have a proper name. If `x` raises an exception, it is sometimes hard to figure out where this occurred. To overcome this, set the env variable `GAMLA_DEBUG_MODE` (to anything). This will cause the composition functions to give a name for the anonymous composition. The name would be a concatenation of its constituents' names, e.g. `x_of_y_of_z`. The name is given in a way that persists to the stack exceptions.
-
-This is turned on only by flag because it incurs significant overhead so things might get slow.
+`gamla.compose(x, y, z)` produces a new function which doesn't have a proper name. If `x` raises an exception, it is sometimes hard to figure out where this occurred. To overcome this, set the env variable `GAMLA_DEBUG_MODE` (to anything) to get more useful exceptions. This is turned on only by flag because it incurs significant overhead so things might get slow.
 
 ## Mixing asynchronous and synchronous code
 
