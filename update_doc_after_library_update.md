@@ -25,4 +25,4 @@ While in gamla directory:
 1. Rebuild: ``make html``
 
 ### If an existing function was updated
-do nothing.
+While in gamla directory in terminal, rebuild with: ``make html``
