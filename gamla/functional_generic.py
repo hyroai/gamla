@@ -76,9 +76,6 @@ def compose_sync(*funcs):
     return composed
 
 
-_DEBUG_MODE_PRINT_MARKER = "gamla_debug_printed"
-
-
 def compose(*funcs):
     if _any_is_async(funcs):
         composed = _compose_async(*funcs)
@@ -90,18 +87,13 @@ def compose(*funcs):
         frames = inspect.stack()
 
         def reraise_and_log(e):
-            # Don't spam the stack trace.
-            if _DEBUG_MODE_PRINT_MARKER in str(e):
-                raise e
-
             for frame in frames:
                 if "gamla" in frame.filename:
                     continue
-                print(  # noqa: T001
+                raise type(e)(
                     f"Composition involved in exception: {frame.filename}:{frame.lineno}",
                 )
-                break
-            raise type(e)(_DEBUG_MODE_PRINT_MARKER)
+            raise e
 
         composed = excepts_decorator.excepts(Exception, reraise_and_log, composed)
     composed.__name__ = name
