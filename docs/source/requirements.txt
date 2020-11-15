@@ -1,2 +1,0 @@
-# requirements file for read_the_docs
-gamla
