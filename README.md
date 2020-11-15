@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.com/hyroai/gamla.svg?branch=master)](https://travis-ci.com/hyroai/gamla)
 
-גamla is a functional programming library for python which is performant and supports `async`.
+גamla is a performant functional programming library for python which supports `async`.
 
 ## Installation
 
