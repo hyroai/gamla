@@ -22,6 +22,9 @@ class frozendict:
         self._dict = d
         self.__setattr__ = _immutable
 
+    def __eq__(self, other):
+        return self._dict.__eq__(other._dict)
+
     def __getitem__(self, key):
         return self._dict[key]
 
