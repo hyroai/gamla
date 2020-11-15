@@ -90,9 +90,9 @@ def compose(*funcs):
         frames = inspect.stack()
 
         def reraise_and_log(e):
-            if hasattr(e, "msg"):
-                if _DEBUG_MESSAGE_PREFIX in e.msg:
-                    raise e
+            # Don't overspam the stack trace.
+            if _DEBUG_MESSAGE_PREFIX in str(e):
+                raise e
             raise type(e)(
                 _DEBUG_MESSAGE_PREFIX
                 + "\n".join(
