@@ -1,6 +1,6 @@
 import asyncio
 
-from gamla import excepts, functional
+from gamla import excepts_decorator, functional
 
 
 def test_excepts_sync():
@@ -8,7 +8,7 @@ def test_excepts_sync():
         pass
 
     assert (
-        excepts.excepts(
+        excepts_decorator.excepts(
             SomeException,
             functional.just(None),
             functional.identity,
@@ -16,7 +16,7 @@ def test_excepts_sync():
         == 1
     )
     assert (
-        excepts.excepts(
+        excepts_decorator.excepts(
             SomeException,
             functional.just(None),
             functional.make_raise(SomeException),
@@ -37,7 +37,7 @@ async def test_excepts_async():
         return x
 
     assert (
-        await excepts.excepts(
+        await excepts_decorator.excepts(
             SomeException,
             functional.just(None),
             slow_identity,
@@ -45,7 +45,7 @@ async def test_excepts_async():
         == 1
     )
     assert (
-        await excepts.excepts(
+        await excepts_decorator.excepts(
             SomeException,
             functional.just(None),
             slow_raise,

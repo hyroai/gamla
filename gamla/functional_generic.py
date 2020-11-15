@@ -7,7 +7,7 @@ import operator
 import os
 from typing import Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar
 
-from gamla import currying, data, excepts, functional
+from gamla import currying, data, excepts_decorator, functional
 
 
 def compose_left(*funcs):
@@ -87,13 +87,17 @@ def compose(*funcs):
         frames = inspect.stack()
 
         def reraise_and_log(e):
+            if hasattr(e, "msg"):
+                if "GAMLA_DEBUG_MESSAGE:" in e.msg:
+                    raise e
             raise type(e)(
-                "\n".join(
+                "GAMLA_DEBUG_MESSAGE:"
+                + "\n".join(
                     map(lambda frame: f"{frame.filename}:{frame.lineno}", frames),
                 ),
             )
 
-        composed = excepts.excepts(Exception, reraise_and_log, composed)
+        composed = excepts_decorator.excepts(Exception, reraise_and_log, composed)
     composed.__name__ = name
     return composed
 
@@ -393,7 +397,7 @@ def bifurcate(*funcs):
 
 average = compose_left(
     bifurcate(sum, functional.count),
-    excepts.excepts(
+    excepts_decorator.excepts(
         ZeroDivisionError,
         lambda _: 0,
         functional.star(lambda x, y: x / y),
@@ -438,7 +442,13 @@ def reduce_curried(
 
 
 find = compose(
-    after(excepts.excepts(StopIteration, functional.just(None), functional.head)),
+    after(
+        excepts_decorator.excepts(
+            StopIteration,
+            functional.just(None),
+            functional.head,
+        ),
+    ),
     curried_filter,
 )
 
