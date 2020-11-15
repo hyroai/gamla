@@ -16,19 +16,30 @@ def _immutable(self, *args, **kws):
     raise TypeError("cannot change object - object is immutable")
 
 
-class frozendict(dict):  # noqa: N801
-    def __init__(self, *args, **kwargs):
+class frozendict:
+    def __init__(self, d):
         self._hash = None
+        self._dict = d
         self.__setattr__ = _immutable
-        super(frozendict, self).__init__(*args, **kwargs)
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __getstate__(self):
+        return self._dict
+
+    def __setstate__(self, state):
+        self._dict = state
+
+    def __repr__(self):
+        return f"frozendict({repr(self._dict)})"
 
     def __hash__(self):
         if self._hash is None:
-            self._hash = hash(tuple(self.items()))
+            self._hash = hash(tuple(self._dict.items()))
         return self._hash
 
-    # TODO(nitzo): Disabled since we need to be able to un-serialize with dill/pickle.
-    # __setitem__ = _immutable
+    __setitem__ = _immutable
     __delitem__ = _immutable
     pop = _immutable
     popitem = _immutable
