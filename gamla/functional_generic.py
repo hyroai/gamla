@@ -397,7 +397,7 @@ average = compose_left(
     bifurcate(sum, functional.count),
     excepts_decorator.excepts(
         ZeroDivisionError,
-        lambda _: 0,
+        functional.just(0),
         functional.star(operator.truediv),
     ),
 )
