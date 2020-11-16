@@ -29,7 +29,7 @@ async def test_excepts_async():
     class SomeException(Exception):
         pass
 
-    async def slow_raise(x):
+    async def async_raise(x):
         raise SomeException
 
     async def slow_identity(x):
@@ -48,7 +48,7 @@ async def test_excepts_async():
         await excepts_decorator.excepts(
             SomeException,
             functional.just(None),
-            slow_raise,
+            async_raise,
         )(1)
         is None
     )

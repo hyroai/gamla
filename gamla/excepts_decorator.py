@@ -13,21 +13,18 @@ def excepts(
 ):
     if asyncio.iscoroutinefunction(function):
 
-        @functools.wraps(function)
         async def excepts(*args, **kwargs):
             try:
                 return await function(*args, **kwargs)
             except exception as error:
                 return handler(error)
 
-        return excepts
     else:
 
-        @functools.wraps(function)
         def excepts(*args, **kwargs):
             try:
                 return function(*args, **kwargs)
             except exception as error:
                 return handler(error)
 
-        return excepts
+    return functools.wraps(function)(excepts)
