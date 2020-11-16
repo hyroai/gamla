@@ -398,7 +398,7 @@ average = compose_left(
     excepts_decorator.excepts(
         ZeroDivisionError,
         lambda _: 0,
-        functional.star(lambda x, y: x / y),
+        functional.star(operator.truediv),
     ),
 )
 
