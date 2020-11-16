@@ -158,9 +158,12 @@ async def test_keymap_async_curried():
 
 
 async def test_keyfilter_sync_curried():
-    assert functional_generic.keyfilter(functional.identity)(
-        {False: True, True: False}
-    ) == {True: False}
+    assert (
+        functional_generic.keyfilter(functional.identity)(
+            {False: True, True: False},
+        )
+        == {True: False}
+    )
 
 
 async def test_valmap_sync_curried():
@@ -168,9 +171,12 @@ async def test_valmap_sync_curried():
 
 
 async def test_valfilter_sync_curried():
-    assert functional_generic.valfilter(functional.identity)(
-        {False: True, True: False}
-    ) == {False: True}
+    assert (
+        functional_generic.valfilter(functional.identity)(
+            {False: True, True: False},
+        )
+        == {False: True}
+    )
 
 
 async def _is_even_async(x):
@@ -354,57 +360,6 @@ def test_reduce_aync():
         return x + y
 
     assert functional_generic.reduce_curried(addition, 0)([1, 2, 3]) == 6
-
-
-def test_excepts_sync():
-    class SomeException(Exception):
-        pass
-
-    assert (
-        functional_generic.excepts(
-            SomeException,
-            functional.just(None),
-            functional.identity,
-        )(1)
-        == 1
-    )
-    assert (
-        functional_generic.excepts(
-            SomeException,
-            functional.just(None),
-            functional.make_raise(SomeException),
-        )(1)
-        is None
-    )
-
-
-async def test_excepts_async():
-    class SomeException(Exception):
-        pass
-
-    async def slow_raise(x):
-        raise SomeException
-
-    async def slow_identity(x):
-        await asyncio.sleep(0.01)
-        return x
-
-    assert (
-        await functional_generic.excepts(
-            SomeException,
-            functional.just(None),
-            slow_identity,
-        )(1)
-        == 1
-    )
-    assert (
-        await functional_generic.excepts(
-            SomeException,
-            functional.just(None),
-            slow_raise,
-        )(1)
-        is None
-    )
 
 
 def test_find():
