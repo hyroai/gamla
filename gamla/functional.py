@@ -617,7 +617,7 @@ def tail(n: int):
 
 
 head = toolz.first
-head.__doc__ = """ The first element in a sequence
+head.__doc__ = """ The first element in a sequence bla
 
     >>> first('ABC')
     'A'
