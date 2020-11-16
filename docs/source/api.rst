@@ -1,7 +1,5 @@
 API
 ===
-This page contains a comprehensive list of all functions within ``gamla``.
-Docstrings should provide sufficient understanding for any individual function.
 
 
 data
@@ -25,6 +23,7 @@ functional
    bottom
    groupby_many_reduce
    unique_by
+   head
 
 
 functional_async

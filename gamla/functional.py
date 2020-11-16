@@ -617,5 +617,11 @@ def tail(n: int):
 
 
 head = toolz.first
+head.__doc__ = """ The first element in a sequence
+
+    >>> first('ABC')
+    'A'
+    """
+#: The second element in a sequence >>> second([1,2,3]) '2'
 second = toolz.second
 last = toolz.last
