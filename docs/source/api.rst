@@ -1,6 +1,7 @@
 API
 ===
 
+
 data
 ----
 
@@ -22,6 +23,8 @@ functional
    bottom
    groupby_many_reduce
    unique_by
+   head
+   second
 
 
 functional_async
