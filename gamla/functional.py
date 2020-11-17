@@ -616,6 +616,8 @@ def tail(n: int):
     return tail
 
 
+frequencies = toolz.frequencies 
+
 head = toolz.first
 head.__doc__ = """ The first element in a sequence bla
 
