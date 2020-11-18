@@ -615,6 +615,9 @@ def tail(n: int):
 
     return tail
 
+
+frequencies = toolz.frequencies
+
 """ The first element in a sequence bla
 
     >>> first('ABC')

@@ -2,6 +2,7 @@
 
 from .currying import *
 from .data import *
+from .excepts_decorator import *
 from .functional import *
 from .functional_async import *
 from .functional_generic import *
