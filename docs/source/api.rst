@@ -17,6 +17,7 @@ functional
 .. currentmodule:: gamla.functional
 
 .. autosummary::
+   :annotate:
    translate_exception
    make_call_key
    top
