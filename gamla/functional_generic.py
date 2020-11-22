@@ -194,7 +194,13 @@ def first(*funcs, exception_type: Type[Exception]):
     return inner
 
 
+class PipeNotGivenAnyFunctions(Exception):
+    pass
+
+
 def pipe(val, *funcs):
+    if not funcs:
+        raise PipeNotGivenAnyFunctions
     return compose_left(*funcs)(val)
 
 

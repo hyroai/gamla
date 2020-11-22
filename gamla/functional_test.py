@@ -619,3 +619,7 @@ def test_compose_many_to_one():
         )
         == 12
     )
+
+def test_empty_pipe():
+    with pytest.raises(functional_generic.PipeNotGivenAnyFunctions):
+        functional_generic.pipe([1, 2, 3,])
