@@ -618,12 +618,20 @@ def tail(n: int):
 
 frequencies = toolz.frequencies
 
-""" The first element in a sequence bla
-
-    >>> first('ABC')
-    'A'
-    """
+#: The first element in a sequence
+#:
+#:    >>> head('ABC')
+#:    'A'
 head = toolz.first
-#: The second element in a sequence >>> second([1,2,3]) '2'
+
+#:  The second element in a sequence
+#:
+#:    >>> second('ABC')
+#:    'B'
 second = toolz.second
+
+#: The last element in a sequence
+#:
+#:    >>> last('ABC')
+#:    'C'
 last = toolz.last
