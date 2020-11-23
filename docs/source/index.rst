@@ -8,7 +8,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   ../../README
+   README.rst
    api.rst
 
 
