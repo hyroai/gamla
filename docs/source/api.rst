@@ -5,15 +5,16 @@ API
 data
 ----
 
-.. autoclass:: gamla.data
-   :members:
-   :undoc-members:
+.. currentmodule:: gamla.data
 
-    .. rubric:: Methods
-
-    .. autoautosummary:: gamla.data
-        :methods:
-
+.. autosummary::
+   get_encode_config
+   freeze_deep
+   dict_to_csv
+   csv_to_json
+   dict_to_tuple_of_tuples
+   tuple_of_tuples_to_csv
+   match
 
 functional
 ----------
