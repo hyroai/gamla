@@ -5,10 +5,14 @@ API
 data
 ----
 
-.. currentmodule:: gamla.data
+.. autoclass:: gamla.data
+   :members:
+   :undoc-members:
 
-.. autosummary::
-   match
+    .. rubric:: Methods
+
+    .. autoautosummary:: gamla.data
+        :methods:
 
 
 functional
