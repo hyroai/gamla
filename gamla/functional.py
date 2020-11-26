@@ -262,6 +262,29 @@ def assoc_in(d, keys, value, factory=dict):
     return update_in(d, keys, lambda x: value, value, factory)
 
 
+def add_key_value(key, value):
+    def add_key_value(d):
+        return assoc_in(d, [key], value)
+
+    return add_key_value
+
+
+def remove_key(key):
+    def remove_key(d):
+        updated = d.copy()
+        del updated[key]
+        return updated
+
+    return remove_key
+
+
+def wrap_dict(key):
+    def wrap_dict(value):
+        return {key: value}
+
+    return wrap_dict
+
+
 @currying.curry
 def update_in(d, keys, func, default=None, factory=dict):
     ks = iter(keys)

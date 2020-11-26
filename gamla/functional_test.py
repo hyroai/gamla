@@ -623,4 +623,22 @@ def test_compose_many_to_one():
 
 def test_empty_pipe():
     with pytest.raises(functional_generic.PipeNotGivenAnyFunctions):
-        functional_generic.pipe([1, 2, 3])
+        functional_generic.pipe(
+            [
+                1,
+                2,
+                3,
+            ],
+        )
+
+
+def test_add_key_value():
+    assert functional.add_key_value("1", "1")({"2": "2"}) == {"1": "1", "2": "2"}
+
+
+def test_remove_key():
+    assert functional.remove_key("1")({"1": 1, "2": 2}) == {"2": 2}
+
+
+def test_wrap_dict():
+    assert functional.wrap_dict("some_key")("some_value") == {"some_key": "some_value"}
