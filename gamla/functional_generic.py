@@ -5,7 +5,7 @@ import itertools
 import logging
 import operator
 import os
-from typing import Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar
+from typing import Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar, Any
 
 from gamla import currying, data, excepts_decorator, functional
 
@@ -539,3 +539,25 @@ def merge_with(f):
 merge = merge_with(functional.last)
 concat = itertools.chain.from_iterable
 mapcat = compose_left(curried_map, after(concat))
+
+_K = TypeVar("_K")
+
+def groupby(
+    key: Callable[[_E], _K]
+) -> Callable[[Iterable[_E]], Mapping[_K, Tuple[_E, ...]]]:
+    return compose_left(
+        functional.groupby_many_reduce(
+            compose_left(key, functional.wrap_tuple),
+            compose_left(
+                functional.pack,
+                stack(
+                    [
+                        unless(functional.identity, functional.just(())),
+                        functional.wrap_tuple,
+                    ]
+                ),
+                concat,
+            ),
+        ),
+        valmap(tuple),
+    )
