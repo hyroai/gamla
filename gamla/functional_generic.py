@@ -5,7 +5,7 @@ import itertools
 import logging
 import operator
 import os
-from typing import Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar, Any
+from typing import Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar
 
 from gamla import currying, data, excepts_decorator, functional
 
@@ -542,8 +542,9 @@ mapcat = compose_left(curried_map, after(concat))
 
 _K = TypeVar("_K")
 
+
 def groupby(
-    key: Callable[[_E], _K]
+    key: Callable[[_E], _K],
 ) -> Callable[[Iterable[_E]], Mapping[_K, Tuple[_E, ...]]]:
     return compose_left(
         functional.groupby_many_reduce(
@@ -554,7 +555,7 @@ def groupby(
                     [
                         unless(functional.identity, functional.just(())),
                         functional.wrap_tuple,
-                    ]
+                    ],
                 ),
                 concat,
             ),

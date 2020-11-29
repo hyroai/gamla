@@ -1,6 +1,13 @@
 API
 ===
 
+currying
+----
+
+.. currentmodule:: gamla.currying
+
+.. autosummary::
+
 
 data
 ----
@@ -73,10 +80,69 @@ graph
    has_cycle
 
 
+graph_async
+-----------
+.. currentmodule:: gamla.graph_async
+
+.. autosummary::
+   agraph_traverse
+   agraph_traverse_many
+   agroupby_many
+   atraverse_graph_by_radius
+
+io_utils
+--------
+
+.. currentmodule:: gamla.io_utils
+
+.. autosummary::
+   batch_calls
+   get_async
+   post_json_async
+   post_json_with_extra_headers_async
+   queue_identical_calls
+   requests_with_retry
+   throttle
+   timeit
+   timeout
+
+transducer
+--------
+
+.. currentmodule:: gamla.transducer
+
+.. autosummary::
+   apply_spec
+   concat
+   count_by
+   filter
+   groupby
+   groupby_many
+   juxt
+   map
+   mapcat
+   transduce
+
+tree
+----
+
+.. currentmodule:: gamla.tree
+
+.. autosummary::
+   filter_leaves
+   get_leaves_by_ancestor_predicate
+
+
 Definitions
 -----------
 
 .. automodule:: gamla
+   :members:
+
+.. automodule:: gamla.currying
+   :members:
+
+.. automodule:: gamla.data
    :members:
 
 .. automodule:: gamla.functional
@@ -91,5 +157,14 @@ Definitions
 .. automodule:: gamla.graph
    :members:
 
+.. automodule:: gamla.graph_async
+   :members:
+
+.. automodule:: gamla.io_utils
+   :members:
+
 .. automodule:: gamla.transducer
+   :members:
+
+.. automodule:: gamla.tree
    :members:

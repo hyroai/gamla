@@ -643,6 +643,7 @@ def test_remove_key():
 def test_wrap_dict():
     assert functional.wrap_dict("some_key")("some_value") == {"some_key": "some_value"}
 
+
 def test_groupby():
     names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
     assert functional_generic.groupby(functional.last)(names) == {
@@ -653,5 +654,6 @@ def test_groupby():
         "k": ("frank",),
     }
 
+
 def test_groupby_empty():
-    assert functional_generic.groupby(functional.last)([]) == dict()
+    assert functional_generic.groupby(functional.last)([]) == {}
