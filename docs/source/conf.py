@@ -24,6 +24,7 @@ project = "gamla"
 copyright = "2020, hyro.ai"
 author = "hyro.ai"
 
+
 # The full version, including alpha/beta/rc tags
 release = "0.0.1"
 
