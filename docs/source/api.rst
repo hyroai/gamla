@@ -51,6 +51,7 @@ functional_generic
    apply_spec
    bifurcate
    countby_many
+   groupby
    
 
 graph
