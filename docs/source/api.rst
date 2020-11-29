@@ -59,11 +59,17 @@ graph
 .. currentmodule:: gamla.graph
 
 .. autosummary::
+   graph_traverse
    graph_traverse_many
    general_graph_traverse_many
    traverse_graph_by_radius
+   edges_to_graph
+   graph_to_edges
+   reverse_graph
+   cliques_to_graph
    get_connectivity_components
-   groupby_many_reduce
+   groupby_many
+   has_cycle
 
 
 Definitions
