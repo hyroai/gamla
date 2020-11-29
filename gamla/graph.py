@@ -13,7 +13,7 @@ def graph_traverse(
     get_neighbors: Callable,
     key: Callable = functional.identity,
 ) -> Iterable:
-    """Gets a graph and a function to get a node's neighbours, BFS over it from a single source node, return an iterator of unique nodes
+    """Gets a graph and a function to get a node's neighbours, BFS over it from a single source node, return an iterator of unique nodes.
 
     >>> g = {'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}
     >>> list(graph_traverse('1', g.__getitem__))
@@ -27,7 +27,8 @@ def graph_traverse_many(
     get_neighbors: Callable,
     key: Callable = functional.identity,
 ) -> Iterable:
-    """Gets a graph and a function to get a node's neighbours, BFS over it starting from multiple sources, return an iterator of unique nodes
+    """Gets a graph and a function to get a node's neighbours, BFS over it starting from multiple sources, return an iterator of unique nodes.
+
     >>> g = {'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}
     >>> list(graph_traverse_many(['1', '3'], g.__getitem__))
     ['3', '1', '4', '2']
@@ -55,13 +56,13 @@ def general_graph_traverse_many(
     should_traverse: Callable,
 ) -> Iterable:
     """Gets a graph, a function to get a node's neighbours, a function to add to the set of seen nodes, and function to know if a node is seen or not.
-    BFS over the graph, return an iterator of unique nodes
+    BFS over the graph and return an iterator of unique nodes.
 
-        >>> seen_set = set(); key =  len; g = {'one': ['two', 'three'], 'two': ['three'], 'three': ['four'], 'four': []}
-        >>> list(general_graph_traverse_many(['one', 'three'], g.__getitem__, functional_generic.compose_left(key, seen_set.add), functional_generic.compose_left(key, functional_generic.complement(functional.contains(seen_set)))))
-        ['three', 'one', 'four']
+    >>> seen_set = set(); key =  len; g = {'one': ['two', 'three'], 'two': ['three'], 'three': ['four'], 'four': []}
+    >>> list(general_graph_traverse_many(['one', 'three'], g.__getitem__, functional_generic.compose_left(key, seen_set.add), functional_generic.compose_left(key, functional_generic.complement(functional.contains(seen_set)))))
+    ['three', 'one', 'four']
 
-        Note: `get_neighbors` must return elements without duplicates."""
+    Note: `get_neighbors` must return elements without duplicates."""
     queue = [*sources]
     for element in queue:
         remember(element)
@@ -81,6 +82,7 @@ def traverse_graph_by_radius(
     radius: int,
 ) -> Iterable:
     """Traverse over a graph like `graph_traverse`, but up to a given radius.
+
     >>> g = {'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}
     >>> list(traverse_graph_by_radius('1', g.__getitem__, 1))
     ['1', '2', '3']"""
@@ -101,10 +103,10 @@ def traverse_graph_by_radius(
     )
 
 
-#: Gets a sequence of edges and returns a graph made of these edges
+#: Gets a sequence of edges and returns a graph made of these edges.
 #:
-#:    >>> graph.edges_to_graph([(1,2), (2, 3), (3, 1), (3, 2)])
-#:    '{1: frozenset({2}), 2: frozenset({3}), 3: frozenset({1, 2})}'
+#:  >>> graph.edges_to_graph([(1,2), (2, 3), (3, 1), (3, 2)])
+#:  {1: frozenset({2}), 2: frozenset({3}), 3: frozenset({1, 2})}
 edges_to_graph = functional_generic.compose(
     functional_generic.valmap(
         functional_generic.compose(
@@ -115,10 +117,10 @@ edges_to_graph = functional_generic.compose(
     curried.groupby(toolz.first),
 )
 
-#: Gets a graph and returns an iterator of all edges in it
+#: Gets a graph and returns an iterator of all edges in it.
 #:
-#:    >>> list(graph_to_edges({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}))
-#:    '[('1', '2'), ('1', '3'), ('2', '3'), ('3', '4')]'
+#:  >>> list(graph_to_edges({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}))
+#:  [('1', '2'), ('1', '3'), ('2', '3'), ('3', '4')]
 graph_to_edges = functional_generic.compose_left(
     functional_generic.keymap(functional.wrap_tuple),
     dict.items,
@@ -127,8 +129,8 @@ graph_to_edges = functional_generic.compose_left(
 
 #: Gets a graph and returns the graph with its edges reversed
 #:
-#:    >>> reverse_graph({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []})
-#:    '{'2': frozenset({'1'}), '3': frozenset({'1', '2'}), '4': frozenset({'3'})}'
+#:  >>> reverse_graph({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []})
+#:  {'2': frozenset({'1'}), '3': frozenset({'1', '2'}), '4': frozenset({'3'})}
 reverse_graph = functional_generic.compose_left(
     graph_to_edges,
     functional_generic.curried_map(functional_generic.compose_left(reversed, tuple)),
@@ -137,8 +139,8 @@ reverse_graph = functional_generic.compose_left(
 
 #: Gets a sequence of nodes (cliques) and returns the bidirectional graph they represent
 #:
-#:    >>> cliques_to_graph([{1, 2}, {3, 4}])
-#:    '{1: frozenset({2}), 2: frozenset({1}), 3: frozenset({4}), 4: frozenset({3})}'
+#:  >>> cliques_to_graph([{1, 2}, {3, 4}])
+#:  {1: frozenset({2}), 2: frozenset({1}), 3: frozenset({4}), 4: frozenset({3})}
 cliques_to_graph = functional_generic.compose_left(
     curried.mapcat(lambda clique: itertools.permutations(clique, r=2)),
     edges_to_graph,
@@ -147,12 +149,13 @@ cliques_to_graph = functional_generic.compose_left(
 
 def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
     """
-    Gets a graph and return its connectivity components
-        >>> g = cliques_to_graph([{1, 2}, {3, 4}])
-        >>> list(get_connectivity_components(g))
-        [frozenset({1, 2}), frozenset({3, 4})]
+    Gets a graph and return an iterator of its connectivity components.
 
-        Note: Graph is assumed to undirected, so each edge must appear both ways."""
+    >>> g = cliques_to_graph([{1, 2}, {3, 4}])
+    >>> list(get_connectivity_components(g))
+    [frozenset({1, 2}), frozenset({3, 4})]
+
+    Note: Graph is assumed to undirected, so each edge must appear both ways."""
     nodes_left = frozenset(graph)
     while nodes_left:
         result = frozenset(
@@ -169,15 +172,14 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
 
 
 @currying.curry
-def groupby_many(f, it):
+def groupby_many(f: Callable, it: Iterable) -> Dict[Text, Any]:
     """Return a mapping `{y: {x s.t. y in f(x)}}, where x in it. `
 
     Parameters:
-    f (Callable): Key function (gets an object in collection and outputs tuple of keys).
-    it (Iterable): Collection.
+    Key function (gets an object in collection and outputs tuple of keys).
+    A Collection.
 
-    Returns:
-    Dict[Text, Any]: Dictionary where key has been computed by the `f` key function.
+    Returns a dictionary where key has been computed by the `f` key function.
 
     >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
     >>> groupby_many(lambda name: (name[0], name[-1]), names)
@@ -217,7 +219,7 @@ def _has_cycle(sourced, get_neighbors, visited, node):
 
 
 def has_cycle(graph):
-    """Gets a graph, returns True if it contains a cycle, False else
+    """Gets a graph, returns True if it contains a cycle, False else.
 
     >>> has_cycle({1: [2], 2: [3], 3: [1]})
     True
