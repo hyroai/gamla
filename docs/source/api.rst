@@ -139,6 +139,9 @@ Definitions
 .. automodule:: gamla
    :members:
 
+.. automodule:: gamla.__init__
+   :members:
+
 .. automodule:: gamla.currying
    :members:
 
