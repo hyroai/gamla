@@ -7,7 +7,7 @@ currying
 .. currentmodule:: gamla.currying
 
 .. autosummary::
-
+   curry
 
 data
 ----
@@ -135,9 +135,6 @@ tree
 
 Definitions
 -----------
-
-.. automodule:: gamla
-   :members:
 
 .. automodule:: gamla.__init__
    :members:
