@@ -262,6 +262,29 @@ def assoc_in(d, keys, value, factory=dict):
     return update_in(d, keys, lambda x: value, value, factory)
 
 
+def add_key_value(key, value):
+    def add_key_value(d):
+        return assoc_in(d, [key], value)
+
+    return add_key_value
+
+
+def remove_key(key):
+    def remove_key(d):
+        updated = d.copy()
+        del updated[key]
+        return updated
+
+    return remove_key
+
+
+def wrap_dict(key):
+    def wrap_dict(value):
+        return {key: value}
+
+    return wrap_dict
+
+
 @currying.curry
 def update_in(d, keys, func, default=None, factory=dict):
     ks = iter(keys)
@@ -616,6 +639,43 @@ def tail(n: int):
     return tail
 
 
+def take(n: int):
+    def take(seq):
+        return itertools.islice(seq, n)
+
+    return take
+
+
+def nth(n: int):
+    def nth(seq):
+        return toolz.nth(n, seq)
+
+    return nth
+
+
+def drop(n: int):
+    def drop(seq):
+        return toolz.drop(n, seq)
+
+    return drop
+
+
+frequencies = toolz.frequencies
+
+#: The first element in a sequence
+#:
+#:    >>> head('ABC')
+#:    'A'
 head = toolz.first
+
+#:  The second element in a sequence
+#:
+#:    >>> second('ABC')
+#:    'B'
 second = toolz.second
+
+#: The last element in a sequence
+#:
+#:    >>> last('ABC')
+#:    'C'
 last = toolz.last

@@ -8,9 +8,7 @@
 
 ## Debugging anonymous compositions
 
-`gamla.compose(x, y, z)` produces a new function which doesn't have a proper name. If `x` raises an exception, it is sometimes hard to figure out where this occurred. To overcome this, set the env variable `GAMLA_DEBUG_MODE` (to anything). This will cause the composition functions to give a name for the anonymous composition. The name would be a concatenation of its constituents' names, e.g. `x_of_y_of_z`. The name is given in a way that persists to the stack exceptions.
-
-This is turned on only by flag because it incurs significant overhead so things might get slow.
+`gamla.compose(x, y, z)` produces a new function which doesn't have a proper name. If `x` raises an exception, it is sometimes hard to figure out where this occurred. To overcome this, set the env variable `GAMLA_DEBUG_MODE` (to anything) to get more useful exceptions. This is turned on only by flag because it incurs significant overhead so things might get slow.
 
 ## Mixing asynchronous and synchronous code
 
@@ -42,18 +40,20 @@ async def run():
 
 The main problems - `toolz` is slow and does not support `async` functions.
 
-### Why is it slow?
+### Why are curried functions and composition in `toolz` slow?
 
-It uses the expensive `inspect` module to look at a function’s arguments, and doing so at each run. This happens not only on curried functions, but in compositions as well.
+These functions use an expensive `inspect` call to look at a function’s arguments, and doing so at each run.
 
 ### Why does `gamla` not suffer from this problem?
 
 Two reasons:
 
-1. It does no longer support binary signatures on things like `map`, so it doesn’t need to infer anything (these are higher order functions in `gamla`).
-1. The `gamla.curry` function pays for the signature inspection in advance, and remembers its results.
+1. It does not have binary signatures on things like `map`, so it doesn’t need to infer anything (these are higher order functions in `gamla`).
+1. The `gamla.curry` function eagerly pays for the signature inspection in advance, and remembers its results for future runs.
 
-### Function mapping and common gotchas (written in blood):
+### Function mapping and common gotchas:
+
+Most functions are drop in replacements. Here are some examples:
 
 - `curried.(filter|map|valmap|itemmap|keymap)` -> `gamla.$1` (make sure the call is with a single argument)
 - `toolz.identity` -> `gamla.identity`

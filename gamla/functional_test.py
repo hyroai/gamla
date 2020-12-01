@@ -158,9 +158,12 @@ async def test_keymap_async_curried():
 
 
 async def test_keyfilter_sync_curried():
-    assert functional_generic.keyfilter(functional.identity)(
-        {False: True, True: False}
-    ) == {True: False}
+    assert (
+        functional_generic.keyfilter(functional.identity)(
+            {False: True, True: False},
+        )
+        == {True: False}
+    )
 
 
 async def test_valmap_sync_curried():
@@ -168,9 +171,12 @@ async def test_valmap_sync_curried():
 
 
 async def test_valfilter_sync_curried():
-    assert functional_generic.valfilter(functional.identity)(
-        {False: True, True: False}
-    ) == {False: True}
+    assert (
+        functional_generic.valfilter(functional.identity)(
+            {False: True, True: False},
+        )
+        == {False: True}
+    )
 
 
 async def _is_even_async(x):
@@ -354,57 +360,6 @@ def test_reduce_aync():
         return x + y
 
     assert functional_generic.reduce_curried(addition, 0)([1, 2, 3]) == 6
-
-
-def test_excepts_sync():
-    class SomeException(Exception):
-        pass
-
-    assert (
-        functional_generic.excepts(
-            SomeException,
-            functional.just(None),
-            functional.identity,
-        )(1)
-        == 1
-    )
-    assert (
-        functional_generic.excepts(
-            SomeException,
-            functional.just(None),
-            functional.make_raise(SomeException),
-        )(1)
-        is None
-    )
-
-
-async def test_excepts_async():
-    class SomeException(Exception):
-        pass
-
-    async def slow_raise(x):
-        raise SomeException
-
-    async def slow_identity(x):
-        await asyncio.sleep(0.01)
-        return x
-
-    assert (
-        await functional_generic.excepts(
-            SomeException,
-            functional.just(None),
-            slow_identity,
-        )(1)
-        == 1
-    )
-    assert (
-        await functional_generic.excepts(
-            SomeException,
-            functional.just(None),
-            slow_raise,
-        )(1)
-        is None
-    )
 
 
 def test_find():
@@ -664,3 +619,53 @@ def test_compose_many_to_one():
         )
         == 12
     )
+
+
+def test_empty_pipe():
+    with pytest.raises(functional_generic.PipeNotGivenAnyFunctions):
+        functional_generic.pipe(
+            [
+                1,
+                2,
+                3,
+            ],
+        )
+
+
+def test_add_key_value():
+    assert functional.add_key_value("1", "1")({"2": "2"}) == {"1": "1", "2": "2"}
+
+
+def test_remove_key():
+    assert functional.remove_key("1")({"1": 1, "2": 2}) == {"2": 2}
+
+
+def test_wrap_dict():
+    assert functional.wrap_dict("some_key")("some_value") == {"some_key": "some_value"}
+
+
+def test_groupby():
+    names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
+    assert functional_generic.groupby(functional.last)(names) == {
+        "e": ("alice", "charlie"),
+        "b": ("bob",),
+        "n": ("dan",),
+        "h": ("edith",),
+        "k": ("frank",),
+    }
+
+
+def test_groupby_empty():
+    assert functional_generic.groupby(functional.last)([]) == {}
+
+
+def test_take():
+    assert tuple(functional.take(2)(["a", "b", "c"])) == ("a", "b")
+
+
+def test_nth():
+    assert functional.nth(1)(["a", "b", "c"]) == "b"
+
+
+def test_drop():
+    assert tuple(functional.drop(2)(["a", "b", "c"])) == ("c",)

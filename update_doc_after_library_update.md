@@ -1,7 +1,7 @@
 ## How to update gamla documentation after library update
 
-### If a new docstring was added
-1. Go to docs/api.rst and add your function name under the relevant module, with 3 spaces indentation.
+### If a new function was added
+1. Go to docs/api.rst and add your function name under the relevant module, with an indentation of 3 spaces.
 For example:
 
 ```rest
@@ -14,15 +14,13 @@ For example:
    .
    my_new_function
 ```
-2. While in gamla directory in terminal, rebuild with: ``make html``
 
 
 ### If README.md was updated
 While in gamla directory:
-1. Install .md-to-.rst converter: ``pip install m2r``
+1. Install md-to-rst converter: ``pip install m2r``
 1. Convert README.md to README.rst: ``m2r README.md``
-1. Move README.rst to docs folder instead of existing one: ``mv README.rst docs``
-1. Rebuild: ``make html``
+1. Move README.rst to docs/source folder instead of existing one: ``mv README.rst docs/source``
 
 ### If an existing function was updated
-While in gamla directory in terminal, rebuild with: ``make html``
+Do nothing. The documentation will update itself.
