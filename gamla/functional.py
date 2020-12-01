@@ -639,6 +639,27 @@ def tail(n: int):
     return tail
 
 
+def take(n: int):
+    def take(seq):
+        return itertools.islice(seq, n)
+
+    return take
+
+
+def nth(n: int):
+    def nth(seq):
+        return toolz.nth(n, seq)
+
+    return nth
+
+
+def drop(n: int):
+    def drop(seq):
+        return toolz.drop(n, seq)
+
+    return drop
+
+
 frequencies = toolz.frequencies
 
 #: The first element in a sequence

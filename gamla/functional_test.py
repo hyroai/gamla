@@ -657,3 +657,15 @@ def test_groupby():
 
 def test_groupby_empty():
     assert functional_generic.groupby(functional.last)([]) == {}
+
+
+def test_take():
+    assert tuple(functional.take(2)(["a", "b", "c"])) == ("a", "b")
+
+
+def test_nth():
+    assert functional.nth(1)(["a", "b", "c"]) == "b"
+
+
+def test_drop():
+    assert tuple(functional.drop(2)(["a", "b", "c"])) == ("c",)
