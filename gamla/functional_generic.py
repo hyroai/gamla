@@ -537,7 +537,7 @@ find_index = compose_left(
 
 
 def check(condition, exception):
-    """Apply function `condition` to value, raise `exception` if return value is `False`-ish or return value as-is.
+    """Apply function `condition` to value, raise `exception` if return value is `False`-ish or return the value as-is.
 
     >>> f = check(gamla.greater_than(10), ValueError)
     >>> f(5)
