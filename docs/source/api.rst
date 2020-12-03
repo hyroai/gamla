@@ -15,13 +15,12 @@ data
 .. currentmodule:: gamla.data
 
 .. autosummary::
-   get_encode_config
-   freeze_deep
-   dict_to_csv
    csv_to_json
    dict_to_tuple_of_tuples
-   tuple_of_tuples_to_csv
+   freeze_deep
+   get_encode_config
    match
+   tuple_of_tuples_to_csv
 
 functional
 ----------
@@ -29,15 +28,91 @@ functional
 .. currentmodule:: gamla.functional
 
 .. autosummary::
-   translate_exception
-   make_call_key
-   top
+   add
+   add_key_value
+   apply
+   assert_that
+   assoc_in
+   attrgetter
    bottom
+   concat_with
+   contains
+   count
+   curried_map_sync
+   dataclass_replace
+   dataclass_transform
+   divide_by
+   do_if
+   drop
+   drop_last_while
+   eq_by
+   eq_str_ignore_case
+   equals
+   frequencies
+   get_all_n_grams
+   get_in
+   get_in_or_none
+   get_in_or_none_uncurried
+   get_in_with_default
+   greater_equals
+   greater_than
    groupby_many_reduce
-   unique_by
    head
+   identity
+   ignore_input
+   inside
+   interpose
+   invoke
+   is_instance
+   itemgetter
+   itemgetter_or_none
+   itemgetter_with_default
+   just
+   just_raise
+   last
+   len_equals
+   len_greater
+   len_smaller
+   less_equals
+   less_than
+   log_text
+   make_call_key
+   make_raise
+   multiply
+   not_equals
+   nth
+   pack
+   partition_after
+   partition_before
+   pmap
+   prefix
+   profileit
+   reduce
+   remove_key
+   sample
    second
-
+   singleize
+   skip
+   sort
+   sort_by
+   sort_by_reversed
+   sort_reversed
+   star
+   suffix
+   tail
+   take
+   take_last_while
+   take_while
+   to_json
+   top
+   translate_exception
+   unique
+   unique_by
+   update_in
+   wrap_dict
+   wrap_str
+   wrap_tuple
+   wrapped_partial
 
 functional_async
 ----------------
@@ -45,8 +120,12 @@ functional_async
 .. currentmodule:: gamla.functional_async
 
 .. autosummary::
+   aconcat
+   aexcepts
+   afirst
+   amap_ascompleted
+   mapa
    run_sync
-
 
 functional_generic
 ------------------
@@ -54,11 +133,57 @@ functional_generic
 .. currentmodule:: gamla.functional_generic
 
 .. autosummary::
-   lazyjuxt
+   after
+   alljuxt
+   allmap
+   anyjuxt
+   anymap
    apply_spec
+   average
+   before
    bifurcate
+   case
+   case_dict
+   check
+   complement
+   compose
+   compose_left
+   compose_many_to_one
+   compose_sync
    countby_many
+   curried_filter
+   curried_map
+   curried_ternary
+   curried_to_binary
+   find
+   find_index
+   first
    groupby
+   itemfilter
+   itemmap
+   juxt
+   juxtcat
+   keyfilter
+   keymap
+   lazyjuxt
+   map_dict
+   map_filter_empty
+   mapcat
+   merge
+   merge_with
+   pair_right
+   pair_with
+   pipe
+   reduce_curried
+   remove
+   stack
+   ternary
+   to_awaitable
+   unless
+   valfilter
+   valmap
+   value_to_dict
+   when
    
 
 graph
@@ -78,7 +203,6 @@ graph
    get_connectivity_components
    groupby_many
    has_cycle
-
 
 graph_async
 -----------

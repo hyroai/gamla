@@ -44,6 +44,39 @@ def _infer_defaults(f):
 
 
 def curry(f):
+    """
+    Make a function handle partial input, returning a function that expects the rest.
+
+    Warning: uses `inspect` which is slow, so avoid calling this inside a loop.
+
+    >>> def addition(a, b): return a + b
+    >>> add_3 = gamla.curry(addition)(3)
+    >>> add_3(7)
+    10
+
+    Can also be used as a decorator:
+    ```
+    @gamla.curry
+    def addition(a, b):
+        return a + b
+    ```
+
+    In case the function is async, the function becomes synchronous until the last argument.
+    Although this is not always what you want, it fits the majority of cases.
+
+    ```
+    @gamla.curry
+    async def async_addition(a, b):
+        await asyncio.sleep(0.1)
+        return a + b
+
+    add_3 = async_addition(3)
+
+    await add_3(7)  # Note that `await` is needed here. Must be done inside an async scope.
+    ```
+
+    The variables can be given with keywords, but mixing keyword and call by order might have unexpected results.
+    """
     f_len_args = inspect.signature(f).parameters
     assert (
         len(f_len_args) > 1

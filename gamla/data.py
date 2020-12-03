@@ -2,7 +2,7 @@ import csv
 import dataclasses
 import itertools
 import json
-from typing import Any, Dict, List, Optional, Text, Tuple
+from typing import Any, Dict, List, Text, Tuple
 
 import dataclasses_json
 import toolz
@@ -52,19 +52,6 @@ def _freeze_nonterminal(v):
 
 
 freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identity)
-
-
-@currying.curry
-def dict_to_csv(
-    table: Dict[Any, Tuple],
-    titles: Optional[Tuple] = None,
-    separator: Text = "\t",
-) -> Text:
-    return functional_generic.pipe(
-        table,
-        dict_to_tuple_of_tuples,
-        tuple_of_tuples_to_csv(titles=titles, separator=separator),
-    )
 
 
 def csv_to_json(csv_file_path) -> List:
