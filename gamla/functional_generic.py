@@ -5,7 +5,7 @@ import itertools
 import logging
 import operator
 import os
-from typing import Callable, Iterable, Mapping, Text, Tuple, Type, TypeVar
+from typing import Callable, Dict, Iterable, Mapping, Text, Tuple, Type, TypeVar
 
 from gamla import currying, data, excepts_decorator, functional
 
@@ -106,11 +106,13 @@ def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
 
 @currying.curry
 def after(f1, f2):
+    """Second-order composition of `f1` over `f2`. """
     return compose(f1, f2)
 
 
 @currying.curry
 def before(f1, f2):
+    """Second-order composition of `f2` over `f1`. """
     return compose_left(f1, f2)
 
 
@@ -132,8 +134,28 @@ def lazyjuxt(*funcs):
 
 
 juxt = compose(after(tuple), lazyjuxt)
+
+#:  Pass a value through a list of functions, return `True` iff all functions returned `True`-ish values.
+#:
+#:    >>> f = juxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
+#:    >>> f(100)
+#:    True
+#:    >>> f(10)
+#:    False
 alljuxt = compose(after(all), lazyjuxt)
+
+#:  Pass a value through a list of functions, return `True` if at least one function returned a `True`-ish value.
+#   Note: evaluation is lazy, i.e. returns on first `True`.
+#:
+#:    >>> f = juxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
+#:    >>> f(100)
+#:    True
+#:    >>> f(10)
+#:    True
+#:    >>> f(0)
+#:    False
 anyjuxt = compose(after(any), lazyjuxt)
+
 juxtcat = compose(after(itertools.chain.from_iterable), lazyjuxt)
 
 
@@ -204,7 +226,22 @@ def pipe(val, *funcs):
     return compose_left(*funcs)(val)
 
 
+#:  Map an iterable using a function, return `True` iff all mapped values are `True`-ish.
+#:
+#:    >>> f = allmap(lambda x: x % 2 == 0)
+#:    >>> f([1, 2, 3, 4, 5])
+#:    False
+#:    >>> f([2, 4, 6, 8, 10])
+#:    True
 allmap = compose(after(all), curried_map)
+
+#:  Map an iterable using a function, return `True` if at least one mapped value is `True`-ish.
+#:  Note: evaluation is lazy, i.e. returns on first `True`.
+#:    >>> f = anymap(lambda x: x % 2 == 0)
+#:    >>> f([1, 2, 3, 4, 5])
+#:    True
+#:    >>> f([1, 3, 5, 7, 9])
+#:    False
 anymap = compose(after(any), curried_map)
 
 
@@ -259,6 +296,13 @@ valfilter = compose(
     before(functional.second),
 )
 
+#: Complement of a boolean function.
+#:
+#:    >>> f = complement(gamla.greater_than(5))
+#:    >>> f(10)
+#:    False
+#:    >>> f(1)
+#:    True
 complement = after(operator.not_)
 
 remove = compose(curried_filter, complement)
@@ -301,11 +345,28 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
 
 
 def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
+    """Applies mappers to values according to predicates. If no predicate matches, raises `gamla.functional_generic.NoConditionMatched`.
+    >>> f = case(((gamla.less_than(10), gamla.identity), (gamla.greater_than(10), gamla.add(100))))
+    >>> f(5)
+    5
+    >>> f(15)
+    115
+    >>> f(10)
+    `NoConditionMatched`
+    """
     predicates = tuple(map(functional.head, predicates_and_mappers))
     mappers = tuple(map(functional.second, predicates_and_mappers))
     return _case(predicates, mappers)
 
 
+#:  Applies mappers to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
+#:    >>> f = case_dict({gamla.less_than(10): gamla.identity, gamla.greater_than(10): gamla.add(100)})
+#:    >>> f(5)
+#:    5
+#:    >>> f(15)
+#:    115
+#:    >>> f(10)
+#:    `NoConditionMatched`
 case_dict = compose_left(dict.items, tuple, case)
 
 
@@ -357,8 +418,9 @@ def _iterdict(d):
 _has_coroutines = compose_left(_iterdict, _any_is_async)
 
 
-def apply_spec(spec):
-    """
+def apply_spec(spec: Dict):
+    """Named mapping of a value using named functions.
+
     >>> spec = {"len": len, "sum": sum}
     >>> apply_spec(spec)([1,2,3,4,5])
     {'len': 5, 'sum': 15}
@@ -395,10 +457,20 @@ stack = compose_left(
 
 
 def bifurcate(*funcs):
-    """Serially runs each function on tee'd copies of `input_generator`."""
+    """Serially run each function on tee'd copies of a sequence.
+    If the sequence is a generator, it is exhausted only once.
+    >>> f = bifurcate(sum, gamla.count)
+    >>> seq = map(gamla.identity, [1, 2, 3, 4, 5])
+    >>> f(seq)
+    (15, 5)
+    """
     return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
 
 
+#:  Average of an iterable.
+#:
+#:    >>> average([1,2,3])
+#:    2.0
 average = compose_left(
     bifurcate(sum, functional.count),
     excepts_decorator.excepts(
@@ -465,6 +537,14 @@ find_index = compose_left(
 
 
 def check(condition, exception):
+    """Apply function `condition` to value, raise `exception` if return value is `False`-ish or return value as-is.
+
+    >>> f = check(gamla.greater_than(10), ValueError)
+    >>> f(5)
+    `ValueError`
+    >>> f(15)
+    15
+    """
     return functional.do_if(
         complement(condition),
         functional.make_raise(exception),
@@ -546,6 +626,15 @@ _K = TypeVar("_K")
 def groupby(
     key: Callable[[_E], _K],
 ) -> Callable[[Iterable[_E]], Mapping[_K, Tuple[_E, ...]]]:
+    """Return a mapping `{y: {x s.t. key(x) = y}}.`
+
+    >>> names = ['alice', 'bob', 'barbara', 'frank', 'fred']
+    >>> f = groupby(gamla.head)
+    >>> f(names)
+    {"a": ("alice",),
+     "b": ("bob", "barbara"),
+     "f": ("frank", "fred")}
+    """
     return compose_left(
         functional.groupby_many_reduce(
             compose_left(key, functional.wrap_tuple),
