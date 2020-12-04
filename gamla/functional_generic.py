@@ -106,13 +106,13 @@ def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
 
 @currying.curry
 def after(f1, f2):
-    """Second-order composition of `f1` over `f2`. """
+    """Second-order composition of `f1` over `f2`."""
     return compose(f1, f2)
 
 
 @currying.curry
 def before(f1, f2):
-    """Second-order composition of `f2` over `f1`. """
+    """Second-order composition of `f2` over `f1`."""
     return compose_left(f1, f2)
 
 
@@ -137,7 +137,7 @@ juxt = compose(after(tuple), lazyjuxt)
 
 #:  Pass a value through a list of functions, return `True` iff all functions returned `True`-ish values.
 #:
-#:    >>> f = juxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
+#:    >>> f = alljuxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
 #:    >>> f(100)
 #:    True
 #:    >>> f(10)
@@ -147,7 +147,7 @@ alljuxt = compose(after(all), lazyjuxt)
 #:  Pass a value through a list of functions, return `True` if at least one function returned a `True`-ish value.
 #   Note: evaluation is lazy, i.e. returns on first `True`.
 #:
-#:    >>> f = juxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
+#:    >>> f = anyjuxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
 #:    >>> f(100)
 #:    True
 #:    >>> f(10)
@@ -227,7 +227,6 @@ def pipe(val, *funcs):
 
 
 #:  Map an iterable using a function, return `True` iff all mapped values are `True`-ish.
-#:
 #:    >>> f = allmap(lambda x: x % 2 == 0)
 #:    >>> f([1, 2, 3, 4, 5])
 #:    False
@@ -359,7 +358,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
     return _case(predicates, mappers)
 
 
-#:  Applies mappers to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
+#:  Applies transformations to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
 #:    >>> f = case_dict({gamla.less_than(10): gamla.identity, gamla.greater_than(10): gamla.add(100)})
 #:    >>> f(5)
 #:    5
@@ -419,7 +418,7 @@ _has_coroutines = compose_left(_iterdict, _any_is_async)
 
 
 def apply_spec(spec: Dict):
-    """Named mapping of a value using named functions.
+    """Named transformations of a value using named functions.
 
     >>> spec = {"len": len, "sum": sum}
     >>> apply_spec(spec)([1,2,3,4,5])
@@ -458,7 +457,7 @@ stack = compose_left(
 
 def bifurcate(*funcs):
     """Serially run each function on tee'd copies of a sequence.
-    If the sequence is a generator, it is exhausted only once.
+    If the sequence is a generator, it is duplicated so it will not be exhaused (which may incur a substantial memory signature in some cases).
     >>> f = bifurcate(sum, gamla.count)
     >>> seq = map(gamla.identity, [1, 2, 3, 4, 5])
     >>> f(seq)
@@ -467,8 +466,7 @@ def bifurcate(*funcs):
     return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
 
 
-#:  Average of an iterable.
-#:
+#:  Average of an iterable. If the sequence is empty, returns 0.
 #:    >>> average([1,2,3])
 #:    2.0
 average = compose_left(
