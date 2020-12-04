@@ -662,19 +662,19 @@ def drop(n: int):
 
 frequencies = toolz.frequencies
 
-#: The first element in a sequence
+#: The first element in a sequence.
 #:
 #:    >>> head('ABC')
 #:    'A'
 head = toolz.first
 
-#:  The second element in a sequence
+#:  The second element in a sequence.
 #:
 #:    >>> second('ABC')
 #:    'B'
 second = toolz.second
 
-#: The last element in a sequence
+#: The last element in a sequence.
 #:
 #:    >>> last('ABC')
 #:    'C'
