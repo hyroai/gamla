@@ -78,7 +78,7 @@ _merge_children = functional_generic.compose_left(
 
 @currying.curry
 def _get_anywhere_reducer(predicate: Callable, node, children):
-    if isinstance(node, str):
+    if _is_terminal(node):
         return _make_matched_unmatched((), (node,))
     if isinstance(node, _KeyValue) and predicate(node.key):
         return _merge_children_as_matched(children)
@@ -86,7 +86,16 @@ def _get_anywhere_reducer(predicate: Callable, node, children):
 
 
 def get_leaves_by_ancestor_predicate(predicate: Callable):
-    """Gets leafs with ancestor nodes passing the predicate."""
+    """Gets a predicate, and builds a function that gets a dictionary, potentially nested and returns an iterable of leaf values.
+    The values returned are of leafs where some ancestor (possibly indirect) passes the predicate.
+
+    >>> gamla.pipe({"x": {"y": (1, 2, 3)}}, gamla.get_leaves_by_ancestor_predicate(gamla.equals("x")), tuple)
+    (1, 2, 3)
+    >>> gamla.pipe({"x": {"y": (1, 2, 3)}}, gamla.get_leaves_by_ancestor_predicate(gamla.equals("z")), tuple)
+    ()
+
+    Useful for retrieving values from large json objects, where the exact path is unimportant.
+    """
     return functional_generic.compose_left(
         _tree_reduce(_get_children, _get_anywhere_reducer(predicate)),
         _get_matched,
@@ -100,5 +109,13 @@ def _filter_leaves_reducer(predicate, node, children):
     return toolz.concat(children)
 
 
-def filter_leaves(predicate):
+def filter_leaves(predicate: Callable):
+    """Gets a predicate, and builds a function that gets a dictionary, potentially nested and returns an iterable of leaf values.
+    The values returned are of leafs that pass the predicate.
+
+    >>> gamla.pipe({"x": {"y": (1, 2, 3)}}, gamla.filter_leaves(gamla.greater_than(2)), tuple)
+    (3,)
+
+    Useful for retrieving values from large json objects, where the exact path is unimportant.
+    """
     return _tree_reduce(_get_children, _filter_leaves_reducer(predicate))
