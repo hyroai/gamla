@@ -488,7 +488,7 @@ def take_last_while(pred, seq):
 def unique_by(f):
     """Return only unique elements of a sequence defined by function f
 
-    >>> tuple(unique_by(['cat', 'mouse', 'dog', 'hen'], f=len))
+    >>> tuple(unique_by(len)(['cat', 'mouse', 'dog', 'hen']))
     ('cat', 'mouse')
     """
 
@@ -660,14 +660,25 @@ def drop(n: int):
     return drop
 
 
-def replace_in_text(old:Text, new:Text):
+def replace_in_text(old: Text, new: Text):
+    """ Return a copy of the string with all occurrences of substring old replaced by new
+        >>> txt = "hello world"
+        >>> replace_in_text("world", "Jhon")(txt)
+        'hello Jhon'
+    """
     def replace_in_text(text: Text):
         return text.replace(old, new)
-        
+
     return replace_in_text
 
 
-def split_text(sep:Text):
+def split_text(sep: Text):
+    """Return a list of the words in the string, using sep as the delimiter string
+
+     >>> txt = "hello world"
+     >>> split_text(" ")(txt)
+     ['hello', 'world']
+    """
     def split_text(text: Text):
         return text.split(sep)
 
