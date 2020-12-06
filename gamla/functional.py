@@ -660,6 +660,19 @@ def drop(n: int):
     return drop
 
 
+def replace_in_text(old:Text, new:Text):
+    def replace_in_text(text: Text):
+        return text.replace(old, new)
+        
+    return replace_in_text
+
+
+def split_text(sep:Text):
+    def split_text(text: Text):
+        return text.split(sep)
+
+    return split_text
+
 frequencies = toolz.frequencies
 
 #: The first element in a sequence.
