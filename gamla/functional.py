@@ -685,20 +685,6 @@ def split_text(sep: Text):
     return split_text
 
 
-def find_sub_text(sub: Text):
-    """Return the lowest index in the string where substring sub is found.
-    >>> txt = "hey"
-    >>> find_sub_text("h")(txt)
-    0
-    >>> find_sub_text("w")(txt)
-    -1
-    """
-    def find_sub_text(txt: Text):
-        return txt.find(sub)
-
-    return find_sub_text
-
-
 frequencies = toolz.frequencies
 
 #: The first element in a sequence.
