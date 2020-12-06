@@ -109,7 +109,7 @@ def _filter_leaves_reducer(predicate, node, children):
     return toolz.concat(children)
 
 
-def filter_leaves(predicate):
+def filter_leaves(predicate: Callable):
     """Gets a predicate, and builds a function that gets a dictionary, potentially nested and returns an iterable of leaf values.
     The values returned are of leafs that pass the predicate.
 
