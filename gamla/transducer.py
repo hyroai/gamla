@@ -32,7 +32,7 @@ def _replace_index(the_tuple, index, value):
 
 
 #: Combines transducers in a `dict` into a transducer that produces a `dict`.
-#: transducer.transduce(
+#: >>> transducer.transduce(
 #:     transducer.apply_spec(  # This will combine the inner stuff into one new transducer.
 #:         {
 #:             "incremented": _increment(_append_to_tuple),  # This is a transducer.
