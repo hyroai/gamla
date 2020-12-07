@@ -1,3 +1,5 @@
+"""https://www.youtube.com/watch?v=6mTbuzafcII for some explanations about this is about."""
+
 import functools
 import itertools
 from typing import Any, Callable, Iterable, TypeVar
@@ -13,7 +15,7 @@ Reducer = Callable[[_S, _X], _S]
 Transducer = Callable[[Reducer], Reducer]
 
 
-def transduce(transformation, step, initial, collection):
+def transduce(transformation: Transducer, step: Reducer, initial, collection):
     return functools.reduce(transformation(step), collection, initial)
 
 
