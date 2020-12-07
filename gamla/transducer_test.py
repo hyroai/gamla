@@ -17,6 +17,18 @@ def test_map():
     )
 
 
+def test_filter():
+    assert (
+        transducer.transduce(
+            transducer.filter(lambda x: x > 2),
+            _append_to_tuple,
+            [],
+            [1, 2, 3],
+        )
+        == (3,)
+    )
+
+
 def test_composition():
     assert transducer.transduce(
         functional_generic.compose(_increment, _increment),
