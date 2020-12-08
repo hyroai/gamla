@@ -155,6 +155,12 @@ def _assert_f_output_on_inp(f, inp):
 
 
 def assert_that(f):
+    """
+    Assert a function `f` on the input.
+
+    >>> assert_that(equals(2))(2)
+    2
+    """
     return curried.do(_assert_f_output_on_inp(f))
 
 
@@ -200,7 +206,15 @@ def top(iterable, key=identity):
 
 @currying.curry
 def bottom(iterable, key=identity):
-    """Generates elements from min to max."""
+    """
+    Generates elements from min to max.
+
+    >>> tuple(bottom((3, 2, 1)))
+    (1, 2, 3)
+
+    >>> tuple(bottom((1, 2, 3, 4), lambda x: x % 2 == 0))
+    (1, 3, 2, 4)
+    """
     h = []
     for i, value in enumerate(iterable):
         # Use the index as a tie breaker.
@@ -259,10 +273,23 @@ def invoke(x):
 
 @currying.curry
 def assoc_in(d, keys, value, factory=dict):
+    """
+    Associate a new value to an existing dict given the path "keys".
+
+    >>> assoc_in({"a": {"b": 1}}, ["a", "b"], 2)
+    {"a": {"b": 2}}
+    """
     return update_in(d, keys, lambda x: value, value, factory)
 
 
 def add_key_value(key, value):
+    """
+    Associate a new key-value pair to an existing dict.
+
+    >>> add_key_value("1", "1")({"2": "2"})
+    {"1": "1", "2": "2"}
+    """
+
     def add_key_value(d):
         return assoc_in(d, [key], value)
 
@@ -365,6 +392,12 @@ def prefix(val, it: Iterable):
 
 @currying.curry
 def concat_with(new_it: Iterable, it: Iterable):
+    """
+    Concat two iterables.
+
+    >>> concat_with((3, 4), (1, 2)))
+    (1, 2, 3, 4)
+    """
     return itertools.chain(it, new_it)
 
 
@@ -374,6 +407,13 @@ def wrap_str(wrapping_string: Text, x: Text) -> Text:
 
 
 def apply(*args, **kwargs):
+    """
+    Apply input on function.
+
+    >>> apply(1)(add(2))
+    3
+    """
+
     def apply_inner(function):
         return function(*args, **kwargs)
 
@@ -507,6 +547,13 @@ unique = unique_by(identity)
 
 
 def attrgetter(attr):
+    """
+    Access the object attribute by its name `attr`.
+
+    >>> attrgetter("lower")("ASD")()
+    "asd"
+    """
+
     def attrgetter(obj):
         return getattr(obj, attr)
 
@@ -550,6 +597,16 @@ def not_equals(x):
 
 
 def contains(x):
+    """
+    Contains operator.
+
+    >>> contains([1, 2, 3])(2)
+    True
+
+    >>> contains("David")("x")
+    False
+    """
+
     def contains(y):
         return y in x
 
@@ -557,6 +614,16 @@ def contains(x):
 
 
 def add(x):
+    """
+    Addition operator.
+
+    >>> add(1)(2)
+    3
+
+    >>> add(["c"])(["a", "b"])
+    ["a", "b", "c"]
+    """
+
     def add(y):
         return y + x
 
@@ -661,11 +728,12 @@ def drop(n: int):
 
 
 def replace_in_text(old: Text, new: Text):
-    """ Return a copy of the string with all occurrences of substring old replaced by new
-        >>> txt = "hello world"
-        >>> replace_in_text("world", "Jhon")(txt)
-        'hello Jhon'
+    """Return a copy of the string with all occurrences of substring old replaced by new
+    >>> txt = "hello world"
+    >>> replace_in_text("world", "Jhon")(txt)
+    'hello Jhon'
     """
+
     def replace_in_text(txt: Text):
         return txt.replace(old, new)
 
@@ -675,10 +743,11 @@ def replace_in_text(old: Text, new: Text):
 def split_text(sep: Text):
     """Return a list of the words in the string, using sep as the delimiter string
 
-     >>> txt = "hello world"
-     >>> split_text(" ")(txt)
-     ['hello', 'world']
+    >>> txt = "hello world"
+    >>> split_text(" ")(txt)
+    ['hello', 'world']
     """
+
     def split_text(txt: Text):
         return txt.split(sep)
 

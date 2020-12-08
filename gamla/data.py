@@ -38,6 +38,9 @@ class frozendict(dict):  # noqa: N801
 
 
 def get_encode_config():
+    """
+    Display dataclass field as a list of JSON strings.
+    """
     return dataclasses.field(
         metadata=dataclasses_json.config(
             encoder=lambda lst: sorted(lst, key=json.dumps, reverse=False),
@@ -51,25 +54,24 @@ def _freeze_nonterminal(v):
     return tuple(v)
 
 
+#: Freeze recursively a dictionary.
+#:
+#: >>> freeze_deep({"1": {"2": "345", "some-string": ["hello"]}})
+#: data.frozendict(
+#:     {"1": data.frozendict({"2": "345", "some-string": ("hello",)})},
+#: )
 freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identity)
 
 
 def csv_to_json(csv_file_path) -> List:
+    """
+    Return a JSON object given a CSV file path.
+
+     >>> csv_to_json("data_test_example.csv")
+     [{"name": "David", "age": "23"}, {"name": "Itay", "age": "26"}]
+    """
     with open(csv_file_path, encoding="utf-8") as csvf:
         return list(csv.DictReader(csvf))
-
-
-dict_to_tuple_of_tuples = functional_generic.compose_left(
-    dict.items,
-    functional_generic.curried_map(
-        functional_generic.compose_left(
-            lambda x: (x[0], *x[1]),
-            functional_generic.curried_map(str),
-            tuple,
-        ),
-    ),
-    tuple,
-)
 
 
 @currying.curry
@@ -77,6 +79,14 @@ def tuple_of_tuples_to_csv(
     tuple_of_tuples: Tuple[Tuple[Any], ...],
     separator: Text = "\t",
 ) -> Text:
+    """
+    Return a CSV file string given a tuple of tuples. Each element is separated by the character "separator" (default is \t).
+
+    >>> tuple_of_tuples_to_csv((("name", "age"), ("David", "23"), ("Itay", "26")))
+    "name\tage\nDavid\t23\nItay\t26"
+    >>> tuple_of_tuples_to_csv((("name", "age"), ("David", "23"), ("Itay", "26")), "")
+    "name age\nDavid 23\nItay 26"
+    """
     return functional_generic.pipe(
         tuple_of_tuples,
         curried.map(
@@ -93,16 +103,41 @@ def tuple_of_tuples_to_csv(
 _field_getters = functional_generic.compose_left(
     dataclasses.fields,
     functional_generic.curried_map(
-        functional_generic.compose_left(lambda f: f.name, functional.attrgetter),
+        functional_generic.compose_left(
+            functional.attrgetter("name"),
+            functional.attrgetter,
+        ),
     ),
     tuple,
 )
 
 
 def match(dataclass_pattern):
-    """creates a function that returns true if input matches dataclass_pattern.
+    """
+    Create a function that returns true if input matches dataclass_pattern.
     Use data.Any as wildcard for field value.
     Supports recursive patterns.
+
+    >>> @dataclasses.dataclass(frozen=True)
+    >>> class MockDataclassA:
+    >>>     a: int
+
+    >>> @dataclasses.dataclass(frozen=True)
+    >>> class MockDataclassB:
+    >>>     b: MockDataclassA
+
+    >>> match(MockDataclassB(MockDataclassA(5)))(
+    >>>    MockDataclassB(MockDataclassA(4)),
+    >>> )
+    False
+
+    >>> match(MockDataclassB(MockDataclassA(Any)))(
+    >>>    MockDataclassB(MockDataclassA(4)),
+    >>> )
+    True
+
+    >>> match(MockDataclassB(Any))(MockDataclassB(MockDataclassA(4)))
+    True
     """
     # pattern -> ( (getter,...), pattern) -> ((getter,...), (value,...)) ->
     # ((getter,...), (eq(value),...)) -> alljuxt( compose_left(getter,eq(value)),... )
@@ -132,7 +167,12 @@ def match(dataclass_pattern):
         functional.star(
             curried.map(functional_generic.compose_left),
         ),
-        functional.prefix(lambda dc: type(dc) == type(dataclass_pattern)),
+        functional.prefix(
+            functional_generic.compose_left(
+                type,
+                functional.equals(type(dataclass_pattern)),
+            ),
+        ),
         functional.star(functional_generic.alljuxt),
     )
 
