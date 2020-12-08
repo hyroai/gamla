@@ -68,7 +68,7 @@ def csv_to_json(csv_file_path) -> List:
     Return a JSON object given a CSV file path.
 
      >>> csv_to_json("data_test_example.csv")
-     [{"name": "David", "age": "23"}, {"name": "Itay", "age": "26"}]
+     [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
     """
     with open(csv_file_path, encoding="utf-8") as csvf:
         return list(csv.DictReader(csvf))

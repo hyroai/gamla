@@ -277,7 +277,7 @@ def assoc_in(d, keys, value, factory=dict):
     Associate a new value to an existing dict given the path "keys".
 
     >>> assoc_in({"a": {"b": 1}}, ["a", "b"], 2)
-    {"a": {"b": 2}}
+    {'a': {'b': 2}}
     """
     return update_in(d, keys, lambda x: value, value, factory)
 
@@ -287,7 +287,7 @@ def add_key_value(key, value):
     Associate a new key-value pair to an existing dict.
 
     >>> add_key_value("1", "1")({"2": "2"})
-    {"1": "1", "2": "2"}
+    {'2': '2', '1': '1'}
     """
 
     def add_key_value(d):
@@ -395,7 +395,7 @@ def concat_with(new_it: Iterable, it: Iterable):
     """
     Concat two iterables.
 
-    >>> concat_with((3, 4), (1, 2)))
+    >>> tuple(concat_with((3, 4), (1, 2)))
     (1, 2, 3, 4)
     """
     return itertools.chain(it, new_it)
@@ -551,7 +551,7 @@ def attrgetter(attr):
     Access the object attribute by its name `attr`.
 
     >>> attrgetter("lower")("ASD")()
-    "asd"
+    'asd'
     """
 
     def attrgetter(obj):
@@ -621,7 +621,7 @@ def add(x):
     3
 
     >>> add(["c"])(["a", "b"])
-    ["a", "b", "c"]
+    ['a', 'b', 'c']
     """
 
     def add(y):
