@@ -5,7 +5,7 @@ import itertools
 import logging
 import operator
 import os
-from typing import Callable, Dict, Iterable, Mapping, Text, Tuple, Type, TypeVar
+from typing import Any, Callable, Dict, Iterable, Mapping, Text, Tuple, Type, TypeVar
 
 from gamla import currying, data, excepts_decorator, functional
 
@@ -648,4 +648,18 @@ def groupby(
             ),
         ),
         valmap(tuple),
+    )
+
+
+def countby(f: Callable) -> Dict[Any, int]:
+    """
+    Count elements of a collection by a function `f`.
+    Return a mapping `{y: len({x s.t. key(x) = y})}.`
+
+    >>> countby(functional.head)(["aa", "ab", "ac", "bc"])
+    {'a': 3, 'b': 1}
+    """
+    return compose_left(
+        groupby(f),
+        valmap(functional.count),
     )

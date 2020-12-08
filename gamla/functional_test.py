@@ -669,3 +669,10 @@ def test_nth():
 
 def test_drop():
     assert tuple(functional.drop(2)(["a", "b", "c"])) == ("c",)
+
+
+def test_countby():
+    assert functional_generic.countby(functional.head)(["aa", "ab", "ac", "bc"]) == {
+        "a": 3,
+        "b": 1,
+    }
