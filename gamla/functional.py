@@ -274,7 +274,7 @@ def invoke(x):
 @currying.curry
 def assoc_in(d, keys, value, factory=dict):
     """
-    Associate a new value to an existing dict given the path "keys".
+    Associate a value to the input dict given the path "keys".
 
     >>> assoc_in({"a": {"b": 1}}, ["a", "b"], 2)
     {'a': {'b': 2}}
@@ -284,7 +284,7 @@ def assoc_in(d, keys, value, factory=dict):
 
 def add_key_value(key, value):
     """
-    Associate a new key-value pair to an existing dict.
+    Associate a key-value pair to the input dict.
 
     >>> add_key_value("1", "1")({"2": "2"})
     {'2': '2', '1': '1'}

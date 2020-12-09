@@ -52,11 +52,12 @@ def test_match_true_shallow():
     assert data.match(MockDataclassB(Any))(MockDataclassB(MockDataclassA(4)))
 
 
-def test_csv_to_json():
+def test_csv_to_list_of_dicts():
     csv_file_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "data_test_example.csv"
+        os.path.dirname(os.path.realpath(__file__)),
+        "data_test_example.csv",
     )
-    assert data.csv_to_json(csv_file_path) == [
+    assert data.csv_to_list_of_dicts(csv_file_path) == [
         {"name": "David", "age": "23"},
         {"name": "Itay", "age": "26"},
     ]
