@@ -651,12 +651,12 @@ def groupby(
     )
 
 
-def countby(f: Callable) -> Dict[Any, int]:
+def count_by(f: Callable) -> Dict[Any, int]:
     """
     Count elements of a collection by a function `f`.
     Return a mapping `{y: len({x s.t. key(x) = y})}.`
 
-    >>> countby(functional.head)(["aa", "ab", "ac", "bc"])
+    >>> count_by(functional.head)(["aa", "ab", "ac", "bc"])
     {'a': 3, 'b': 1}
     """
     return functional.groupby_many_reduce(
