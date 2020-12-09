@@ -773,3 +773,28 @@ second = toolz.second
 #:    >>> last('ABC')
 #:    'C'
 last = toolz.last
+
+#: Determines whether the element is iterable.
+#:
+#:    >>> isiterable([1, 2, 3])
+#:    True
+#:
+#:    >>> isiterable(5)
+#:    False
+is_iterable = toolz.isiterable
+
+#: A sequence of overlapping subsequences.
+#:
+#:    >>> list(sliding_window(2, [1, 2, 3, 4]))
+#:    [(1, 2), (2, 3), (3, 4)]
+sliding_window = toolz.sliding_window
+
+#: Partition all elements of sequence into tuples of length at most n.
+#: The final tuple may be shorter to accommodate extra elements.
+#:
+#:    >>> list(partition_all(2, [1, 2, 3, 4]))
+#:    [(1, 2), (3, 4)]
+#:
+#:    >>> list(partition_all(2, [1, 2, 3, 4, 5]))
+#:    [(1, 2), (3, 4), (5,)]
+partition_all = toolz.partition_all
