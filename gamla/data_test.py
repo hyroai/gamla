@@ -1,4 +1,5 @@
 import dataclasses
+import os
 import pickle
 from typing import Any
 
@@ -52,7 +53,10 @@ def test_match_true_shallow():
 
 
 def test_csv_to_json():
-    assert data.csv_to_json("data_test_example.csv") == [
+    csv_file_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "data_test_example.csv"
+    )
+    assert data.csv_to_json(csv_file_path) == [
         {"name": "David", "age": "23"},
         {"name": "Itay", "age": "26"},
     ]
