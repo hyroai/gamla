@@ -659,7 +659,7 @@ def countby(f: Callable) -> Dict[Any, int]:
     >>> countby(functional.head)(["aa", "ab", "ac", "bc"])
     {'a': 3, 'b': 1}
     """
-    return compose_left(
-        groupby(f),
-        valmap(functional.count),
+    return functional.groupby_many_reduce(
+        compose_left(f, functional.wrap_tuple),
+        lambda x, y: x + 1 if x else 1,
     )
