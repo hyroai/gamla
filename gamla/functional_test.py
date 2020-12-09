@@ -700,3 +700,23 @@ def test_concat_with():
 def test_contains():
     assert functional.contains([1, 2, 3])(2)
     assert not functional.contains("David")("x")
+
+
+def test_side_effect():
+    side_result = []
+    side_effect = functional_generic.compose_left(
+        functional.multiply(2),
+        side_result.append,
+    )
+    assert functional_generic.side_effect(side_effect)(2) == 2
+    assert side_result[0] == 4
+
+
+async def test_side_effect_async():
+    side_result = []
+    side_effect = functional_generic.compose_left(
+        functional.currying.curry(_equals)(2),
+        side_result.append,
+    )
+    assert await functional_generic.side_effect(side_effect)(2) == 2
+    assert side_result[0]
