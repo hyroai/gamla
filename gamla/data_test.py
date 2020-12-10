@@ -1,4 +1,5 @@
 import dataclasses
+import os
 import pickle
 from typing import Any
 
@@ -16,7 +17,7 @@ def test_freeze_deep():
     {data.freeze_deep(original)}
 
 
-def test_fozendict_serializable():
+def test_frozendict_serializable():
     fd = data.frozendict({"a": "something", "b": 1})
     fd_str = pickle.dumps(fd)
 
@@ -49,3 +50,31 @@ def test_match_true_deep():
 
 def test_match_true_shallow():
     assert data.match(MockDataclassB(Any))(MockDataclassB(MockDataclassA(4)))
+
+
+def test_csv_to_list_of_dicts():
+    csv_file_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "data_test_example.csv",
+    )
+    assert data.csv_to_list_of_dicts(csv_file_path) == [
+        {"name": "David", "age": "23"},
+        {"name": "Itay", "age": "26"},
+    ]
+
+
+def test_tuple_of_tuples_to_csv():
+    assert (
+        data.tuple_of_tuples_to_csv((("name", "age"), ("David", "23"), ("Itay", "26")))
+        == "name\tage\nDavid\t23\nItay\t26"
+    )
+
+
+def test_tuple_of_tuples_to_csv_custom_separator():
+    assert (
+        data.tuple_of_tuples_to_csv(
+            (("name", "age"), ("David", "23"), ("Itay", "26")),
+            " ",
+        )
+        == "name age\nDavid 23\nItay 26"
+    )

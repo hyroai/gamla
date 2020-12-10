@@ -669,3 +669,41 @@ def test_nth():
 
 def test_drop():
     assert tuple(functional.drop(2)(["a", "b", "c"])) == ("c",)
+
+
+def test_count_by():
+    assert functional_generic.count_by(functional.head)(["aa", "ab", "ac", "bc"]) == {
+        "a": 3,
+        "b": 1,
+    }
+
+
+def test_add():
+    assert functional.add(1)(2) == 3
+    assert functional.add(["c"])(["a", "b"]) == ["a", "b", "c"]
+
+
+def test_apply():
+    assert functional.apply(1)(functional.add(2)) == 3
+
+
+def test_assert_that():
+    functional.assert_that(functional.equals(2))(2)
+
+
+def test_assoc_in():
+    assert functional.assoc_in({"a": {"b": 1}}, ["a", "b"], 2) == {"a": {"b": 2}}
+
+
+def test_bottom():
+    assert tuple(functional.bottom((3, 2, 1))) == (1, 2, 3)
+    assert tuple(functional.bottom((1, 2, 3, 4), lambda x: x % 2 == 0)) == (1, 3, 2, 4)
+
+
+def test_concat_with():
+    assert tuple(functional.concat_with((3, 4), (1, 2))) == (1, 2, 3, 4)
+
+
+def test_contains():
+    assert functional.contains([1, 2, 3])(2)
+    assert not functional.contains("David")("x")

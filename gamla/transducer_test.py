@@ -90,7 +90,7 @@ def test_apply_spec():
     )
 
 
-def test_countby():
+def test_count_by():
     assert (
         transducer.transduce(
             transducer.count_by(
