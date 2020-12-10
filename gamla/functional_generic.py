@@ -457,7 +457,7 @@ stack = compose_left(
 
 def bifurcate(*funcs):
     """Serially run each function on tee'd copies of a sequence.
-    If the sequence is a generator, it is duplicated so it will not be exhaused (which may incur a substantial memory signature in some cases).
+    If the sequence is a generator, it is duplicated so it will not be exhausted (which may incur a substantial memory signature in some cases).
     >>> f = bifurcate(sum, gamla.count)
     >>> seq = map(gamla.identity, [1, 2, 3, 4, 5])
     >>> f(seq)
