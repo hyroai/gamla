@@ -698,6 +698,8 @@ def interpose(el):
     def interpose_inner(seq):
         return toolz.interpose(el, seq)
 
+    return interpose_inner
+
 
 def tail(n: int):
     def tail(seq):
