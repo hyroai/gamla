@@ -716,14 +716,14 @@ def test_side_effect():
         side_result.append,
     )
     assert functional_generic.side_effect(side_effect)(2) == 2
-    assert side_result[0] == 4
+    assert side_result == [4]
 
 
 async def test_side_effect_async():
     side_result = []
     side_effect = functional_generic.compose_left(
-        functional.currying.curry(_equals)(2),
+        currying.curry(_equals)(2),
         side_result.append,
     )
     assert await functional_generic.side_effect(side_effect)(2) == 2
-    assert side_result[0]
+    assert side_result == [True]
