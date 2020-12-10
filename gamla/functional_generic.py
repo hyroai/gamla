@@ -651,6 +651,29 @@ def groupby(
     )
 
 
+def side_effect(f: Callable):
+    """Runs `f` on `x`, returns `x`
+
+    >>> log_and_add = compose_left(side_effect(print), add(1)))
+    >>> log_and_add(2)
+    2
+    3
+    """
+    if asyncio.iscoroutinefunction(f):
+
+        async def side_effect_async(x):
+            await f(x)
+            return x
+
+        return side_effect_async
+
+    def _side_effect(x):
+        f(x)
+        return x
+
+    return _side_effect
+
+
 def count_by(f: Callable) -> Dict[Any, int]:
     """
     Count elements of a collection by a function `f`.
