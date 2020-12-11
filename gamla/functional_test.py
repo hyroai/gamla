@@ -727,3 +727,7 @@ async def test_side_effect_async():
     )
     assert await functional_generic.side_effect(side_effect)(2) == 2
     assert side_result == [True]
+
+
+async def test_apply_fn_with_args():
+    assert functional.apply_fn_with_args(lambda x, y: x + y, 1, 3) == 4
