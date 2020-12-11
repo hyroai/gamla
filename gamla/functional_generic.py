@@ -661,17 +661,17 @@ def side_effect(f: Callable):
     """
     if asyncio.iscoroutinefunction(f):
 
-        async def side_effect_async(x):
+        async def do(x):
             await f(x)
             return x
 
-        return side_effect_async
+        return do
 
-    def _side_effect(x):
+    def do(x):
         f(x)
         return x
 
-    return _side_effect
+    return do
 
 
 def count_by(f: Callable) -> Dict[Any, int]:
