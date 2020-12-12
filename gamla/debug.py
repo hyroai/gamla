@@ -16,6 +16,18 @@ do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
 def debug_exception(f):
+    """Debug exception in a pipeline stage by looking at the causal value.
+
+    >>> gamla.pipe(
+        "abc",
+        gamla.itemgetter("some_key"),  # This would cause an exception.
+    )
+
+    >>> gamla.pipe(
+        "abc",
+        debug_exception(gamla.itemgetter("some_key")),  # Now we can see the cause of the exception - we expect a `dict` but get a `str`.
+    )
+    """
     if asyncio.iscoroutinefunction(f):
 
         async def debug_exception(x):
