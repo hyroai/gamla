@@ -1,4 +1,3 @@
-import builtins
 import cProfile
 import dataclasses
 import functools
@@ -22,9 +21,6 @@ from gamla import currying
 
 def identity(x):
     return x
-
-
-do_breakpoint = curried.do(lambda x: builtins.breakpoint())
 
 
 count = toolz.count
@@ -168,13 +164,6 @@ def assert_that(f):
 def pmap(f, n_workers, it):
     # The `tuple` is for callers convenience (even without it, the pool is eager).
     return tuple(futures.ThreadPoolExecutor(max_workers=n_workers).map(f, it))
-
-
-logger = curried.do(logging.info)
-
-
-def log_text(text: Text, level: int = logging.INFO):
-    return curried.do(lambda x: logging.log(level, text.format(x)))
 
 
 def just(x):
