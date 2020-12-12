@@ -39,9 +39,9 @@ def debug_exception(f):
 
     else:
 
-        def debug_exception(value):  # type: ignore
+        def debug_exception(x):  # type: ignore
             try:
-                return f(value)
+                return f(x)
             except Exception as e:
                 builtins.breakpoint()
                 raise e
