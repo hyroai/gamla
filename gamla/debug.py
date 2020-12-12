@@ -25,7 +25,7 @@ def debug_exception(f):
 
     >>> gamla.pipe(
         "abc",
-        debug_exception(gamla.itemgetter("some_key")),  # Now we can see the cause of the exception - we expect a `dict` but get a `str`.
+        gamla.debug_exception(gamla.itemgetter("some_key")),  # Now we can see the cause of the exception - we expect a `dict` but get a `str`.
     )
     """
     if asyncio.iscoroutinefunction(f):
