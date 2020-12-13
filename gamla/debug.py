@@ -3,16 +3,16 @@ import builtins
 import logging
 from typing import Text
 
-from toolz import curried
+from gamla import functional_generic
 
-logger = curried.do(logging.info)
+logger = functional_generic.side_effect(logging.info)
 
 
 def log_text(text: Text, level: int = logging.INFO):
-    return curried.do(lambda x: logging.log(level, text.format(x)))
+    return functional_generic.side_effect(lambda x: logging.log(level, text.format(x)))
 
 
-do_breakpoint = curried.do(lambda x: builtins.breakpoint())
+do_breakpoint = functional_generic.side_effect(lambda x: builtins.breakpoint())
 
 
 def debug_exception(f):
