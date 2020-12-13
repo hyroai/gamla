@@ -137,15 +137,15 @@ def juxt(*funcs):
     if _any_is_async(funcs):
         funcs = tuple(map(after(to_awaitable), funcs))
 
-        async def inner_juxt_async(*args, **kwargs):
+        async def juxt_async(*args, **kwargs):
             return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
 
-        return compose(after(tuple), inner_juxt_async)
+        return compose(tuple, juxt_async)
 
-    def inner_juxt(*args, **kwargs):
+    def juxt(*args, **kwargs):
         return tuple(func(*args, **kwargs) for func in funcs)
 
-    return inner_juxt
+    return juxt
 
 
 #:  Pass a value through a list of functions, return `True` iff all functions returned `True`-ish values.
