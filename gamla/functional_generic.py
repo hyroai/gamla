@@ -140,7 +140,7 @@ def juxt(*funcs):
         async def inner_juxt_async(*args, **kwargs):
             return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
 
-        return inner_juxt_async
+        return compose(after(tuple), inner_juxt_async)
 
     def inner_juxt(*args, **kwargs):
         return tuple(func(*args, **kwargs) for func in funcs)
