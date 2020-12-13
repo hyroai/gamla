@@ -21,6 +21,7 @@ def _curry_helper(
 
         return curry_inner_async
 
+    @functools.wraps(f)
     def curry_inner(*args, **kwargs):
         return _curry_helper(
             is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
