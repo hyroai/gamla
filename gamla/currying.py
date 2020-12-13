@@ -17,7 +17,7 @@ def _curry_helper(
 
         @functools.wraps(f)
         async def curry_inner_async(*args, **kwargs):
-            return await f(*(args_so_far + args), {**kwargs_so_far, **kwargs})
+            return await f(*(args_so_far + args), **{**kwargs_so_far, **kwargs})
 
         return curry_inner_async
 
