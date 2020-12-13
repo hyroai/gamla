@@ -194,7 +194,7 @@ def make_call_key(args, kwargs):
 
 
 @currying.curry
-def top(iterable, key=identity):
+def top(iterable: Iterable, key=identity):
     """Generates elements from max to min."""
     h = []
     for i, value in enumerate(iterable):
@@ -263,7 +263,13 @@ def skip(n, seq):
         yield x
 
 
-def wrap_tuple(x):
+def wrap_tuple(x: Any):
+    """
+    Wrap an element in a tuple.
+
+    >>> wrap_tuple("hello")
+    ('hello',)
+    """
     return (x,)
 
 
@@ -306,6 +312,13 @@ def remove_key(key):
 
 
 def wrap_dict(key):
+    """
+    Wrap a key and a value in a dict.
+
+    >>> wrap_dict("one") (1)
+    {'one': 1}
+    """
+
     def wrap_dict(value):
         return {key: value}
 
@@ -314,6 +327,9 @@ def wrap_dict(key):
 
 @currying.curry
 def update_in(d, keys, func, default=None, factory=dict):
+    """
+    Gets a (potentially nested) dictionary, key(s) and a
+    """
     ks = iter(keys)
     k = next(ks)
 
@@ -381,12 +397,24 @@ def reduce(
 
 
 @currying.curry
-def suffix(val, it: Iterable):
+def suffix(val: Any, it: Iterable):
+    """
+    Add a value at the end of an iterable. return an iterable
+
+    >>> tuple(suffix(4, (1, 2, 3)))
+    (1, 2, 3, 4)
+    """
     return itertools.chain(it, (val,))
 
 
 @currying.curry
-def prefix(val, it: Iterable):
+def prefix(val: Any, it: Iterable):
+    """
+    Add a value in the beginning of an iterable. return an iterable
+
+    >>> tuple(prefix(1, (2, 3, 4)))
+    (1, 2, 3, 4)
+    """
     return itertools.chain((val,), it)
 
 
@@ -403,6 +431,12 @@ def concat_with(new_it: Iterable, it: Iterable):
 
 @currying.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
+    """
+    Wrap a string in a wrapping string.
+
+    >>> wrap_str("hello {}", "world")
+    'hello world'
+    """
     return wrapping_string.format(x)
 
 
@@ -506,25 +540,6 @@ def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
     return result
 
 
-@currying.curry
-def take_while(pred, seq):
-    for x in seq:
-        if not pred(x):
-            return
-        yield x
-
-
-@currying.curry
-def take_last_while(pred, seq):
-    return toolz.pipe(
-        seq,
-        reduce(
-            lambda acc, elem: suffix(elem, acc) if pred(elem) else (),
-            (),
-        ),
-    )
-
-
 def unique_by(f):
     """Return only unique elements of a sequence defined by function f
 
@@ -543,6 +558,10 @@ def unique_by(f):
     return unique
 
 
+#: Return only unique elements of a sequence
+#:
+#: >>> tuple(unique(["cat", "mouse", "dog", "cat"]))
+#: ('cat', 'mouse', 'dog')
 unique = unique_by(identity)
 
 
@@ -702,13 +721,27 @@ def interpose(el):
 
 
 def tail(n: int):
-    def tail(seq):
+    """
+    Get the last n elements of a sequence.
+
+    >>> tail(3) ([1, 2, 3, 4, 5])
+    [3, 4, 5]
+    """
+
+    def tail(seq: Iterable):
         return toolz.tail(n, seq)
 
     return tail
 
 
 def take(n: int):
+    """
+    Get an iterator for the first n elements of a sequence.
+
+    >>> tuple(take(3) ([1, 2, 3, 4, 5]))
+    (1, 2, 3)
+    """
+
     def take(seq):
         return itertools.islice(seq, n)
 
