@@ -665,11 +665,11 @@ def side_effect(f: Callable):
             await f(x)
             return x
 
-        return do
+    else:
 
-    def do(x):
-        f(x)
-        return x
+        def do(x):
+            f(x)
+            return x
 
     return do
 
