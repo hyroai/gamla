@@ -752,18 +752,34 @@ last = toolz.last
 #:    False
 is_iterable = toolz.isiterable
 
-#: A sequence of overlapping subsequences.
-#:
-#:    >>> list(sliding_window(2, [1, 2, 3, 4]))
-#:    [(1, 2), (2, 3), (3, 4)]
-sliding_window = toolz.sliding_window
 
-#: Partition all elements of sequence into tuples of length at most n.
-#: The final tuple may be shorter to accommodate extra elements.
-#:
-#:    >>> list(partition_all(2, [1, 2, 3, 4]))
-#:    [(1, 2), (3, 4)]
-#:
-#:    >>> list(partition_all(2, [1, 2, 3, 4, 5]))
-#:    [(1, 2), (3, 4), (5,)]
-partition_all = toolz.partition_all
+def sliding_window(n: int):
+    """
+    A sequence of overlapping subsequences.
+
+    >>> list(sliding_window(2)([1, 2, 3, 4]))
+    [(1, 2), (2, 3), (3, 4)]
+    """
+
+    def sliding_window(seq):
+        return toolz.sliding_window(n, seq)
+
+    return sliding_window
+
+
+def partition_all(n: int):
+    """
+    Partition all elements of sequence into tuples of length at most n.
+    The final tuple may be shorter to accommodate extra elements.
+
+    >>> list(partition_all(2)([1, 2, 3, 4]))
+    [(1, 2), (3, 4)]
+
+    >>> list(partition_all(2)([1, 2, 3, 4, 5]))
+    [(1, 2), (3, 4), (5,)]
+    """
+
+    def partition_all(seq):
+        return toolz.partition_all(n, seq)
+
+    return partition_all
