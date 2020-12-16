@@ -85,12 +85,6 @@ def singleize(func: Callable) -> Callable:
     return wrapped
 
 
-def wrapped_partial(func: Callable, *args, **kwargs) -> Callable:
-    partial_func = functools.partial(func, *args, **kwargs)
-    functools.update_wrapper(partial_func, func)
-    return partial_func
-
-
 def ignore_input(inner):
     def ignore_and_run(*args, **kwargs):
         return inner()
@@ -115,12 +109,24 @@ def make_raise(exception):
 
 
 @currying.curry
-def translate_exception(func, exc1, exc2):
-    """`func` is assumed to be unary."""
+def translate_exception(func: Callable, exc1: Exception, exc2: Exception):
+    """
+    A functional try/except block: Get a function, and if it fails with `exc1`, raise `exc2`
+
+    >>> from gamla import functional_generic
+    >>> functional_generic.pipe(iter([]), translate_exception(next, StopIteration, ValueError))
+    ValueError
+    Note: `func` is assumed to be unary."""
     return toolz.excepts(exc1, func, make_raise(exc2))
 
 
 def to_json(obj):
+    """
+    Return a json representation of a dict or an object.
+
+    >>> to_json({"one": 1, "two": 2})
+    '{"one": 1, "two": 2}'
+    """
     if hasattr(obj, "to_json"):
         return obj.to_json()
     return json.dumps(obj)
@@ -138,6 +144,14 @@ def compute_stable_json_hash(item) -> Text:
 
 
 def star(function: Callable) -> Callable:
+    """
+    Gets a variadic function and turns it into a unary one that gets a tuple of args to the original function.
+
+    >>> from gamla import functional_generic
+    >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
+    5
+    """
+
     def star_and_run(x):
         return function(*x)
 
@@ -195,7 +209,14 @@ def make_call_key(args, kwargs):
 
 @currying.curry
 def top(iterable: Iterable, key=identity):
-    """Generates elements from max to min."""
+    """Generates elements from max to min.
+
+    >>> tuple(top((1, 3, 2)))
+    (3, 2, 1)
+
+    >>> tuple(top(('a', 'aa', 'aaa'), len))
+    ('aaa', 'aa', 'a')
+    """
     h = []
     for i, value in enumerate(iterable):
         # Use the index as a tie breaker.
@@ -326,9 +347,13 @@ def wrap_dict(key):
 
 
 @currying.curry
-def update_in(d, keys, func, default=None, factory=dict):
+def update_in(d: dict, keys: Iterable, func: Callable, default=None, factory=dict):
     """
-    Gets a (potentially nested) dictionary, key(s) and a
+    Gets a (potentially nested) dictionary, key(s) and a function, and return d' where d'[key] = func(d[key])
+
+    >>> inc = lambda x: x + 1
+    >>> update_in({'a': 0}, ['a'], inc)
+    {'a': 1}
     """
     ks = iter(keys)
     k = next(ks)
