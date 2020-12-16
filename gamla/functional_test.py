@@ -731,3 +731,12 @@ async def test_side_effect_async():
 
 async def test_apply_fn_with_args():
     assert functional.apply_fn_with_args(lambda x, y: x + y, 1, 3) == 4
+
+
+def test_sliding_window():
+    assert list(functional.sliding_window(2)([1, 2, 3, 4])) == [(1, 2), (2, 3), (3, 4)]
+
+
+def test_partition_all():
+    assert list(functional.partition_all(2)([1, 2, 3, 4])) == [(1, 2), (3, 4)]
+    assert list(functional.partition_all(2)([1, 2, 3, 4, 5])) == [(1, 2), (3, 4), (5,)]
