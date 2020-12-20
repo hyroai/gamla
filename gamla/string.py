@@ -26,3 +26,14 @@ def split_text(sep: Text):
         return txt.split(sep)
 
     return split_text
+
+
+def capitalize(text: Text):
+    """Capitalize only the first letter of a given string, unlike
+    str.capitalize that transforms all characters after the first
+    character to lowercase.
+
+    >>>capitalize("my name is John Smith")
+    'My name is John Smith'
+    """
+    return text[0].upper() + text[1:]
