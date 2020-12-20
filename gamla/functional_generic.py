@@ -51,7 +51,7 @@ _DEBUG_MODE = os.environ.get("GAMLA_DEBUG_MODE")
 # TODO(uri): Far from a perfect id, but should work most of the time.
 # Improve by having higher order functions create meaningful names (e.g. `map`).
 def _get_name_for_function_group(funcs):
-    return "_of_".join(map(lambda x: x.__name__, funcs))
+    return "_OF_".join(map(lambda x: x.__name__, funcs))
 
 
 def _compose_async(*funcs):
