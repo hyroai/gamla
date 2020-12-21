@@ -2,7 +2,7 @@ API
 ===
 
 currying
-----
+--------
 
 .. currentmodule:: gamla.currying
 
@@ -15,8 +15,6 @@ data
 .. currentmodule:: gamla.data
 
 .. autosummary::
-   csv_to_json
-   dict_to_tuple_of_tuples
    freeze_deep
    get_encode_config
    match
@@ -184,7 +182,7 @@ functional_generic
    valmap
    value_to_dict
    when
-   
+
 
 graph
 -----
@@ -229,6 +227,16 @@ io_utils
    throttle
    timeit
    timeout
+
+string
+------
+
+.. currentmodule:: gamla.string
+
+.. autosummary::
+   replace_in_text
+   split_in_text
+
 
 transducer
 --------
@@ -285,6 +293,9 @@ Definitions
    :members:
 
 .. automodule:: gamla.io_utils
+   :members:
+
+.. automodule:: gamla.string
    :members:
 
 .. automodule:: gamla.transducer
