@@ -256,6 +256,16 @@ def wrap_tuple(x):
     return (x,)
 
 
+def wrap_frozenset(x):
+    """
+        Wraps x with frozenset.
+
+        >>> wrap_frozenset(1)
+        frozenset({1})
+        """
+    return frozenset([x])
+
+
 def invoke(x):
     return x()
 
