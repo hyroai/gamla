@@ -412,66 +412,6 @@ def test_find_index():
     )
 
 
-def test_take_while():
-    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
-
-    assert (
-        tuple(
-            functional.take_while(
-                functional_generic.compose_left(
-                    functional.itemgetter("key"),
-                    functional.not_equals(3),
-                ),
-                iter(seq),
-            ),
-        )
-        == ({"key": 1}, {"key": 2})
-    )
-
-    assert (
-        tuple(
-            functional.take_while(
-                functional_generic.compose_left(
-                    functional.itemgetter("key"),
-                    functional.not_equals(4),
-                ),
-                iter(seq),
-            ),
-        )
-        == ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
-    )
-
-
-def test_take_last_while():
-    seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2}, {"key": 4}, {"key": 5})
-
-    assert (
-        tuple(
-            functional.take_last_while(
-                functional_generic.compose_left(
-                    functional.itemgetter("key"),
-                    functional.not_equals(2),
-                ),
-                iter(seq),
-            ),
-        )
-        == ({"key": 4}, {"key": 5})
-    )
-
-    assert (
-        tuple(
-            functional.take_last_while(
-                functional_generic.compose_left(
-                    functional.itemgetter("key"),
-                    functional.not_equals(6),
-                ),
-                iter(seq),
-            ),
-        )
-        == ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2}, {"key": 4}, {"key": 5})
-    )
-
-
 def test_compositions_have_name():
     assert (
         functional_generic.compose_left(
