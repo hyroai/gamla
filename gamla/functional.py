@@ -111,7 +111,7 @@ def make_raise(exception):
 @currying.curry
 def translate_exception(func: Callable, exc1: Exception, exc2: Exception):
     """
-    A functional try/except block: Get a function, and if it fails with `exc1`, raise `exc2`
+    A functional try/except block: if `func` fails with `exc1`, raise `exc2`.
 
     >>> from gamla import functional_generic
     >>> functional_generic.pipe(iter([]), translate_exception(next, StopIteration, ValueError))
@@ -122,7 +122,7 @@ def translate_exception(func: Callable, exc1: Exception, exc2: Exception):
 
 def to_json(obj):
     """
-    Return a json representation of a dict or an object.
+    Return a `JSON` representation of a 'dictionary' or an object.
 
     >>> to_json({"one": 1, "two": 2})
     '{"one": 1, "two": 2}'
@@ -145,7 +145,7 @@ def compute_stable_json_hash(item) -> Text:
 
 def star(function: Callable) -> Callable:
     """
-    Gets a variadic function and turns it into a unary one that gets a tuple of args to the original function.
+    Turns a variadic function into an unary one that gets a tuple of args to the original function.
 
     >>> from gamla import functional_generic
     >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
@@ -334,7 +334,7 @@ def remove_key(key):
 
 def wrap_dict(key):
     """
-    Wrap a key and a value in a dict.
+    Wrap a key and a value in a dict (in a curried fashion).
 
     >>> wrap_dict("one") (1)
     {'one': 1}
@@ -349,7 +349,7 @@ def wrap_dict(key):
 @currying.curry
 def update_in(d: dict, keys: Iterable, func: Callable, default=None, factory=dict):
     """
-    Gets a (potentially nested) dictionary, key(s) and a function, and return d' where d'[key] = func(d[key])
+    Gets a (potentially nested) dictionary, key(s) and a function, and return new `dictionary` d' where d'[key] = func(d[key]).
 
     >>> inc = lambda x: x + 1
     >>> update_in({'a': 0}, ['a'], inc)
@@ -424,7 +424,7 @@ def reduce(
 @currying.curry
 def suffix(val: Any, it: Iterable):
     """
-    Add a value at the end of an iterable. return an iterable
+    Add a value to the end of an iterable. Return an iterable.
 
     >>> tuple(suffix(4, (1, 2, 3)))
     (1, 2, 3, 4)
@@ -435,7 +435,7 @@ def suffix(val: Any, it: Iterable):
 @currying.curry
 def prefix(val: Any, it: Iterable):
     """
-    Add a value in the beginning of an iterable. return an iterable
+    Add a value to the beginning of an iterable. Return an iterable.
 
     >>> tuple(prefix(1, (2, 3, 4)))
     (1, 2, 3, 4)
