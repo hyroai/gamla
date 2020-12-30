@@ -10,7 +10,7 @@ import logging
 import operator
 import random
 from concurrent import futures
-from typing import Any, Callable, Dict, Iterable, Sequence, Text, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Sequence, Text, TypeVar
 
 import heapq_max
 import toolz
@@ -206,7 +206,7 @@ def top(iterable: Iterable, key=identity):
     >>> tuple(top(('a', 'aa', 'aaa'), len))
     ('aaa', 'aa', 'a')
     """
-    h = []
+    h: List = []
     for i, value in enumerate(iterable):
         # Use the index as a tie breaker.
         heapq_max.heappush_max(h, (key(value), i, value))
@@ -284,12 +284,11 @@ def wrap_tuple(x: Any):
 
 
 def wrap_frozenset(x):
-    """
-        Wraps x with frozenset.
+    """Wraps x with frozenset.
 
-        >>> wrap_frozenset(1)
-        frozenset({1})
-        """
+    >>> wrap_frozenset(1)
+    frozenset({1})
+    """
     return frozenset([x])
 
 
@@ -851,3 +850,19 @@ def partition_all(n: int):
         return toolz.partition_all(n, seq)
 
     return partition_all
+
+
+@currying.curry
+def dict_to_getter_with_default(default, d: Dict):
+    """Turns a dictionary into a function from key to value or default if key is not there.
+
+    >>> dict_to_getter_with_default(None, {1:1})(1)
+    1
+    >>> dict_to_getter_with_default(None, {1:1})(2)
+    None
+    """
+
+    def dict_to_getter_with_default(key):
+        return d.get(key, default)
+
+    return dict_to_getter_with_default

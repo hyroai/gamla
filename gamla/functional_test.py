@@ -419,7 +419,7 @@ def test_compositions_have_name():
             functional.identity,
             toolz.unique,
         ).__name__
-        == "unique_of_identity_of_identity"
+        == "unique_OF_identity_OF_identity"
     )
 
 
@@ -434,7 +434,7 @@ def test_async_compositions_have_name():
             async_identity,
             toolz.unique,
         ).__name__
-        == "unique_of_async_identity_of_identity"
+        == "unique_OF_async_identity_OF_identity"
     )
 
 
@@ -680,3 +680,24 @@ def test_sliding_window():
 def test_partition_all():
     assert list(functional.partition_all(2)([1, 2, 3, 4])) == [(1, 2), (3, 4)]
     assert list(functional.partition_all(2)([1, 2, 3, 4, 5])) == [(1, 2), (3, 4), (5,)]
+
+
+def test_dict_to_getter_with_default_value_exists():
+    assert functional.dict_to_getter_with_default(None, {1: 1})(1) == 1
+
+
+def test_dict_to_getter_with_default_values_does_not_exist():
+    assert functional.dict_to_getter_with_default(None, {1: 1})(2) is None
+
+
+def test_prepare_and_apply():
+    def increment(x):
+        return x + 1
+
+    def decrement(x):
+        return x - 1
+
+    def conditional_transformation(x):
+        return increment if x < 10 else decrement
+
+    assert functional_generic.prepare_and_apply(conditional_transformation)(15) == 14

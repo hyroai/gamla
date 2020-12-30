@@ -699,3 +699,26 @@ def count_by(f: Callable) -> Dict[Any, int]:
         compose_left(f, functional.wrap_tuple),
         lambda x, y: x + 1 if x else 1,
     )
+
+
+#: Like `stack` but doesn't require additional brackets.
+packstack = compose_left(functional.pack, stack)
+#: Runs `packstack` with given functions, then runs `all` on the output.
+allstack = compose_left(packstack, after(all))
+#: Runs `packstack` with given functions, then runs `any` on the output.
+anystack = compose_left(packstack, after(any))
+
+
+def prepare_and_apply(f):
+    """Transforms a higher order function to a regular one.
+
+    Uses the given value once to prepare a regular function, then again to call it with.
+
+    >>> def increment(x): return x + 1
+    >>> def decrement(x): return x - 1
+    >>> def conditional_transformation(x):
+    ... return increment if x < 10 else decrement
+    >>> prepare_and_apply(conditional_transformation))(15)
+    14
+    """
+    return compose_left(pair_with(f), functional.star(functional.apply_fn_with_args))
