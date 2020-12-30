@@ -852,7 +852,7 @@ def partition_all(n: int):
     return partition_all
 
 
-def getter_with_default(default, d: Dict):
+def dict_to_getter_with_default(default, d: Dict):
     """Turns a dictionary into a function from key to value or default if key is not there.
 
     >>> dict_to_getter_with_default(None, {1:1})(1)
@@ -861,7 +861,7 @@ def getter_with_default(default, d: Dict):
     None
     """
 
-    def getter_with_default(key):
+    def dict_to_getter_with_default(key):
         return d.get(key, default)
 
-    return getter_with_default
+    return dict_to_getter_with_default

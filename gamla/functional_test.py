@@ -682,12 +682,12 @@ def test_partition_all():
     assert list(functional.partition_all(2)([1, 2, 3, 4, 5])) == [(1, 2), (3, 4), (5,)]
 
 
-def test_getter_with_default_value_exists():
-    assert functional.getter_with_default(None, {1: 1})(1) == 1
+def test_dict_to_getter_with_default_value_exists():
+    assert functional.dict_to_getter_with_default(None, {1: 1})(1) == 1
 
 
-def test_getter_with_default_value_does_not_exist():
-    assert functional.getter_with_default(None, {1: 1})(2) is None
+def test_dict_to_getter_with_default_values_does_not_exist():
+    assert functional.dict_to_getter_with_default(None, {1: 1})(2) is None
 
 
 def test_prepare_and_apply():
