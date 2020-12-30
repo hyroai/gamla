@@ -699,3 +699,11 @@ def count_by(f: Callable) -> Dict[Any, int]:
         compose_left(f, functional.wrap_tuple),
         lambda x, y: x + 1 if x else 1,
     )
+
+
+#: Like `stack` but doesn't require additional brackets.
+packstack = compose_left(functional.pack, stack)
+#: Runs `packstack` with given functions, then runs `all` on the output.
+allstack = compose_left(packstack, after(all))
+#: Runs `packstack` with given functions, then runs `any` on the output.
+anystack = compose_left(packstack, after(any))
