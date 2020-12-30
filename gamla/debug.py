@@ -12,7 +12,18 @@ def log_text(text: Text, level: int = logging.INFO):
     return functional_generic.side_effect(lambda x: logging.log(level, text.format(x)))
 
 
-do_breakpoint = functional_generic.side_effect(lambda x: builtins.breakpoint())
+def _is_generator(iterable):
+    return hasattr(iterable, "__iter__") and not hasattr(iterable, "__len__")
+
+
+#: A util to inspect a pipline by opening a debug prompt.
+#: Note:
+#: - Materializes generators, as most of the time we are interested in looking into them, so can have unexpected results.
+#: - The current value can be referenced by `x` in the debug prompt.
+debug = functional_generic.compose_left(
+    functional_generic.when(_is_generator, tuple),
+    functional_generic.side_effect(lambda x: builtins.breakpoint()),
+)
 
 
 def debug_exception(f):
