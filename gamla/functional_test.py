@@ -688,3 +688,16 @@ def test_getter_with_default_value_exists():
 
 def test_getter_with_default_value_does_not_exist():
     assert functional.getter_with_default(None, {1: 1})(2) is None
+
+
+def test_prepare_and_apply():
+    def increment(x):
+        return x + 1
+
+    def decrement(x):
+        return x - 1
+
+    def conditional_transformation(x):
+        return increment if x < 10 else decrement
+
+    assert functional_generic.prepare_and_apply(conditional_transformation)(15) == 14
