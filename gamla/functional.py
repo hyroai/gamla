@@ -852,6 +852,7 @@ def partition_all(n: int):
     return partition_all
 
 
+@currying.curry
 def dict_to_getter_with_default(default, d: Dict):
     """Turns a dictionary into a function from key to value or default if key is not there.
 
