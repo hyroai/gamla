@@ -717,7 +717,7 @@ def prepare_and_apply(f):
     >>> def increment(x): return x + 1
     >>> def decrement(x): return x - 1
     >>> def conditional_transformation(x):
-    ... return increment if x < 10 else decrement
+    ...     return increment if x < 10 else decrement
     >>> prepare_and_apply(conditional_transformation))(15)
     14
     """
