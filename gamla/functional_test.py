@@ -419,7 +419,7 @@ def test_compositions_have_name():
             functional.identity,
             toolz.unique,
         ).__name__
-        == "unique_of_identity_of_identity"
+        == "unique_OF_identity_OF_identity"
     )
 
 
@@ -434,7 +434,7 @@ def test_async_compositions_have_name():
             async_identity,
             toolz.unique,
         ).__name__
-        == "unique_of_async_identity_of_identity"
+        == "unique_OF_async_identity_OF_identity"
     )
 
 
@@ -683,8 +683,8 @@ def test_partition_all():
 
 
 def test_getter_with_default_value_exists():
-    assert functional.dict_to_getter_with_default(None, {1: 1})(1) == 1
+    assert functional.getter_with_default(None, {1: 1})(1) == 1
 
 
 def test_getter_with_default_value_does_not_exist():
-    assert functional.dict_to_getter_with_default(None, {1: 1})(2) is None
+    assert functional.getter_with_default(None, {1: 1})(2) is None
