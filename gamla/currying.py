@@ -18,7 +18,9 @@ class _Curry:
             return self.function(*args, **kwargs)
         except TypeError as e:
             print(f"itay {e}")
-            return functools.wraps(self.function)(_Curry(functools.partial(self.function, *args, **kwargs)))
+            return functools.wraps(self.function)(
+                _Curry(functools.partial(self.function, *args, **kwargs)),
+            )
 
 
 def curry(f):
@@ -149,5 +151,3 @@ curried_filter = compose_sync(
 
 
 map_filter_empty = compose_sync(after(curried_filter(identity)), curried_map)
-
-
