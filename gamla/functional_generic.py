@@ -712,13 +712,13 @@ anystack = compose_left(packstack, after(any))
 def prepare_and_apply(f):
     """Transforms a higher order function to a regular one.
 
-    Uses the given value once to prepare a regular function, then to call it.
+    Uses the given value once to prepare a regular function, then again to call it with.
 
     >>> def increment(x): return x + 1
     >>> def decrement(x): return x - 1
     >>> def conditional_transformation(x):
-            return increment if x < 10 else decrement
-    >>> prepare_and_transform(conditional_transformation)(15)
+    ... return increment if x < 10 else decrement
+    >>> prepare_and_apply(conditional_transformation))(15)
     14
     """
     return compose_left(pair_with(f), functional.star(functional.apply_fn_with_args))
