@@ -4,24 +4,28 @@ import functools
 import inspect
 from typing import Callable
 
+import toolz
+
 
 @dataclasses.dataclass
 class _Curry:
     function: Callable
+    wrapper: Callable
 
     def __call__(self, *args, **kwargs):
         try:
+            print(f"now running f={self.function}")
             return self.function(*args, **kwargs)
         except TypeError as e:
             print(f"itay {e}")
-            self.function = functools.partial(self.function, *args, **kwargs)
-            return self
+            return functools.wraps(self.function)(_Curry(functools.partial(self.function, *args, **kwargs)))
 
 
 def curry(f):
     if asyncio.iscoroutinefunction(f):
         return old_curry(f)
-    return functools.wraps(f)(_Curry(function=f))
+    wrapper = functools.wraps(f)
+    return wrapper(_Curry(function=f, wrapper=wrapper))
 
 
 def _curry_helper(
@@ -79,24 +83,29 @@ def addition(x):
     return x + 1
 
 
-def compose(f1, f2):
-    def composition(x):
-        return f1(f2(x))
+def compose_sync(*funcs):
+    @functools.wraps(toolz.last(funcs))
+    def composed(*args, **kwargs):
+        for f in reversed(funcs):
+            args = [f(*args, **kwargs)]
+            kwargs = {}
+        return toolz.first(args)
 
-    return composition
+    return composed
 
 
 @curry
 def after(f1, f2):
     """Second-order composition of `f1` over `f2`."""
-    return compose(f1, f2)
-
-
-b = after(addition)
+    return compose_sync(f1, f2)
 
 
 def curried_map(f):
     return curried_map_sync(f)
+
+
+def identity(x):
+    return x
 
 
 def curried_map_sync(f):
@@ -107,4 +116,38 @@ def curried_map_sync(f):
     return curried_map
 
 
-map_filter_empty = compose(curried_map, after(curried_map(lambda x: x)))
+def _sync_curried_filter(f):
+    def curried_filter(it):
+        for x in it:
+            if f(x):
+                yield x
+
+    return curried_filter
+
+
+def juxt(*funcs):
+    def juxt(*args, **kwargs):
+        return tuple(func(*args, **kwargs) for func in funcs)
+
+    return juxt
+
+
+def pair_with(f):
+    return juxt(f, identity)
+
+
+curried_filter = compose_sync(
+    after(
+        compose_sync(
+            curried_map_sync(toolz.second),
+            _sync_curried_filter(toolz.first),
+        ),
+    ),
+    curried_map,
+    pair_with,
+)
+
+
+map_filter_empty = compose_sync(after(curried_filter(identity)), curried_map)
+
+
