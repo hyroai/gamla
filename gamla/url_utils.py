@@ -5,7 +5,7 @@ from gamla import currying, functional_generic
 
 
 @currying.curry
-def add_to_query_string(params_to_add: Dict, url: Text):
+def add_to_query_string(params_to_add: Dict, url: Text) -> Text:
     """
     Add params_to_add to the query string part of url
 
