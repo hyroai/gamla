@@ -1,5 +1,6 @@
 from typing import Dict, Text
 from urllib import parse
+
 from gamla import currying, functional_generic
 
 
@@ -16,5 +17,5 @@ def add_to_query_string(params_to_add: Dict, url: Text):
     new_query = functional_generic.merge(parse.parse_qs(query), params_to_add)
 
     return parse.urlunsplit(
-        (scheme, netloc, path, parse.urlencode(new_query, doseq=True), fragment)
+        (scheme, netloc, path, parse.urlencode(new_query, doseq=True), fragment),
     )
