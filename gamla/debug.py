@@ -1,5 +1,6 @@
 import asyncio
 import builtins
+import functools
 import logging
 from typing import Text
 
@@ -41,20 +42,20 @@ def debug_exception(f):
     """
     if asyncio.iscoroutinefunction(f):
 
-        async def debug_exception(x):
+        async def debug_exception(*x):
             try:
-                return await f(x)
+                return await f(*x)
             except Exception as e:
                 builtins.breakpoint()
                 raise e
 
     else:
 
-        def debug_exception(x):  # type: ignore
+        def debug_exception(*x):  # type: ignore
             try:
-                return f(x)
+                return f(*x)
             except Exception as e:
                 builtins.breakpoint()
                 raise e
 
-    return debug_exception
+    return functools.wraps(f)(debug_exception)

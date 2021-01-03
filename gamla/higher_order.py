@@ -1,3 +1,6 @@
+from gamla import functional, functional_generic
+
+
 def prepare_and_apply(f):
     """Transforms a higher order function to a regular one.
 
@@ -31,6 +34,14 @@ def prepare_and_apply_async(f):
     """
 
     async def prepare_and_apply(value):
-        return await f(value)(value)
+        return await functional_generic.to_awaitable(
+            (await functional_generic.to_awaitable(f(value)))(value),
+        )
 
     return prepare_and_apply
+
+
+#: Make a function act on the first element on incoming input.
+on_first = functional_generic.before(functional.head)
+#: Make a function act on the second element on incoming input.
+on_second = functional_generic.before(functional.second)
