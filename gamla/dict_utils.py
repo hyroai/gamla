@@ -90,6 +90,12 @@ def _return_after_n_calls(n, value):
 
 
 def make_index(steps: Iterable[Callable]) -> Callable[[Iterable], Any]:
+    """Builds an index with arbitrary amount of steps from an iterable.
+
+    >>> index = dict_utils.make_index([functional.head, functional.second])(["uri", "dani"])
+    >>> index("d")("a")
+    frozenset(["dani"])
+    """
     steps = tuple(steps)
     if not steps:
         return frozenset
