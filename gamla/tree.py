@@ -4,7 +4,7 @@ from typing import Any, Callable
 import toolz
 from toolz import curried
 
-from gamla import currying, functional, functional_generic
+from gamla import currying, dict_utils, functional, functional_generic
 
 
 @currying.curry
@@ -52,8 +52,8 @@ def _get_children(element):
 
 _MATCHED = "matched"
 _UNMATCHED = "unmatched"
-_get_matched = functional.itemgetter(_MATCHED)
-_get_unmatched = functional.itemgetter(_UNMATCHED)
+_get_matched = dict_utils.itemgetter(_MATCHED)
+_get_unmatched = dict_utils.itemgetter(_UNMATCHED)
 
 
 def _make_matched_unmatched(matched, unmatched):

@@ -7,7 +7,6 @@ import inspect
 import itertools
 import json
 import logging
-import operator
 import random
 from concurrent import futures
 from typing import Any, Callable, Dict, Iterable, List, Sequence, Text, TypeVar
@@ -602,28 +601,6 @@ def attrgetter(attr):
     return attrgetter
 
 
-def itemgetter(attr):
-    def itemgetter(obj):
-        return operator.getitem(obj, attr)
-
-    return itemgetter
-
-
-def itemgetter_or_none(attr):
-    def itemgetter_or_none(obj):
-        return obj.get(attr, None)
-
-    return itemgetter_or_none
-
-
-def itemgetter_with_default(default, attr):
-    return toolz.excepts(
-        (KeyError, IndexError),
-        itemgetter(attr),
-        just(default),
-    )
-
-
 def equals(x):
     def equals(y):
         return x == y
@@ -712,28 +689,6 @@ def divide_by(x):
         return y / x
 
     return divide_by
-
-
-_GET_IN_EXCEPTIONS = (KeyError, IndexError, TypeError)
-
-
-def get_in(keys):
-    def get_in(coll):
-        return functools.reduce(operator.getitem, keys, coll)
-
-    return get_in
-
-
-def get_in_with_default(keys, default):
-    return toolz.excepts(_GET_IN_EXCEPTIONS, get_in(keys), just(default))
-
-
-def get_in_or_none(keys):
-    return get_in_with_default(keys, None)
-
-
-def get_in_or_none_uncurried(keys, coll):
-    return get_in_or_none(keys)(coll)
 
 
 def interpose(el):
@@ -850,19 +805,3 @@ def partition_all(n: int):
         return toolz.partition_all(n, seq)
 
     return partition_all
-
-
-@currying.curry
-def dict_to_getter_with_default(default, d: Dict):
-    """Turns a dictionary into a function from key to value or default if key is not there.
-
-    >>> dict_to_getter_with_default(None, {1:1})(1)
-    1
-    >>> dict_to_getter_with_default(None, {1:1})(2)
-    None
-    """
-
-    def dict_to_getter_with_default(key):
-        return d.get(key, default)
-
-    return dict_to_getter_with_default

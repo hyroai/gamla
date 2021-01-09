@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 import toolz
 from toolz import curried
 
-from gamla import currying, functional, functional_generic
+from gamla import currying, dict_utils, functional, functional_generic
 
 
 @currying.curry
@@ -231,7 +231,7 @@ def has_cycle(graph):
         functional_generic.curried_map(
             _has_cycle(
                 frozenset(),
-                lambda node: functional.itemgetter_with_default((), node)(graph),
+                dict_utils.dict_to_getter_with_default((), graph),
                 set(),
             ),
         ),

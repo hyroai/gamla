@@ -3,6 +3,7 @@
 from .currying import *
 from .data import *
 from .debug import *
+from .dict_utils import *
 from .excepts_decorator import *
 from .functional import *
 from .functional_async import *
