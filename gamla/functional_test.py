@@ -5,7 +5,7 @@ import time
 import pytest
 import toolz
 
-from gamla import currying, functional, functional_generic
+from gamla import currying, dict_utils, functional, functional_generic
 
 pytestmark = pytest.mark.asyncio
 
@@ -367,7 +367,7 @@ def test_find():
     assert (
         functional_generic.find(
             functional_generic.compose_left(
-                functional.itemgetter("key"),
+                dict_utils.itemgetter("key"),
                 functional.equals(2),
             ),
         )(
@@ -379,7 +379,7 @@ def test_find():
     assert (
         functional_generic.find(
             functional_generic.compose_left(
-                functional.itemgetter("key"),
+                dict_utils.itemgetter("key"),
                 functional.equals(4),
             ),
         )(iter(seq))
@@ -393,7 +393,7 @@ def test_find_index():
     assert (
         functional_generic.find_index(
             functional_generic.compose_left(
-                functional.itemgetter("key"),
+                dict_utils.itemgetter("key"),
                 functional.equals(2),
             ),
         )(iter(seq))
@@ -403,7 +403,7 @@ def test_find_index():
     assert (
         functional_generic.find_index(
             functional_generic.compose_left(
-                functional.itemgetter("key"),
+                dict_utils.itemgetter("key"),
                 functional.equals(4),
             ),
         )(iter(seq))
@@ -441,18 +441,6 @@ def test_attrgetter():
     assert functional.attrgetter("lower")("ASD")() == "asd"
 
 
-def test_itemgetter():
-    assert functional.itemgetter("a")({"a": 1}) == 1
-
-
-def test_itemgetter_with_default():
-    assert functional.itemgetter_with_default(2, "b")({"a": 1}) == 2
-
-
-def test_itemgetter_or_none():
-    assert functional.itemgetter_or_none("b")({"a": 1}) is None
-
-
 def test_latency():
     start_time = time.time()
     for _ in range(1000):
@@ -474,27 +462,6 @@ def test_unique_by():
         == ("a", "bc", "c")
     )
     assert tuple(functional.unique(["a", "a", "a", "bc", "a"])) == ("a", "bc")
-
-
-def test_get_in():
-    assert functional.get_in(["a", "b", "c", 1])({"a": {"b": {"c": [0, 1, 2]}}}) == 1
-
-
-def test_get_in_or_none():
-    assert (
-        functional.get_in_or_none(["a", "b", "d", 1])({"a": {"b": {"c": [0, 1, 2]}}})
-        is None
-    )
-
-
-def test_get_in_or_none_uncurried():
-    assert (
-        functional.get_in_or_none_uncurried(
-            ["a", "b", "c", 1],
-            {"a": {"b": {"c": [0, 1, 2]}}},
-        )
-        == 1
-    )
 
 
 def test_merge():
@@ -679,11 +646,3 @@ def test_sliding_window():
 def test_partition_all():
     assert list(functional.partition_all(2)([1, 2, 3, 4])) == [(1, 2), (3, 4)]
     assert list(functional.partition_all(2)([1, 2, 3, 4, 5])) == [(1, 2), (3, 4), (5,)]
-
-
-def test_dict_to_getter_with_default_value_exists():
-    assert functional.dict_to_getter_with_default(None, {1: 1})(1) == 1
-
-
-def test_dict_to_getter_with_default_values_does_not_exist():
-    assert functional.dict_to_getter_with_default(None, {1: 1})(2) is None
