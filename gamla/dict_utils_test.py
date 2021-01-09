@@ -1,4 +1,4 @@
-from gamla import dict_utils, functional
+from gamla import dict_utils, functional, functional_generic
 
 
 def test_itemgetter():
@@ -48,7 +48,9 @@ def test_get_or_identity():
 
 
 def test_make_index():
-    index = dict_utils.make_index([functional.head, functional.second])(["uri", "dani"])
+    index = dict_utils.make_index(
+        map(functional_generic.groupby, [functional.head, functional.second]),
+    )(["uri", "dani"])
     assert index("d")("a") == frozenset(["dani"])
     assert index("u")("r") == frozenset(["uri"])
     assert index("h")("i") == frozenset()

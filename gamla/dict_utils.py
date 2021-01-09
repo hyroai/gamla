@@ -89,10 +89,12 @@ def _return_after_n_calls(n, value):
     return return_after_n_calls
 
 
-def make_index(steps: Iterable[Callable]) -> Callable[[Iterable], Any]:
+def make_index(
+    steps: Iterable[Callable[[Iterable], Dict]],
+) -> Callable[[Iterable], Any]:
     """Builds an index with arbitrary amount of steps from an iterable.
 
-    >>> index = dict_utils.make_index([functional.head, functional.second])(["uri", "dani"])
+    >>> index = dict_utils.make_index(map(gamla.groupby, [gamla.head, gamla.second]))(["uri", "dani"])
     >>> index("d")("a")
     frozenset(["dani"])
     """
@@ -100,7 +102,7 @@ def make_index(steps: Iterable[Callable]) -> Callable[[Iterable], Any]:
     if not steps:
         return frozenset
     return functional_generic.compose_left(
-        functional_generic.groupby(functional.head(steps)),
+        functional.head(steps),
         functional_generic.valmap(make_index(steps[1:])),
         lambda d: lambda x: d.get(
             x,
