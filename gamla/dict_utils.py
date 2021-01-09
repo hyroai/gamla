@@ -1,8 +1,8 @@
 import functools
 import operator
-from typing import Dict
+from typing import Any, Callable, Dict, Iterable
 
-from gamla import currying
+from gamla import currying, functional, functional_generic
 
 
 def itemgetter(attr):
@@ -77,3 +77,27 @@ def dict_to_getter_with_default(default, d: Dict):
         return d.get(key, default)
 
     return dict_to_getter_with_default
+
+
+def _return_after_n_calls(n, value):
+    if n == 0:
+        return value
+
+    def return_after_n_calls(_):
+        return _return_after_n_calls(n - 1, value)
+
+    return return_after_n_calls
+
+
+def make_index(steps: Iterable[Callable]) -> Callable[[Iterable], Any]:
+    steps = tuple(steps)
+    if not steps:
+        return frozenset
+    return functional_generic.compose_left(
+        functional_generic.groupby(functional.head(steps)),
+        functional_generic.valmap(make_index(steps[1:])),
+        lambda d: lambda x: d.get(
+            x,
+            _return_after_n_calls(len(steps) - 1, frozenset()),
+        ),
+    )
