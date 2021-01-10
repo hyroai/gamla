@@ -43,6 +43,7 @@ functional
    do_if
    drop
    drop_last_while
+   ends_with
    eq_by
    eq_str_ignore_case
    equals
