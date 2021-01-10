@@ -33,22 +33,18 @@ def _get_function_table_entries(module) -> Text:
     )
 
 
-def _get_module_table_string(string_so_far: Text, module) -> Text:
-    return (
-        string_so_far
-        + f"{module.__name__[6:]}\n{len(module.__name__[6:]) * '-'}\n\n.. currentmodule:: {module.__name__}\n\n.. autosummary::\n{_get_function_table_entries(module)}\n"
-    )
+def _concat_module_table_string(string_so_far: Text, module) -> Text:
+    return ''.join(gamla.concat_with(f"{module.__name__[6:]}\n{len(module.__name__[6:]) * '-'}\n\n.. currentmodule:: {module.__name__}\n\n.. autosummary::\n{_get_function_table_entries(module)}\n", string_so_far))
 
 
-def _get_module_members_string(string_so_far: Text, module) -> Text:
-    return string_so_far + f".. automodule:: {module.__name__}\n   :members:\n\n"
+def _concat_module_members_string(string_so_far: Text, module) -> Text:
+    return ''.join(gamla.concat_with(f".. automodule:: {module.__name__}\n   :members:\n\n", string_so_far))
 
 
 def create_api_string(modules: Iterable) -> Text:
-    new_api_string = "API\n===\n\n"
     return gamla.reduce(
-        _get_module_members_string,
-        gamla.reduce(_get_module_table_string, new_api_string, modules)
+        _concat_module_members_string,
+        gamla.reduce(_concat_module_table_string, "API\n===\n\n", modules)
         + "Definitions\n-----------\n\n",
         modules,
     )
