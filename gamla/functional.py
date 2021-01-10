@@ -476,6 +476,20 @@ def apply(*args, **kwargs):
     return apply_inner
 
 
+def apply_async(*args, **kwargs):
+    """
+    Apply input on an async function.
+
+    >>> apply_async(1)(async_add(2))
+    3
+    """
+
+    async def apply_async(f):
+        return await f(*args, **kwargs)
+
+    return apply_async
+
+
 @currying.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
     return toolz.pipe(
@@ -805,3 +819,31 @@ def partition_all(n: int):
         return toolz.partition_all(n, seq)
 
     return partition_all
+
+
+def apply_method_async(method: Text, *args, **kwargs):
+    """
+    Invokes the specified async method on an object with *args and **kwargs.
+
+    >>> apply_method_async("get", "http://www.someurl.com")(httpx)
+    httpx.Response()
+    """
+
+    async def apply_method_async(obj):
+        return await apply_async(*args, **kwargs)(getattr(obj, method))
+
+    return apply_method_async
+
+
+def apply_method(method: Text, *args, **kwargs):
+    """
+    Invokes the specified method on an object with *args and **kwargs.
+
+    >>> apply_method("get", "http://www.someurl.com")(requests)
+    requests.Response()
+    """
+
+    def apply_method(obj):
+        return apply(*args, **kwargs)(getattr(obj, method))
+
+    return apply_method

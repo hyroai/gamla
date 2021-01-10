@@ -593,6 +593,10 @@ def test_apply():
     assert functional.apply(1)(functional.add(2)) == 3
 
 
+async def test_apply_async():
+    assert await functional.apply_async(True)(_opposite_async) == False
+
+
 def test_assert_that():
     functional.assert_that(functional.equals(2))(2)
 
@@ -646,3 +650,30 @@ def test_sliding_window():
 def test_partition_all():
     assert list(functional.partition_all(2)([1, 2, 3, 4])) == [(1, 2), (3, 4)]
     assert list(functional.partition_all(2)([1, 2, 3, 4, 5])) == [(1, 2), (3, 4), (5,)]
+
+
+def test_apply_method():
+    class SomeClass:
+        x: int
+
+        def __init__(self, x):
+            self.x = x
+
+        def add(self, y):
+            return self.x + y
+
+    assert functional.apply_method("add", 1)(SomeClass(2)) == 3
+
+
+async def test_apply_method():
+    class SomeClass:
+        x: int
+
+        def __init__(self, x):
+            self.x = x
+
+        async def mult_async(self, y):
+            await asyncio.sleep(0.01)
+            return self.x * y
+
+    assert await functional.apply_method_async("mult_async", 2)(SomeClass(2)) == 4
