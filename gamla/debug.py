@@ -42,18 +42,18 @@ def debug_exception(f):
     """
     if asyncio.iscoroutinefunction(f):
 
-        async def debug_exception(*x):
+        async def debug_exception(*x, **kwargs):
             try:
-                return await f(*x)
+                return await f(*x, **kwargs)
             except Exception as e:
                 builtins.breakpoint()
                 raise e
 
     else:
 
-        def debug_exception(*x):  # type: ignore
+        def debug_exception(*x, **kwargs):  # type: ignore
             try:
-                return f(*x)
+                return f(*x, **kwargs)
             except Exception as e:
                 builtins.breakpoint()
                 raise e
