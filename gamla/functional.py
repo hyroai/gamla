@@ -805,3 +805,26 @@ def partition_all(n: int):
         return toolz.partition_all(n, seq)
 
     return partition_all
+
+
+def ends_with(expected_tail_seq: Sequence) -> Callable[[Sequence], bool]:
+    """
+    Returns a predicate that checks if a sequence ends with :expected_tail_seq:
+
+    >>> ends_with([1,2,3])((0,1,2,3))
+    True
+    >>> ends_with([1,2,3])((1,2))
+    False
+    >>> ends_with([1,2])((3,1,2))
+    True
+    >>> ends_with([1])(())
+    False
+    """
+    take_tail_to_compare = tail(len(expected_tail_seq))
+
+    def does_end_with_expected(seq2):
+        return len(seq2) >= len(expected_tail_seq) and all(
+            a == b for (a, b) in zip(take_tail_to_compare(seq2), expected_tail_seq)
+        )
+
+    return does_end_with_expected

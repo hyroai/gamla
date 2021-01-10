@@ -646,3 +646,10 @@ def test_sliding_window():
 def test_partition_all():
     assert list(functional.partition_all(2)([1, 2, 3, 4])) == [(1, 2), (3, 4)]
     assert list(functional.partition_all(2)([1, 2, 3, 4, 5])) == [(1, 2), (3, 4), (5,)]
+
+
+def test_ends_with():
+    assert functional.ends_with([1, 2, 3])((0, 1, 2, 3)) is True
+    assert functional.ends_with([1, 2, 3])((1, 2)) is False
+    assert functional.ends_with([1, 2])((3, 1, 2)) is True
+    assert functional.ends_with([1])(()) is False
