@@ -1,29 +1,24 @@
+import inspect
+from typing import Any, Text, Tuple
+
 import gamla
-from gamla import *
+
+"""script for creating api.rst"""
 
 
-def get_modules():
-    return [
-        currying,
-        data,
-        dict_utils,
-        excepts_decorator,
-        functional,
-        functional_async,
-        functional_generic,
-        graph,
-        graph_async,
-        higher_order,
-        io_utils,
-        string,
-        tree,
-        url_utils,
-    ]
-    # TODO(itay): find a way to get all modules in gamla automatically. this line below can only get filenames
-    # return [importlib.import_module(module) for module in os.listdir('/Users/itayzit/projects/gamla/gamla') if module.endswith('.py') and 'test' not in module]
+def _module_filter(module):
+    return (
+        inspect.ismodule(module)
+        and "gamla" in str(module)
+        and "test" not in str(module)
+    )
 
 
-def _get_function_table_entries(module) -> Text:
+def get_modules() -> Tuple[Tuple[Text, Any], ...]:
+    return tuple(inspect.getmembers(gamla, _module_filter))
+
+
+def _get_function_table_entries(module: Tuple[Text, Any]) -> Text:
     return "".join(
         [
             f"   {o[0]}\n"
@@ -33,15 +28,28 @@ def _get_function_table_entries(module) -> Text:
     )
 
 
-def _concat_module_table_string(string_so_far: Text, module) -> Text:
-    return ''.join(gamla.concat_with(f"{module.__name__[6:]}\n{len(module.__name__[6:]) * '-'}\n\n.. currentmodule:: {module.__name__}\n\n.. autosummary::\n{_get_function_table_entries(module)}\n", string_so_far))
+def _concat_module_table_string(string_so_far: Text, module: Tuple[Text, Any]) -> Text:
+    return "".join(
+        gamla.concat_with(
+            f"{module[0]}\n{len(module[0]) * '-'}\n\n.. currentmodule:: gamla.{module[0]}\n\n.. autosummary::\n{_get_function_table_entries(module[1])}\n",
+            string_so_far,
+        ),
+    )
 
 
-def _concat_module_members_string(string_so_far: Text, module) -> Text:
-    return ''.join(gamla.concat_with(f".. automodule:: {module.__name__}\n   :members:\n\n", string_so_far))
+def _concat_module_members_string(
+    string_so_far: Text,
+    module: Tuple[Text, Any],
+) -> Text:
+    return "".join(
+        gamla.concat_with(
+            f".. automodule:: gamla.{module[0]}\n   :members:\n\n",
+            string_so_far,
+        ),
+    )
 
 
-def create_api_string(modules: Iterable) -> Text:
+def create_api_string(modules: Tuple[Tuple[Text, Any], ...]) -> Text:
     return gamla.reduce(
         _concat_module_members_string,
         gamla.reduce(_concat_module_table_string, "API\n===\n\n", modules)
@@ -50,7 +58,6 @@ def create_api_string(modules: Iterable) -> Text:
     )
 
 
-print(create_api_string(get_modules()))
-# new_api = open("api.rst", "w")
-# new_api.write(create_api_string(get_modules))
-# new_api.close()
+new_api = open("api.rst", "w")
+new_api.write(create_api_string(get_modules()))
+new_api.close()
