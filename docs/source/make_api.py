@@ -1,9 +1,8 @@
+"""Script for updating api.rst in accordance with changes in the repo"""
 import inspect
 from typing import Any, Text, Tuple
 
 import gamla
-
-"""script for creating api.rst"""
 
 
 def _module_filter(module):

@@ -1,0 +1,6 @@
+- id: make-api
+  name: make api
+  description: make api.rst file according to changes in repo
+  entry: make-api
+  language: python
+  types: [python]
