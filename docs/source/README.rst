@@ -15,6 +15,64 @@ Installation
 Debugging anonymous compositions
 --------------------------------
 
+``gamla.debug``
+^^^^^^^^^^^^^^^^^^^
+
+It is sometimes hard to debug pipelines because you can't place ordinary breakpoints. For this ``gamla.debug`` and ``gamla.debug_exception`` were created.
+
+``gamla.debug`` can be used within pipelines and provide a pdb breakpoint prompt where the value at this position can be referenced by ``x``.
+
+.. code-block:: python
+
+
+   def increment(x):
+       return x + 1
+
+   increment_twice = gamla.compose_left(increment, gamla.debug, increment)
+
+   increment_twice(1)
+
+The above code will break with ``x`` being 2.
+
+``gamla.debug_exception``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In some cases tracking down an exception involves inspecting code that runs many times. Consider the following example:
+
+.. code-block:: python
+
+
+   def increment(x):
+       return x + 1
+
+   def sometimes_has_a_bug(x):
+       if x == 666:
+           raise Exception
+       return x
+
+   increment_with_bug = gamla.map(gamla.compose_left(increment, sometimes_has_a_bug))
+
+   tuple(inrement_with_bug(range(1000)))
+
+Adding a ``gamla.debug`` here can be quite tedious, because the code will break many times.
+
+Instead we can use ``gamla.debug_exception`` to break only in the case the inner function raises, at which case we would get a breakpoint prompt, and be able to inspect the value causing the exception, use the name ``x``. This would like this:
+
+``increment_with_bug = gamla.map(gamla.compose_left(increment, gamla.debug_exception(sometimes_has_a_bug)))``
+
+One can also use ``gamla.debug_exception`` using a decorator.
+
+.. code-block:: python
+
+   @gamla.debug_exception
+   def sometimes_has_a_bug(x):
+       if x == 666:
+           raise Exception
+       return x
+
+Debug mode
+^^^^^^^^^^
+
 ``gamla.compose(x, y, z)`` produces a new function which doesn't have a proper name. If ``x`` raises an exception, it is sometimes hard to figure out where this occurred. To overcome this, set the env variable ``GAMLA_DEBUG_MODE`` (to anything) to get more useful exceptions. This is turned on only by flag because it incurs significant overhead so things might get slow.
 
 Mixing asynchronous and synchronous code
