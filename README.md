@@ -26,6 +26,8 @@ increment_twice(1)
 
 The above code will break with `x` being 2.
 
+When you have a long pipeline and want to debug at each step of the way, you can use `gamla.debug_compose` and `gamla.debug_compose_left`.
+
 ### `gamla.debug_exception`
 
 In some cases tracking down an exception involves inspecting code that runs many times. Consider the following example:
