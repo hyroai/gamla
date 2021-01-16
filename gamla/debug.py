@@ -28,6 +28,9 @@ debug = functional_generic.compose_left(
     functional_generic.side_effect(lambda x: builtins.breakpoint()),
 )
 
+debug_after = functional_generic.after(debug)
+debug_before = functional_generic.before(debug)
+
 
 def _debug_generic(f):
     return functional_generic.compose_left(
