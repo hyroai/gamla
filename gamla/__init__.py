@@ -2,7 +2,7 @@
 
 from .currying import *
 from .data import *
-from .debug import *
+from .debug_utils import *
 from .dict_utils import *
 from .excepts_decorator import *
 from .functional import *
