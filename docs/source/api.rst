@@ -21,21 +21,6 @@ data
    match
    tuple_of_tuples_to_csv
 
-debug_utils
------------
-
-.. currentmodule:: gamla.debug_utils
-
-.. autosummary::
-   debug
-   debug_after
-   debug_before
-   debug_compose
-   debug_compose_left
-   debug_exception
-   log_text
-   logger
-
 dict_utils
 ----------
 
@@ -314,9 +299,6 @@ Definitions
    :members:
 
 .. automodule:: gamla.data
-   :members:
-
-.. automodule:: gamla.debug_utils
    :members:
 
 .. automodule:: gamla.dict_utils
