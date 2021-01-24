@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.1.0
+    rev: v3.4.0
     hooks:
       - id: check-added-large-files
       - id: debug-statements
@@ -11,23 +11,23 @@ repos:
       - id: seed-isort-config
 
   - repo: https://github.com/timothycrosley/isort
-    rev: 4.3.21
+    rev: 5.7.0
     hooks:
       - id: isort
 
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.0.1
+    rev: v2.0.2
     hooks:
       - id: add-trailing-comma
 
   - repo: https://github.com/ambv/black
-    rev: stable
+    rev: 20.8b1
     hooks:
       - id: black
         language_version: python3.8
 
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.3
+    rev: 3.8.4
     hooks:
       - id: flake8
         additional_dependencies:
@@ -41,17 +41,19 @@ repos:
           ]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.781
+    rev: v0.800
     hooks:
       - id: mypy
 
   - repo: https://github.com/hyroai/lint
-    rev: 47f0579ad548a46e2231b613d3b91fb7f98fd721
+    rev: dad847cab4a06cd0d90bf18cf4133113920f05a6
     hooks:
       - id: static-analysis
+      - id: make-api-doc
+        args: [gamla]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v1.16.0
+    rev: v2.0.0
     hooks:
       - id: codespell
         entry: codespell --ignore-words=.codespell_ignore --quiet-level=4 --check-filenames
