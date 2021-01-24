@@ -34,6 +34,8 @@ It is sometimes hard to debug pipelines because you can't place ordinary breakpo
 
 The above code will break with ``x`` being 2.
 
+When you have a long pipeline and want to debug at each step of the way, you can use ``gamla.debug_compose`` and ``gamla.debug_compose_left``.
+
 ``gamla.debug_exception``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -147,38 +149,13 @@ Releasing a new version
 #. Get pypi permissions for the project from its owner.
 #. ``python setup.py sdist bdist_wheel; twine upload dist/*; rm -rf dist;``
 
-How to update gamla documentation after library update
-------------------------------------------------------
-
-If a new function was added
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-#. Go to ``docs/api.rst`` and add your function name under the relevant module, with an indentation of 3 spaces.
-   For example:
-
-.. code-block:: rest
-
-   .. currentmodule:: gamla.functional_generic
-
-   .. autosummary::
-      old_functions
-      .
-      .
-      .
-      my_new_function
-
-If README.md was updated
-^^^^^^^^^^^^^^^^^^^^^^^^
+Updating documentation after change in README.md
+------------------------------------------------
 
 While in gamla directory:
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 #. Install md-to-rst converter: ``pip install m2r``
 #. Convert README.md to README.rst: ``m2r README.md``
 #. Move README.rst to docs/source folder instead of existing one: ``mv README.rst docs/source``
-
-If an existing function was updated
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Do nothing. The documentation will update itself.
