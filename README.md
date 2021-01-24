@@ -126,10 +126,7 @@ Most functions are drop in replacements. Here are some examples:
 
 ## Releasing a new version
 
-1. Create a pypi account.
-1. Download twine and give it your pypi credentials.
-1. Get pypi permissions for the project from its owner.
-1. `python setup.py sdist bdist_wheel; twine upload dist/*; rm -rf dist;`
+Increment the version in master, and pypi will automatically update.
 
 ## Updating documentation after change in README.md
 
