@@ -46,7 +46,7 @@ repos:
       - id: mypy
 
   - repo: https://github.com/hyroai/lint
-    rev: dad847cab4a06cd0d90bf18cf4133113920f05a6
+    rev: 1e2e3352eecf5ee27ec22c966c15a478240c6831
     hooks:
       - id: static-analysis
       - id: make-api-doc
