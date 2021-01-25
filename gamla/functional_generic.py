@@ -5,7 +5,20 @@ import itertools
 import logging
 import operator
 import os
-from typing import Any, Callable, Dict, Iterable, Mapping, Text, Tuple, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Mapping,
+    Text,
+    Tuple,
+    Type,
+    TypeVar,
+    Generator,
+    Union,
+    Coroutine,
+)
 
 from gamla import currying, data, excepts_decorator, functional
 
@@ -116,8 +129,19 @@ def before(f1, f2):
     return compose_left(f1, f2)
 
 
-def lazyjuxt(*funcs):
-    """Reverts to eager implementation if any of `funcs` is async."""
+def lazyjuxt(
+    *funcs: Tuple[Callable, ...]
+) -> Union[Callable[..., Generator], Callable[..., Coroutine[None, None, Tuple]]]:
+    """Create a function that applies each function in :funcs: to its arguments and returns a generator for the results.
+
+    Applies the supplied functions lazily as the returned generator is iterated.
+    Reverts to eager implementation if any of `funcs` is async.
+
+    >>> inc = lambda x: x + 1
+    >>> double = lambda x: x * 2
+    >>> tuple(lazyjuxt(inc, double)(10))
+    (11, 20)
+    """
     if _any_is_async(funcs):
         funcs = tuple(map(after(to_awaitable), funcs))
 
@@ -133,7 +157,14 @@ def lazyjuxt(*funcs):
     return lazyjuxt
 
 
-def juxt(*funcs):
+def juxt(*funcs: Callable) -> Callable[..., Tuple]:
+    """Create a function that applies each function in :funcs: to its arguments and returns a tuple of the results.
+
+    >>> inc = lambda x: x + 1
+    >>> double = lambda x: x * 2
+    >>> juxt(inc, double)(10)
+    (11, 20)
+    """
     if _any_is_async(funcs):
         funcs = tuple(map(after(to_awaitable), funcs))
 
@@ -169,6 +200,11 @@ alljuxt = compose(after(all), lazyjuxt)
 #:    False
 anyjuxt = compose(after(any), lazyjuxt)
 
+#:  Create a function that calls the supplied functions, and chains the results.
+#: Assumes the supplied functions return Iterables.
+#:    >>> f = juxtcat(range,range)
+#:    >>> tuple(f(5))
+#:    (0 ,1 ,2 ,3 ,4 ,0 ,1 ,2 ,3 ,4)
 juxtcat = compose(after(itertools.chain.from_iterable), lazyjuxt)
 
 
@@ -258,6 +294,17 @@ anymap = compose(after(any), curried_map)
 
 
 itemmap = compose(after(dict), before(dict.items), curried_map)
+
+#:  Creates a function that maps supplied mapper over the keys of a dict.
+#:
+#:    >>> f = keymap(lambda k: k + 1)
+#:    >>> f({1:"a",2:"b",3:"c",4:"d"})
+#:    {
+#:      2: "a",
+#:      3: "b",
+#:      4: "c",
+#:      5: "d"
+#:    }
 keymap = compose(
     itemmap,
     lambda f: juxt(f, functional.second),
@@ -299,6 +346,15 @@ curried_filter = compose(
 )
 
 itemfilter = compose(after(dict), before(dict.items), curried_filter)
+
+#:  Create a function that filters a dict using a predicate over keys.
+#:
+#:    >>> f = keyfilter(lambda k: k > 2)
+#:    >>> f({1:"a",2:"b",3:"c",4:"d"})
+#:    {
+#:      3: "c",
+#:      4: "d"
+#:    }
 keyfilter = compose(
     itemfilter,
     before(functional.head),
