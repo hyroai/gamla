@@ -80,7 +80,14 @@ def singleize(func: Callable) -> Callable:
     return wrapped
 
 
-def ignore_input(inner):
+def ignore_input(inner: Callable[[], Any]) -> Callable:
+    """
+    Return `inner` function ignoring the provided inputs.
+
+    >>> ignore_input(lambda: 0)(1)
+    0
+    """
+
     def ignore_and_run(*args, **kwargs):
         return inner()
 
@@ -246,6 +253,15 @@ def profileit(func):
 
 @currying.curry
 def inside(val, container):
+    """
+    In operator.
+
+    >>> inside(1, [0, 1, 2])
+    True
+
+    >>> inside("a", "word")
+    False
+    """
     return val in container
 
 
@@ -291,7 +307,13 @@ def wrap_frozenset(x):
     return frozenset([x])
 
 
-def invoke(x):
+def invoke(x: Callable):
+    """
+    Performs a call of the input function.
+
+    >>> invoke(lambda: 0)
+    0
+    """
     return x()
 
 
@@ -522,6 +544,15 @@ def get_all_n_grams(seq):
 
 @currying.curry
 def is_instance(the_type, the_value):
+    """
+    Return if `the_value` is an instance of `the_type`.
+
+    >>> is_instance(str, "hello")
+    True
+
+    >>> is_instance(int, "a")
+    False
+    """
     return type(the_value) == the_type
 
 
@@ -554,6 +585,8 @@ def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
     Dict[Text, Any]: Dictionary where key has been computed by the `key` function
     and value by the `reducer` function.
 
+    >>> groupby_many_reduce(head, lambda x, y: x + len(y) if x else len(y), ["hello", "hi", "test", "to"])
+    {'h': 7, 't': 6}
     """
     result: Dict[Any, Any] = {}
     for element in seq:
@@ -650,6 +683,16 @@ def add(x):
 
 
 def greater_than(x):
+    """
+    Greater than operator.
+
+    >>> greater_than(1)(2)
+    True
+
+    >>> greater_than(1)(0)
+    False
+    """
+
     def greater_than(y):
         return y > x
 
@@ -657,6 +700,15 @@ def greater_than(x):
 
 
 def greater_equals(x):
+    """Greater than or equal operator.
+
+    >>> greater_equals(1)(1)
+    True
+
+    >>> greater_equals(1)(0)
+    False
+    """
+
     def greater_equals(y):
         return y >= x
 
@@ -692,6 +744,13 @@ def divide_by(x):
 
 
 def interpose(el):
+    """
+    Introduce an element between each pair of elements in the input sequence.
+
+    >>> tuple(interpose("a")([1, 2, 3]))
+    (1, 'a', 2, 'a', 3)
+    """
+
     def interpose_inner(seq):
         return toolz.interpose(el, seq)
 
