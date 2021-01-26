@@ -1,10 +1,60 @@
 [![Build Status](https://travis-ci.com/hyroai/gamla.svg?branch=master)](https://travis-ci.com/hyroai/gamla)
 
-גamla is a performant functional programming library for python which supports `async`.
+גamla is a performant functional programming library for python which supports mixing `async` and regular functions.
 
-## Installation
+Installation: `pip install gamla`
 
-`pip install gamla`
+## Basic example
+
+`gamla` can help you turn this:
+
+```python
+import dataclasses
+
+@dataclasses.dataclass
+class Person:
+    age: int
+    name: str
+
+    def is_eligible(self):
+        return self.age > 9
+
+
+def get_names_eligible_for_vaccine(people):
+    result = []
+    for person in people:
+        if person.is_eligible():
+            result.append(person.name)
+    return result
+
+
+```
+
+into this:
+
+```python
+import dataclasses
+from gamla import attrgetter, greater_than, compose_left, filter, map
+
+@dataclasses.dataclass(frozen=True)
+class Person:
+    age: int
+    name: str
+
+is_eligible = gamla.compose_left(attrgetter("age"), greater_than(9))
+get_names_eligible_for_vaccine = compose_left(filter(is_eligible), map(attrgetter("name")), list)
+
+```
+
+Is this a good thing? that's for you to decide.
+
+The upside:
+
+Functional programming is mainly about how to split your code into composable parts. Composability means that things are easy to move, replace or combine together like lego. It helps you identify recurring patterns (e.g. `filter`), factor them out and reuse them. If your generalizations are good, they free your mind to focus on the new logic. Concretely it saves a lot of code and helps a reader understand what a piece of code is doing. For example, if you are familir with what `filter` is, you don't have to squint and realize that an `if` and a `for` actually do a filtering pattern.
+
+The downside:
+
+Programming in this style in python means some tools won't be so useful (e.g. stack traces, your debugger, static analysis tools).
 
 ## Debugging anonymous compositions
 
@@ -93,36 +143,6 @@ async def run():
     mixed_composition = gamla.compose_left(increment, increment_async, increment)
     return await mixed_composition(0)  # returns 3!
 ```
-
-## Migrating from `toolz`
-
-The main problems - `toolz` is slow and does not support `async` functions.
-
-### Why are curried functions and composition in `toolz` slow?
-
-These functions use an expensive `inspect` call to look at a function’s arguments, and doing so at each run.
-
-### Why does `gamla` not suffer from this problem?
-
-Two reasons:
-
-1. It does not have binary signatures on things like `map`, so it doesn’t need to infer anything (these are higher order functions in `gamla`).
-1. The `gamla.curry` function eagerly pays for the signature inspection in advance, and remembers its results for future runs.
-
-### Function mapping and common gotchas:
-
-Most functions are drop in replacements. Here are some examples:
-
-- `curried.(filter|map|valmap|itemmap|keymap)` -> `gamla.$1` (make sure the call is with a single argument)
-- `toolz.identity` -> `gamla.identity`
-- `toolz.contains` -> `gamla.contains`
-- `toolz.lt` -> `gamla.greater_than`
-- `toolz.gt` -> `gamla.less_than`
-- `toolz.ge` -> `gamla.less_equals`
-- `toolz.le` -> `gamla.greater_equals`
-- `toolz.filter(None) -> gamla.filter(gamla.identity)`
-- `toolz.excepts(a, b, c)` -> `gamla.excepts(a, c, b)`
-- `toolz.excepts(a, b)` -> `gamla.excepts(a, gamla.just(None), b)` (following the “data-last” currying convention)
 
 ## Releasing a new version
 
