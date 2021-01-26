@@ -137,7 +137,7 @@ def increment(i):
 
 
 async def increment_async(i):
-    asyncio.sleep(1)
+    await asyncio.sleep(1)
     return i + 1
 
 
