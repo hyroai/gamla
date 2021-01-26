@@ -43,7 +43,7 @@ class Person:
     age: int
     name: str
 
-is_eligible = gamla.compose_left(attrgetter("age"), greater_than(9))
+is_eligible = compose_left(attrgetter("age"), greater_than(9))
 get_names_eligible_for_vaccine = compose_left(filter(is_eligible), map(attrgetter("name")), list)
 
 ```
