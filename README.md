@@ -4,6 +4,8 @@
 
 Installation: `pip install gamla`
 
+API reference: <https://gamla.readthedocs.io/>
+
 ## Basic example
 
 `gamla` can help you turn this:
