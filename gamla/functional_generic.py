@@ -102,7 +102,7 @@ def _compose_async(*funcs):
     return async_composed
 
 
-def compose_sync(*funcs):
+def _compose_sync(*funcs):
     """Compose sync functions to operate in series.
 
     Returns a function that applies other functions in sequence.
@@ -147,7 +147,7 @@ def compose(*funcs):
     if _any_is_async(funcs):
         composed = _compose_async(*funcs)
     else:
-        composed = compose_sync(*funcs)
+        composed = _compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
     if _DEBUG_MODE:
         logging.info("making call to `inspect` for debug mode")
@@ -286,21 +286,6 @@ def ternary(condition, f_true, f_false):
         )
 
     return ternary_inner
-
-
-#:  Computes `f_true` with the givent arguments iff `condition` with the
-#:  same arguments return true, else Computes `f_false` with the givent
-#:  arguments.
-#:  Returns a function that computes `f_true` or `f_false` according to
-#:  `condition`. The returned function will be an async function iff
-#:  atleast one of the given functions is async.
-#:
-#:  >>> f = ternary(gamla.greater_than(5), gamla.identity, lambda i: -i)
-#:  >>> f(6)
-#:  '6'
-#:  >>> f(3)
-#:  '-3'
-curried_ternary = ternary
 
 
 def when(condition, f_true):

@@ -185,12 +185,10 @@ functional_generic
    compose
    compose_left
    compose_many_to_one
-   compose_sync
    count_by
    countby_many
    curried_filter
    curried_map
-   curried_ternary
    curried_to_binary
    find
    find_index
