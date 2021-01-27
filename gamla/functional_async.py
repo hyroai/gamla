@@ -5,8 +5,7 @@ from gamla import currying, functional_generic
 
 
 def run_sync(f):
-    """
-    Runs a coroutine in a synchronous context, blocking until result arrives.
+    """Runs a coroutine in a synchronous context, blocking until result arrives.
 
     >>> async def afoo(x):
     >>>     await asyncio.sleep(1)
@@ -22,11 +21,12 @@ def run_sync(f):
 async def amap_ascompleted(
     f: Callable[[Any], Awaitable[Any]], it: Iterable
 ) -> AsyncGenerator[Any, None]:
-    """
-    Return an async_generator of the results after applying async f to each element of Iterable it
+    """Returns an AsyncGenerator of the results after applying async `f` to each element of Iterable `it`
 
     >>> async def amulti(x)
     >>>    return x*2
+    >>> async def to_list(ag):
+    >>>     return [i async for i in ag]
     >>> run_sync(to_list(amap_ascompleted(amulti, range(4))))
     [6, 0, 2, 4] (In a random order)
     """
@@ -38,8 +38,7 @@ async def amap_ascompleted(
 async def aexcepts(
     exception_type: Type[Exception], func: Callable, handler: Callable, x: Any
 ):
-    """
-    An async functional try/except block: await and return `func` on x.
+    """An async functional try/except block: await and return `func` on `x`.
     If fails with `exception_type`, return the reult of running handler on the error.
 
 
@@ -61,8 +60,7 @@ async def aexcepts(
 
 @currying.curry
 async def mapa(f: Callable, it: AsyncGenerator) -> AsyncGenerator:
-    """
-    Returns an async_generator of the results after applying f to each async element of it
+    """Returns an AsyncGenerator of the results after applying `f` to each async element of `it`
 
     >>> async def arange(count):
     >>>     for i in range(count):
@@ -77,8 +75,7 @@ async def mapa(f: Callable, it: AsyncGenerator) -> AsyncGenerator:
 
 
 async def aconcat(async_generator: AsyncGenerator) -> AsyncGenerator:
-    """
-    Concat iterables of an async_generator.
+    """Concat iterables of an async_generator.
 
     >>> async def many_range(count):
     >>>     for i in range(count):
@@ -94,9 +91,9 @@ async def aconcat(async_generator: AsyncGenerator) -> AsyncGenerator:
 
 
 def afirst(*funcs: Callable, exception_type: Type[Exception]):
-    """
-    Return the result of the first function that runs on x without raising exception_type.
-    If all given function raise exception_type, exception_type will be raised.
+    """Runs given `funcs` serially until getting a succefull result.
+    Returns the result of the first function that runs on `x` without raising `exception_type`.
+    If all given function raise e`xception_type`, `exception_type` will be raised.
 
     >>> async def araise(x):
     >>>     raise ValueError
