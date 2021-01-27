@@ -14,12 +14,13 @@ class _Curry:
 
     def __call__(self, *args, **kwargs):
         try:
-            print(f"now running f={self.function}")
             return self.function(*args, **kwargs)
-        except TypeError as e:
-            print(f"itay {e}")
+        except TypeError:
             return functools.wraps(self.function)(
-                _Curry(functools.partial(self.function, *args, **kwargs)),
+                _Curry(
+                    functools.partial(self.function, *args, **kwargs),
+                    functools.wraps(self.function),
+                ),
             )
 
 
@@ -149,5 +150,9 @@ curried_filter = compose_sync(
     pair_with,
 )
 
+p = curried_filter(lambda x: x != 2)([1, 2, 3])
 
 map_filter_empty = compose_sync(after(curried_filter(identity)), curried_map)
+
+
+d = tuple(map_filter_empty(lambda x: None if x == 2 else x)([1, 2, 3]))
