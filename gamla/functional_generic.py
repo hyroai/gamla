@@ -14,7 +14,7 @@ def compose_left(*funcs):
     """Compose sync and async functions to operate in series.
 
     Returns a function that applies other functions in sequence. The returned
-    function will be an async function iff atleast one of the functions in the
+    function will be an async function iff at least one of the functions in the
     sequence is async.
 
     Functions are applied from left to right so that
@@ -130,7 +130,7 @@ def compose(*funcs):
     """Compose sync and async functions to operate in series.
 
     Returns a function that applies other functions in sequence. The returned
-    function will be an async function iff atleast one of the functions in the
+    function will be an async function iff at least one of the functions in the
     sequence is async.
 
     Functions are applied from right to left so that
@@ -168,16 +168,10 @@ def compose(*funcs):
 
 
 def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
-    """Compose an itterable of incoming sync and async functions to a single
-    sink function, in the same order as the incoming functions.
-
-    Returns a function that applies an itterable of other functions into a
+    """Returns a function that applies an itterable of other functions into a
     single sink function. The returned function will be an async function iff
-    atleast one of the given functions is async.
+    at least one of the given functions is async.
 
-    The incoming functions are given the same input, and their output is mapped
-    to the coresponding input of the sink function, maintaining the incoming
-    function's order.
     ``compose_many_to_one([f, g, k], h)(x, y)`` is the same as ``h(f(x,y), g(x, y), k(x, y))``.
 
     >>> compose_many_to_one([sum, sum], lambda x, y: x + y)([1, 2, 3])
@@ -259,13 +253,13 @@ juxtcat = compose(after(itertools.chain.from_iterable), lazyjuxt)
 
 
 def ternary(condition, f_true, f_false):
-    """Computes `f_true` with the givent arguments iff `condition` with the
-    same arguments return true, else Computes `f_false` with the givent
+    """Computes `f_true` with the given arguments iff `condition` with the
+    same arguments return true, else Computes `f_false` with the given
     arguments.
 
     Returns a function that computes `f_true` or `f_false` according to
     `condition`. The returned function will be an async function iff
-    atleast one of the given functions is async.
+    at least one of the given functions is async.
 
     >>> f = ternary(gamla.greater_than(5), gamla.identity, lambda i: -i)
     >>> f(6)
