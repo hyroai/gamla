@@ -8,16 +8,16 @@ import os
 from typing import (
     Any,
     Callable,
+    Coroutine,
     Dict,
+    Generator,
     Iterable,
     Mapping,
     Text,
     Tuple,
     Type,
     TypeVar,
-    Generator,
     Union,
-    Coroutine,
 )
 
 from gamla import currying, data, excepts_decorator, functional
