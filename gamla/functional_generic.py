@@ -324,7 +324,7 @@ def ternary(condition, f_true, f_false):
     return ternary_inner
 
 
-def when(condition, f_true):
+def when(condition: Callable, f_true: Callable) -> Callable:
     """Computes `f_true` with the given arguments if `condition` with the
     same arguments return true, else returns the given arguments.
 
@@ -694,7 +694,7 @@ average = compose_left(
 
 
 def value_to_dict(key: Text):
-    """Converts two given strings to a dict object.
+    """Converts a string and Any input to a dict object.
 
     >>> value_to_dict("hello")("world")
     {'hello': 'world'}
