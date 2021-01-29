@@ -1,26 +1,9 @@
-import itertools
 from typing import Any, AsyncGenerator, Callable, Text, Tuple
 
 import toolz
 from toolz import curried
 
-from gamla import currying, functional, functional_async, functional_generic, graph
-
-
-@currying.curry
-async def agroupby_many(f, it):
-    return await functional_async.pipe(
-        it,
-        functional_async.map(
-            functional_async.compose_left(
-                functional_generic.pair_with(f),
-                functional.star(lambda x, y: (x, [y])),
-                functional.star(itertools.product),
-            ),
-        ),
-        toolz.concat,
-        graph.edges_to_graph,
-    )
+from gamla import currying, functional
 
 
 @currying.curry
