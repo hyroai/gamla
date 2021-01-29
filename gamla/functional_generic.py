@@ -654,8 +654,10 @@ def apply_spec(spec: Dict):
     )
 
 
-#: Stacks functions on top of each other, so will run pairwise on the input.
-#: Similar to juxt, only zips with the incoming iterable.
+#: Construct a function that applies the i'th function in an iterable
+#  on the i'th element of a given iterable
+#:
+#: Note: Number of functions should be equal to the number of elements in the given iterable
 #:
 #: >>> stack([lambda x:x+1, lambda x:x-1])((5, 5))
 #: (6, 4)
