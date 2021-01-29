@@ -82,7 +82,7 @@ def singleize(func: Callable) -> Callable:
 
 def ignore_input(inner: Callable[[], Any]) -> Callable:
     """
-    Return `inner` function ignoring the provided inputs.
+    Returns `inner` function ignoring the provided inputs.
 
     >>> ignore_input(lambda: 0)(1)
     0
@@ -545,7 +545,7 @@ def get_all_n_grams(seq):
 @currying.curry
 def is_instance(the_type, the_value):
     """
-    Return if `the_value` is an instance of `the_type`.
+    Returns if `the_value` is an instance of `the_type`.
 
     >>> is_instance(str, "hello")
     True
@@ -745,7 +745,7 @@ def divide_by(x):
 
 def interpose(el):
     """
-    Introduce an element between each pair of elements in the input sequence.
+    Introduces an element between each pair of elements in the input sequence.
 
     >>> tuple(interpose("a")([1, 2, 3]))
     (1, 'a', 2, 'a', 3)

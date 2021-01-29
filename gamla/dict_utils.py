@@ -7,7 +7,7 @@ from gamla import currying, functional, functional_generic
 
 def itemgetter(attr):
     """
-    Access a dictionary item by its key `attr`.
+    Retrieves a dictionary entry by its key `attr`.
 
     >>> itemgetter("a")({"a": 1})
     1
@@ -21,7 +21,7 @@ def itemgetter(attr):
 
 def itemgetter_or_none(attr):
     """
-    Access a dictionary item by its key `attr`. Return `None` if the key is not there.
+    Retrieves a dictionary entry by its key `attr`. Returns `None` if the key is not there.
 
     >>> itemgetter_or_none("a")({"a": 1})
     1
@@ -38,7 +38,7 @@ def itemgetter_or_none(attr):
 
 def itemgetter_with_default(default, attr):
     """
-    Access a dictionary item by its key `attr`. Returns `default` if the key is not there.
+    Retrieves a dictionary entry by its key `attr`. Returns `default` if the key is not there.
 
     >>> itemgetter_with_default(0, "a")({"a": 1})
     1
@@ -64,7 +64,7 @@ def get_or_identity(d):
 
 def get_in(keys: Iterable):
     """
-    Create a function that returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
+    Creates a function that returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
 
     >>> get_in(["a", "b", 1])({"a": {"b": [0, 1, 2]}})
     1
