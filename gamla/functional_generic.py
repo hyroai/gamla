@@ -324,7 +324,15 @@ def ternary(condition, f_true, f_false):
     return ternary_inner
 
 
-def when(condition, f_true):
+def when(condition: Callable, f_true: Callable) -> Callable:
+    """Returns `f_true(args)` if `condition(args)` returns true, else returns args.
+
+    >>> f = when(gamla.greater_than(5), lambda i: -i)
+    >>> f(6)
+    '-6'
+    >>> f(3)
+    '3'
+    """
     return ternary(condition, f_true, functional.identity)
 
 
@@ -500,6 +508,12 @@ valfilter = compose(
 #:    True
 complement = after(operator.not_)
 
+#: Constructs a function that removes elements of a given iterable for which function returns true.
+#: Returns an async function iff the filter function is async, else returns a sync function.
+#:
+#:    >>> f = remove(gamla.greater_than(10))
+#:    >>> tuple(f([1, 2, 3, 11, 12, 13]))
+#:    (1, 2, 3)
 remove = compose(curried_filter, complement)
 
 
@@ -640,8 +654,13 @@ def apply_spec(spec: Dict):
     )
 
 
-# Stacks functions on top of each other, so will run pairwise on the input.
-# Similar to juxt, only zips with the incoming iterable.
+#: Construct a function that applies the i'th function in an iterable
+#  on the i'th element of a given iterable
+#:
+#: Note: Number of functions should be equal to the number of elements in the given iterable
+#:
+#: >>> stack([lambda x:x+1, lambda x:x-1])((5, 5))
+#: (6, 4)
 stack = compose_left(
     enumerate,
     functional.curried_map_sync(
@@ -676,6 +695,11 @@ average = compose_left(
 
 
 def value_to_dict(key: Text):
+    """Converts a string and Any input to a dict object.
+
+    >>> value_to_dict("hello")("world")
+    {'hello': 'world'}
+    """
     return compose_left(
         functional.wrap_tuple,
         functional.prefix(key),
