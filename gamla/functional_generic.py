@@ -325,8 +325,7 @@ def ternary(condition, f_true, f_false):
 
 
 def when(condition: Callable, f_true: Callable) -> Callable:
-    """Computes `f_true` with the given arguments if `condition` with the
-    same arguments return true, else returns the given arguments.
+    """Returns `f_true(args)` if `condition(args)` returns true, else returns args.
 
     >>> f = when(gamla.greater_than(5), lambda i: -i)
     >>> f(6)
