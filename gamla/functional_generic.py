@@ -7,7 +7,7 @@ import operator
 import os
 from typing import Any, Callable, Dict, Iterable, Mapping, Text, Tuple, Type, TypeVar
 
-from gamla import currying, data, excepts_decorator, functional
+from gamla import currying, data, excepts_decorator, functional, apply
 
 
 def compose_left(*funcs):
@@ -446,14 +446,14 @@ def apply_spec(spec: Dict):
         async def apply_spec_async(*args, **kwargs):
             return await map_dict(
                 functional.identity,
-                compose_left(functional.apply(*args, **kwargs), to_awaitable),
+                compose_left(apply.apply(*args, **kwargs), to_awaitable),
             )(spec)
 
         return apply_spec_async
     return compose_left(
-        functional.apply,
+        apply.apply,
         lambda applier: map_dict(functional.identity, applier),
-        functional.apply(spec),
+        apply.apply(spec),
     )
 
 
