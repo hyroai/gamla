@@ -20,7 +20,7 @@ from typing import (
     Union,
 )
 
-from gamla import currying, data, excepts_decorator, functional, apply
+from gamla import apply_utils, currying, data, excepts_decorator, functional
 
 
 def compose_left(*funcs):
@@ -643,14 +643,14 @@ def apply_spec(spec: Dict):
         async def apply_spec_async(*args, **kwargs):
             return await map_dict(
                 functional.identity,
-                compose_left(apply.apply(*args, **kwargs), to_awaitable),
+                compose_left(apply_utils.apply(*args, **kwargs), to_awaitable),
             )(spec)
 
         return apply_spec_async
     return compose_left(
-        apply.apply,
+        apply_utils.apply,
         lambda applier: map_dict(functional.identity, applier),
-        apply.apply(spec),
+        apply_utils.apply(spec),
     )
 
 

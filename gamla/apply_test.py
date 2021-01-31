@@ -1,4 +1,4 @@
-from gamla import functional, asyncio, apply
+from gamla import apply_utils, asyncio, functional
 
 
 async def _opposite_async(x):
@@ -16,10 +16,10 @@ def test_apply_method():
         def add(self, y):
             return self.x + y
 
-    assert apply.apply_method("add", 1)(SomeClass(2)) == 3
+    assert apply_utils.apply_method("add", 1)(SomeClass(2)) == 3
 
 
-async def test_apply_method():
+async def test_apply_method_async():
     class SomeClass:
         x: int
 
@@ -30,16 +30,16 @@ async def test_apply_method():
             await asyncio.sleep(0.01)
             return self.x * y
 
-    assert await apply.apply_method_async("mult_async", 2)(SomeClass(2)) == 4
+    assert await apply_utils.apply_method_async("mult_async", 2)(SomeClass(2)) == 4
 
 
 def test_apply():
-    assert apply.apply(1)(functional.add(2)) == 3
+    assert apply_utils.apply(1)(functional.add(2)) == 3
 
 
 async def test_apply_async():
-    assert await apply.apply_async(True)(_opposite_async) == False
+    assert not await apply_utils.apply_async(True)(_opposite_async)
 
 
 async def test_apply_fn_with_args():
-    assert apply.apply_fn_with_args(lambda x, y: x + y, 1, 3) == 4
+    assert apply_utils.apply_fn_with_args(lambda x, y: x + y, 1, 3) == 4

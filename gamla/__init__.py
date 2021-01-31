@@ -1,6 +1,6 @@
 # flake8: noqa
 
-from .apply import *
+from .apply_utils import *
 from .currying import *
 from .data import *
 from .debug_utils import *
