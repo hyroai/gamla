@@ -1,4 +1,7 @@
+import pytest
 from gamla import apply_utils, asyncio, functional
+
+pytestmark = pytest.mark.asyncio
 
 
 async def _opposite_async(x):

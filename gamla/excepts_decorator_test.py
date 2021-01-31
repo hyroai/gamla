@@ -1,6 +1,10 @@
 import asyncio
 
+import pytest
 from gamla import excepts_decorator, functional
+
+
+pytestmark = pytest.mark.asyncio
 
 
 def test_excepts_sync():
