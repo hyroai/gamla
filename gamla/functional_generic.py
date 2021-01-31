@@ -89,6 +89,15 @@ def _any_is_async(funcs):
 
 
 async def to_awaitable(value):
+    """Wraps a value in a coroutine.
+    If value is a future, it will await it. Otherwise it will simply return the value.
+    Useful when we have a mix of coroutines and regular functions.
+
+    >>> await to_awaitable(5)
+    '5'
+    >>> await to_awaitable(some_coroutine_that_returns_its_input(5))
+    '5'
+    """
     if inspect.isawaitable(value):
         return await value
     return value
@@ -289,13 +298,10 @@ juxtcat = compose(after(itertools.chain.from_iterable), lazyjuxt)
 
 
 def ternary(condition, f_true, f_false):
-    """Computes `f_true` with the given arguments iff `condition` with the
-    same arguments return true, else Computes `f_false` with the given
-    arguments.
-
-    Returns a function that computes `f_true` or `f_false` according to
-    `condition`. The returned function will be an async function iff
-    at least one of the given functions is async.
+    """Returns a function that computes `f_true` or `f_false` according to
+    `condition`. The functions are applied with the same input.
+    The returned function will be an async function if at least one of the given
+    functions is async.
 
     >>> f = ternary(gamla.greater_than(5), gamla.identity, lambda i: -i)
     >>> f(6)
@@ -337,6 +343,17 @@ def when(condition: Callable, f_true: Callable) -> Callable:
 
 
 def unless(condition, f_false):
+    """Retuns a function that computes `f_false` if `condition` is met.
+    Otherwise will return the input unchanged.
+    `condition` and `f_false` are applied with the same input.
+
+
+    >>> f = unless(gamla.greater_than(5), lambda i: -i)
+    >>> f(6)
+    '6'
+    >>> f(3)
+    '-3'
+    """
     return ternary(condition, functional.identity, f_false)
 
 
@@ -428,6 +445,16 @@ keymap = compose(
     lambda f: juxt(f, functional.second),
     before(functional.head),
 )
+
+#: Creates a function then maps the supplied mapper over the values of a dict.
+#:
+#:  >>> f = valmap(gamla.wrap_tuple)
+#:  >>> f({ "a": 1, "b": 2, "c": 3 })
+#:  {
+#:    "a": (1,)
+#:    "b": (2,)
+#:    "c": (3,)
+#:  }
 valmap = compose(
     itemmap,
     lambda f: juxt(functional.head, f),
@@ -494,6 +521,15 @@ keyfilter = compose(
     itemfilter,
     before(functional.head),
 )
+
+#:  Create a function that filters a dict using a predicate over values.
+#:
+#:    >>> f = valefilter(lambda k: k > 2)
+#:    >>> f({"a": 1, "b": 2, "c": 3, "d": 4})
+#:    {
+#:      "c": 3,
+#:      "d": 4
+#:    }
 valfilter = compose(
     itemfilter,
     before(functional.second),
