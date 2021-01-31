@@ -4,7 +4,9 @@ import functools
 import logging
 from typing import Text
 
-from gamla import functional_generic
+import toolz
+
+from gamla import functional, functional_generic
 
 logger = functional_generic.side_effect(logging.info)
 
@@ -26,6 +28,22 @@ debug = functional_generic.compose_left(
     functional_generic.side_effect(lambda x: builtins.breakpoint()),
 )
 
+debug_after = functional_generic.after(debug)
+debug_before = functional_generic.before(debug)
+
+
+def _debug_generic(f):
+    return functional_generic.compose_left(
+        lambda *funcs: toolz.interleave([funcs, [debug] * len(funcs)]),
+        functional.star(f),
+    )
+
+
+#: Replace regular `compose` calls with this to get a breakpoint at each step.
+debug_compose = _debug_generic(functional_generic.compose)
+#: Replace regular `compose_left` calls with this to get a breakpoint at each step.
+debug_compose_left = _debug_generic(functional_generic.compose_left)
+
 
 def debug_exception(f):
     """Debug exception in a pipeline stage by looking at the causal value.
@@ -42,18 +60,18 @@ def debug_exception(f):
     """
     if asyncio.iscoroutinefunction(f):
 
-        async def debug_exception(*x):
+        async def debug_exception(*x, **kwargs):
             try:
-                return await f(*x)
+                return await f(*x, **kwargs)
             except Exception as e:
                 builtins.breakpoint()
                 raise e
 
     else:
 
-        def debug_exception(*x):  # type: ignore
+        def debug_exception(*x, **kwargs):  # type: ignore
             try:
-                return f(*x)
+                return f(*x, **kwargs)
             except Exception as e:
                 builtins.breakpoint()
                 raise e

@@ -5,12 +5,42 @@ import itertools
 import logging
 import operator
 import os
-from typing import Any, Callable, Dict, Iterable, Mapping, Text, Tuple, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Coroutine,
+    Dict,
+    Generator,
+    Iterable,
+    Mapping,
+    Text,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from gamla import currying, data, excepts_decorator, functional, apply
 
 
 def compose_left(*funcs):
+    """Compose sync and async functions to operate in series.
+
+    Returns a function that applies other functions in sequence. The returned
+    function will be an async function iff at least one of the functions in the
+    sequence is async.
+
+    Functions are applied from left to right so that
+    ``compose_left(f, g, h)(x, y)`` is the same as ``h(g(f(x, y)))``.
+
+    >>> inc = lambda i: i + 1
+    >>> compose_left(inc, str)(3)
+    '4'
+
+    See Also:
+        compose
+        pipe
+    """
     return compose(*reversed(funcs))
 
 
@@ -22,12 +52,32 @@ def _async_curried_map(f):
 
 
 def curried_map(f):
+    """
+    Constructs a function that maps elements of a given iterable using the given function.
+
+    Returns an async function iff `f` is async, else returns a sync function.
+
+    >>> inc = lambda i: i + 1
+    >>> curried_map(inc)([3, 4, 5])
+    [4, 5, 6]
+    """
     if asyncio.iscoroutinefunction(f):
         return _async_curried_map(f)
     return functional.curried_map_sync(f)
 
 
 def curried_to_binary(f):
+    """
+    Constructs a function from a given higher order function and returns its first order counterpart.
+    The given higher order function, `f` is must be a unary function
+    Returns an async function iff `f` is async, else returns a sync function.
+
+    >>> inc = lambda i: i + 1
+    >>> f = curried_to_binary(curried_map)
+    >>> f(inc, [1, 2, 3])
+    [2, 3, 4]
+    """
+
     def internal(param1, param2):
         return f(param1)(param2)
 
@@ -65,7 +115,20 @@ def _compose_async(*funcs):
     return async_composed
 
 
-def compose_sync(*funcs):
+def _compose_sync(*funcs):
+    """Compose sync functions to operate in series.
+
+    Returns a function that applies other functions in sequence.
+
+    Functions are applied from right to left so that
+    ``compose(f, g, h)(x, y)`` is the same as ``f(g(h(x, y)))``.
+
+    >>> inc = lambda i: i + 1
+    >>> compose(str, inc)(3)
+    '4'
+
+    """
+
     @functools.wraps(functional.last(funcs))
     def composed(*args, **kwargs):
         for f in reversed(funcs):
@@ -77,10 +140,27 @@ def compose_sync(*funcs):
 
 
 def compose(*funcs):
+    """Compose sync and async functions to operate in series.
+
+    Returns a function that applies other functions in sequence. The returned
+    function will be an async function iff at least one of the functions in the
+    sequence is async.
+
+    Functions are applied from right to left so that
+    ``compose(f, g, h)(x, y)`` is the same as ``f(g(h(x, y)))``.
+
+    >>> inc = lambda i: i + 1
+    >>> compose(str, inc)(3)
+    '4'
+
+    See Also:
+        compose_left
+        pipe
+    """
     if _any_is_async(funcs):
         composed = _compose_async(*funcs)
     else:
-        composed = compose_sync(*funcs)
+        composed = _compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
     if _DEBUG_MODE:
         logging.info("making call to `inspect` for debug mode")
@@ -101,6 +181,19 @@ def compose(*funcs):
 
 
 def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
+    """Returns a function that applies an itterable of other functions into a
+    single sink function. The returned function will be an async function iff
+    at least one of the given functions is async.
+
+    ``compose_many_to_one([f, g, k], h)(x, y)`` is the same as ``h(f(x,y), g(x, y), k(x, y))``.
+
+    >>> compose_many_to_one([sum, sum], lambda x, y: x + y)([1, 2, 3])
+    12
+
+    See Also:
+        juxt
+        compose_left
+    """
     return compose_left(juxt(*incoming), functional.star(f))
 
 
@@ -116,8 +209,19 @@ def before(f1, f2):
     return compose_left(f1, f2)
 
 
-def lazyjuxt(*funcs):
-    """Reverts to eager implementation if any of `funcs` is async."""
+def lazyjuxt(
+    *funcs: Tuple[Callable, ...]
+) -> Union[Callable[..., Generator], Callable[..., Coroutine[None, None, Tuple]]]:
+    """Create a function that applies each function in :funcs: to its arguments and returns a generator for the results.
+
+    Applies the supplied functions lazily as the returned generator is iterated.
+    Reverts to eager implementation if any of `funcs` is async.
+
+    >>> inc = lambda x: x + 1
+    >>> double = lambda x: x * 2
+    >>> tuple(lazyjuxt(inc, double)(10))
+    (11, 20)
+    """
     if _any_is_async(funcs):
         funcs = tuple(map(after(to_awaitable), funcs))
 
@@ -133,7 +237,14 @@ def lazyjuxt(*funcs):
     return lazyjuxt
 
 
-def juxt(*funcs):
+def juxt(*funcs: Callable) -> Callable[..., Tuple]:
+    """Create a function that applies each function in :funcs: to its arguments and returns a tuple of the results.
+
+    >>> inc = lambda x: x + 1
+    >>> double = lambda x: x * 2
+    >>> juxt(inc, double)(10)
+    (11, 20)
+    """
     if _any_is_async(funcs):
         funcs = tuple(map(after(to_awaitable), funcs))
 
@@ -169,10 +280,29 @@ alljuxt = compose(after(all), lazyjuxt)
 #:    False
 anyjuxt = compose(after(any), lazyjuxt)
 
+#:  Create a function that calls the supplied functions, and chains the results.
+#: Assumes the supplied functions return Iterables.
+#:    >>> f = juxtcat(range,range)
+#:    >>> tuple(f(5))
+#:    (0 ,1 ,2 ,3 ,4 ,0 ,1 ,2 ,3 ,4)
 juxtcat = compose(after(itertools.chain.from_iterable), lazyjuxt)
 
 
 def ternary(condition, f_true, f_false):
+    """Computes `f_true` with the given arguments iff `condition` with the
+    same arguments return true, else Computes `f_false` with the given
+    arguments.
+
+    Returns a function that computes `f_true` or `f_false` according to
+    `condition`. The returned function will be an async function iff
+    at least one of the given functions is async.
+
+    >>> f = ternary(gamla.greater_than(5), gamla.identity, lambda i: -i)
+    >>> f(6)
+    '6'
+    >>> f(3)
+    '-3'
+    """
     if _any_is_async([condition, f_true, f_false]):
 
         async def ternary_inner_async(*args, **kwargs):
@@ -194,10 +324,15 @@ def ternary(condition, f_true, f_false):
     return ternary_inner
 
 
-curried_ternary = ternary
+def when(condition: Callable, f_true: Callable) -> Callable:
+    """Returns `f_true(args)` if `condition(args)` returns true, else returns args.
 
-
-def when(condition, f_true):
+    >>> f = when(gamla.greater_than(5), lambda i: -i)
+    >>> f(6)
+    '-6'
+    >>> f(3)
+    '3'
+    """
     return ternary(condition, f_true, functional.identity)
 
 
@@ -206,6 +341,20 @@ def unless(condition, f_false):
 
 
 def first(*funcs, exception_type: Type[Exception]):
+    """Constructs a function that computes all functions from `funcs`, the
+    function is async if at least one of the ginven functions is async. The
+    returned function returns the value of the first function that doesn't
+    throw an exception of type `exception_type`. If all functions throw the
+    given `exception_type`, `exception_type` will be raised.
+
+    >>> f = gamla.first(gamla.second, gamla.head, exception_type=StopIteration)
+    >>> f([1,2])
+    '2'
+    >>> f([1])
+    '1'
+    >>> f([])
+    StopIteration raised
+    """
     if _any_is_async([*funcs]):
 
         async def inner_async(*args, **kwargs):
@@ -256,8 +405,24 @@ allmap = compose(after(all), curried_map)
 #:    False
 anymap = compose(after(any), curried_map)
 
-
+#: Constructs a function that applies the given function to items of a given dictionary.
+#: Returns an async function iff the filter function is async, else returns a sync function.
+#:
+#:    >>> f = itemmap(gamla.star(lambda key, val: (key, val + key)))
+#:    >>> f({1: 2, 2: 3})
+#:    {1: 3, 2: 5}
 itemmap = compose(after(dict), before(dict.items), curried_map)
+
+#:  Creates a function that maps supplied mapper over the keys of a dict.
+#:
+#:    >>> f = keymap(lambda k: k + 1)
+#:    >>> f({1:"a",2:"b",3:"c",4:"d"})
+#:    {
+#:      2: "a",
+#:      3: "b",
+#:      4: "c",
+#:      5: "d"
+#:    }
 keymap = compose(
     itemmap,
     lambda f: juxt(f, functional.second),
@@ -287,6 +452,12 @@ def _sync_curried_filter(f):
     return curried_filter
 
 
+#: Constructs a function that filters elements of a given iterable for which function returns true.
+#: Returns an async function iff the filter function is async, else returns a sync function.
+#:
+#:    >>> f = curried_filter(gamla.greater_than(10))
+#:    >>> f([1, 2, 3, 11, 12, 13])
+#:    [11, 12, 13]
 curried_filter = compose(
     after(
         compose(
@@ -298,7 +469,27 @@ curried_filter = compose(
     pair_with,
 )
 
+#: Constructs a function that filters items of a given dictionary for which function returns true.
+#: Returns an async function iff the filter function is async, else returns a sync function.
+#:
+#:    >>> f = itemfilter(
+#:        alljuxt(
+#:            compose_left(gamla.head, gamla.contains("gamla")),
+#:            compose_left(gamla.second, gamla.greater_than(10)),
+#:        )
+#:    )
+#:    >>> f({"gamla": 11, "gaml": 9, "f":12})
+#:    {'gamla': 11}
 itemfilter = compose(after(dict), before(dict.items), curried_filter)
+
+#:  Create a function that filters a dict using a predicate over keys.
+#:
+#:    >>> f = keyfilter(lambda k: k > 2)
+#:    >>> f({1:"a",2:"b",3:"c",4:"d"})
+#:    {
+#:      3: "c",
+#:      4: "d"
+#:    }
 keyfilter = compose(
     itemfilter,
     before(functional.head),
@@ -317,6 +508,12 @@ valfilter = compose(
 #:    True
 complement = after(operator.not_)
 
+#: Constructs a function that removes elements of a given iterable for which function returns true.
+#: Returns an async function iff the filter function is async, else returns a sync function.
+#:
+#:    >>> f = remove(gamla.greater_than(10))
+#:    >>> tuple(f([1, 2, 3, 11, 12, 13]))
+#:    (1, 2, 3)
 remove = compose(curried_filter, complement)
 
 
@@ -457,8 +654,13 @@ def apply_spec(spec: Dict):
     )
 
 
-# Stacks functions on top of each other, so will run pairwise on the input.
-# Similar to juxt, only zips with the incoming iterable.
+#: Construct a function that applies the i'th function in an iterable
+#  on the i'th element of a given iterable
+#:
+#: Note: Number of functions should be equal to the number of elements in the given iterable
+#:
+#: >>> stack([lambda x:x+1, lambda x:x-1])((5, 5))
+#: (6, 4)
 stack = compose_left(
     enumerate,
     functional.curried_map_sync(
@@ -493,6 +695,11 @@ average = compose_left(
 
 
 def value_to_dict(key: Text):
+    """Converts a string and Any input to a dict object.
+
+    >>> value_to_dict("hello")("world")
+    {'hello': 'world'}
+    """
     return compose_left(
         functional.wrap_tuple,
         functional.prefix(key),
@@ -528,6 +735,15 @@ def reduce_curried(
     return reduce
 
 
+#: Constructs a function that will return the first element of an iterable,
+#: that returns True when used with the the given function. If no element
+#: in the iterable returns True, None is returned.
+#:
+#:    >>> f = find(gamla.greater_than(10))
+#:    >>> f([1, 2, 3, 11, 12, 13])
+#:    11
+#:    >>> f([1, 2, 3])
+#:    None
 find = compose(
     after(
         excepts_decorator.excepts(
@@ -539,6 +755,19 @@ find = compose(
     curried_filter,
 )
 
+
+#: Constructs a function that will return the index of an element of an iterable,
+#: that returns True when used with the the given function. If no element
+#  in the iterable returns True, -1 is returned.
+#:
+#:    >>> f = find(gamla.greater_than(10))
+#:    >>> f([1, 2, 3, 11, 12, 13])
+#:    11
+#:    >>> f([1, 2, 3])
+#:    -1
+#:
+#: See Also:
+#:   - find
 find_index = compose_left(
     before(functional.second),
     find,
