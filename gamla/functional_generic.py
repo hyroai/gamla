@@ -93,9 +93,9 @@ async def to_awaitable(value):
     If value is a future, it will await it. Otherwise it will simply return the value.
     Useful when we have a mix of coroutines and regular functions.
 
-    >>> await to_awaitable(5)
+    >>> run_sync(await to_awaitable(5))
     '5'
-    >>> await to_awaitable(some_coroutine_that_returns_its_input(5))
+    >>> run_sync(await to_awaitable(some_coroutine_that_returns_its_input(5)))
     '5'
     """
     if inspect.isawaitable(value):
@@ -343,7 +343,7 @@ def when(condition: Callable, f_true: Callable) -> Callable:
 
 
 def unless(condition, f_false):
-    """Retuns a function that computes `f_false` if `condition` is met.
+    """Returns a function that computes `f_false` if `condition` is met.
     Otherwise will return the input unchanged.
     `condition` and `f_false` are applied with the same input.
 
@@ -448,12 +448,12 @@ keymap = compose(
 
 #: Creates a function then maps the supplied mapper over the values of a dict.
 #:
-#:  >>> f = valmap(gamla.wrap_tuple)
+#:  >>> f = valmap(gamla.add(1))
 #:  >>> f({ "a": 1, "b": 2, "c": 3 })
 #:  {
-#:    "a": (1,)
-#:    "b": (2,)
-#:    "c": (3,)
+#:    "a": 2
+#:    "b": 3
+#:    "c": 4
 #:  }
 valmap = compose(
     itemmap,
