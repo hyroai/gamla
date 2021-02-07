@@ -59,9 +59,9 @@ def apply_method(method: Text, *args, **kwargs):
 
 
 def invoke(f):
-    """Invokes `f`.  `f` is assumed to be without arguments
-
-    >>> invoke(lambda: 5)
-    '5'
+    """
+    Performs a call of the input function.
+    >>> invoke(lambda: 0)
+    0
     """
     return f()
