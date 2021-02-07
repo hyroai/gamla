@@ -55,6 +55,12 @@ def _async_timeit(f):
 
 
 def timeit(f):
+    """Wraps a function `f` with a timer.
+    Logs the start time, and end time (and difference in seconds).
+    Logs also contain the `args` and `kwargs` that were used to invoke `f`.
+
+    >>> timed_get_async = timeit(get_async)
+    """
     if asyncio.iscoroutinefunction(f):
         return _async_timeit(f)
 
@@ -70,6 +76,11 @@ def timeit(f):
 
 
 def requests_with_retry(retries: int = 3) -> requests.Session:
+    """Creates a `requests` object. Request will be attempted `retries` times.
+    Will retry on 500, 502 and 504 status codes.
+
+    >>> response = requests_with_retry(3).get("http://someurl.com")
+    """
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(
         max_retries=retry.Retry(
@@ -86,9 +97,12 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
 @currying.curry
 def batch_calls(max_batch_size: int, f: Callable):
     """Batches single call into one request.
-
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
     that gets a single request.
+    Each request will be at most of size `max_batched_size`.
+    Requests will be performed in time intervals of 0.1s.
+
+    >>> batched_f = batch_calls(5, f)
     """
     queue: Dict = {}
 
@@ -132,8 +146,13 @@ def batch_calls(max_batch_size: int, f: Callable):
 
 
 def queue_identical_calls(f):
-    # Note that pending grows infinitely large, this assumes we cache the results
-    # anyway after this decorator, so we at most double the memory consumption.
+    """Queues identical calls to coroutine `f` and performs each call once.
+    Note that pending grows infinitely large, this assumes we cache the results
+    anyway after this decorator, so we at most double the memory consumption.
+
+    >>> deduped_get_async = queue_identical_calls(get_async)
+    """
+
     pending = {}
 
     @functools.wraps(f)
@@ -149,6 +168,10 @@ def queue_identical_calls(f):
 
 @currying.curry
 def throttle(limit, f):
+    """Wraps a coroutine f assuring only `limit` amount of calls are done in parallel.
+
+    >>> throttled_get_async = throttle(3, get_async)
+    """
     semaphore = asyncio.Semaphore(limit)
 
     @functools.wraps(f)
@@ -160,6 +183,12 @@ def throttle(limit, f):
 
 
 def timeout(seconds: float):
+    """Wraps a coroutine with a timeout (seconds) after
+    which it will raise `asyncio.TimeoutError`.
+
+    >>> get_with_timeout = timeout(3.5)(get_async)
+    """
+
     def wrapper(corofunc):
         @functools.wraps(corofunc)
         async def run(*args, **kwargs):
@@ -173,6 +202,10 @@ def timeout(seconds: float):
 
 @currying.curry
 async def get_async(timeout: float, url: Text):
+    """Performs an async GET request to url with the specified timeout (seconds).
+
+    >>> response = await get_async(30, "https://www.someurl.com")
+    """
     async with httpx.AsyncClient() as client:
         return await client.get(url, timeout=timeout)
 
@@ -181,7 +214,11 @@ async def get_async(timeout: float, url: Text):
 async def post_json_with_extra_headers_async(
     extra_headers: Dict[Text, Text], timeout: float, url: Text, payload
 ):
-    """Expects payload to be a json object, and the response to be json as well."""
+    """Performs an http POST request of json data. Additional headers may be specified.
+    Expects the payload to be a json serializable object.
+
+    >>> response = await post_json_with_extra_headers_async({"Authorization" : "Bearer TOKEN" }, 30, "https://www.someurl.com/post_data", { "name": "Danny" })
+    """
     async with httpx.AsyncClient() as client:
         return await client.post(
             url=url,
@@ -191,4 +228,8 @@ async def post_json_with_extra_headers_async(
         )
 
 
+#: Performs an http POST request of json data.
+#: Expects the payload to be a json serializable object.
+#:
+#:    >>> response = post_json_async(30, "https://www.someurl.com/post_data", { "name": "Danny" })
 post_json_async = post_json_with_extra_headers_async({})
