@@ -16,7 +16,7 @@ def _tree_reduce(get_children, reduce_fn, tree_node):
 
 
 @dataclasses.dataclass(frozen=True)
-class _KeyValue:
+class KeyValue:
     key: Any
     value: Any
 
@@ -36,9 +36,9 @@ def _get_children(element):
             functional.is_instance(list): functional.identity,
             functional.is_instance(dict): functional_generic.compose_left(
                 dict.items,
-                functional.curried_map_sync(functional.star(_KeyValue)),
+                functional.curried_map_sync(functional.star(KeyValue)),
             ),
-            functional.is_instance(_KeyValue): functional_generic.compose_left(
+            functional.is_instance(KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
                 functional_generic.ternary(
                     _is_terminal,
@@ -80,7 +80,7 @@ _merge_children = functional_generic.compose_left(
 def _get_anywhere_reducer(predicate: Callable, node, children):
     if _is_terminal(node):
         return _make_matched_unmatched((), (node,))
-    if isinstance(node, _KeyValue) and predicate(node.key):
+    if isinstance(node, KeyValue) and predicate(node.key):
         return _merge_children_as_matched(children)
     return _merge_children(children)
 
@@ -119,3 +119,7 @@ def filter_leaves(predicate: Callable):
     Useful for retrieving values from large json objects, where the exact path is unimportant.
     """
     return _tree_reduce(_get_children, _filter_leaves_reducer(predicate))
+
+
+#: Reduce a JSON like tree.
+json_tree_reduce = _tree_reduce(_get_children)

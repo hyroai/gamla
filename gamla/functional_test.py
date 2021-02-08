@@ -589,10 +589,6 @@ def test_add():
     assert functional.add(["c"])(["a", "b"]) == ["a", "b", "c"]
 
 
-def test_apply():
-    assert functional.apply(1)(functional.add(2)) == 3
-
-
 def test_assert_that():
     functional.assert_that(functional.equals(2))(2)
 
@@ -633,10 +629,6 @@ async def test_side_effect_async():
     )
     assert await functional_generic.side_effect(side_effect)(2) == 2
     assert side_result == [True]
-
-
-async def test_apply_fn_with_args():
-    assert functional.apply_fn_with_args(lambda x, y: x + y, 1, 3) == 4
 
 
 def test_sliding_window():

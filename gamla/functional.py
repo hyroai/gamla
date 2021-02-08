@@ -307,16 +307,6 @@ def wrap_frozenset(x):
     return frozenset([x])
 
 
-def invoke(x: Callable):
-    """
-    Performs a call of the input function.
-
-    >>> invoke(lambda: 0)
-    0
-    """
-    return x()
-
-
 @currying.curry
 def assoc_in(d, keys, value, factory=dict):
     """
@@ -482,20 +472,6 @@ def wrap_str(wrapping_string: Text, x: Text) -> Text:
     'hello world'
     """
     return wrapping_string.format(x)
-
-
-def apply(*args, **kwargs):
-    """
-    Apply input on function.
-
-    >>> apply(1)(add(2))
-    3
-    """
-
-    def apply_inner(function):
-        return function(*args, **kwargs)
-
-    return apply_inner
 
 
 @currying.curry
@@ -797,11 +773,6 @@ def drop(n: int):
         return toolz.drop(n, seq)
 
     return drop
-
-
-def apply_fn_with_args(fn, *args):
-    """Returns the result of applying fn(*args)."""
-    return fn(*args)
 
 
 frequencies = toolz.frequencies
