@@ -59,8 +59,7 @@ def apply_method(method: Text, *args, **kwargs):
 
 
 def invoke(f):
-    """
-    Performs a call of the input function.
+    """Performs a call of the input function.
     >>> invoke(lambda: 0)
     0
     """
