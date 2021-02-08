@@ -1,8 +1,8 @@
 import asyncio
 
 import pytest
-from gamla import excepts_decorator, functional
 
+from gamla import excepts_decorator, functional
 
 pytestmark = pytest.mark.asyncio
 
