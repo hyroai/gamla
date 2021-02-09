@@ -641,7 +641,8 @@ def test_partition_all():
 
 
 def test_ends_with():
-    assert functional.ends_with([1, 2, 3])((0, 1, 2, 3)) is True
-    assert functional.ends_with([1, 2, 3])((1, 2)) is False
-    assert functional.ends_with([1, 2])((3, 1, 2)) is True
-    assert functional.ends_with([1])(()) is False
+    assert functional.ends_with([1, 2, 3])((0, 1, 2, 3))
+    assert functional.ends_with(range(1, 4))(range(0, 4))
+    assert not functional.ends_with([1, 2, 3])((1, 2))
+    assert functional.ends_with([1, 2])((3, 1, 2))
+    assert not functional.ends_with([1])(())

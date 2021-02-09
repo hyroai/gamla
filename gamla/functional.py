@@ -837,9 +837,9 @@ def partition_all(n: int):
     return partition_all
 
 
-def ends_with(expected_tail_seq: Sequence) -> Callable[[Sequence], bool]:
+def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
     """
-    Returns a predicate that checks if a sequence ends with :expected_tail_seq:
+    Returns a predicate that checks if an iterabel ends with another iterable.
 
     >>> ends_with([1,2,3])((0,1,2,3))
     True
@@ -850,11 +850,21 @@ def ends_with(expected_tail_seq: Sequence) -> Callable[[Sequence], bool]:
     >>> ends_with([1])(())
     False
     """
-    take_tail_to_compare = tail(len(expected_tail_seq))
 
-    def does_end_with_expected(seq2):
-        return len(seq2) >= len(expected_tail_seq) and all(
-            a == b for (a, b) in zip(take_tail_to_compare(seq2), expected_tail_seq)
-        )
+    class Nothing:
+        pass
 
-    return does_end_with_expected
+    expected_tail_as_tuple = tuple(expected_tail)
+
+    def ends_with(seq: Iterable):
+        tail_of_seq = tail(len(expected_tail_as_tuple))(seq)
+        for a, b in itertools.zip_longest(
+            tail_of_seq,
+            expected_tail_as_tuple,
+            fillvalue=Nothing(),
+        ):
+            if a != b:
+                return False
+        return True
+
+    return ends_with
