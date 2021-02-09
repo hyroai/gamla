@@ -1,12 +1,18 @@
 language: python
 python:
   - 3.8.2
-script:
-  - pytest
-before_install:
-  - pip install --upgrade pytest
-install:
-  - pip install -e .
+jobs:
+  include:
+    - stage: test
+      name: pytest
+      install:
+        - pip install --upgrade pytest
+        - pip install -e .
+      script: pytest
+    - stage: test
+      name: pre-commit
+      install: pip install pre-commit
+      script: pre-commit run --all-files
 deploy:
   provider: pypi
   username: __token__

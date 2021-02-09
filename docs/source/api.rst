@@ -1,6 +1,19 @@
 API
 ===
 
+apply_utils
+-----------
+
+.. currentmodule:: gamla.apply_utils
+
+.. autosummary::
+   apply
+   apply_async
+   apply_fn_with_args
+   apply_method
+   apply_method_async
+   invoke
+
 currying
 --------
 
@@ -69,8 +82,6 @@ functional
 .. autosummary::
    add
    add_key_value
-   apply
-   apply_fn_with_args
    assert_that
    assoc_in
    attrgetter
@@ -99,7 +110,6 @@ functional
    ignore_input
    inside
    interpose
-   invoke
    is_instance
    is_iterable
    just
@@ -185,12 +195,10 @@ functional_generic
    compose
    compose_left
    compose_many_to_one
-   compose_sync
    count_by
    countby_many
    curried_filter
    curried_map
-   curried_ternary
    curried_to_binary
    find
    find_index
@@ -250,7 +258,6 @@ graph_async
 .. autosummary::
    agraph_traverse
    agraph_traverse_many
-   agroupby_many
    atraverse_graph_by_radius
 
 higher_order
@@ -298,6 +305,7 @@ tree
 .. autosummary::
    filter_leaves
    get_leaves_by_ancestor_predicate
+   json_tree_reduce
 
 url_utils
 ---------
@@ -309,6 +317,9 @@ url_utils
 
 Definitions
 -----------
+
+.. automodule:: gamla.apply_utils
+   :members:
 
 .. automodule:: gamla.currying
    :members:
