@@ -40,6 +40,18 @@ def test_currying():
     assert f(1, 2)(3) == 6
 
 
+def test_currying2():
+    @currying.curry
+    def f(x, y, z):
+        return x + y + z
+
+    assert f(1, 2, 3) == 6
+    g = f(1)
+    assert g(2, 3) == 6
+    assert g(2, 5) == 8
+    assert g(2)(3) == 6
+
+
 def test_juxt():
     assert functional_generic.juxt(functional.identity, functional.add(1))(3) == (3, 4)
 
