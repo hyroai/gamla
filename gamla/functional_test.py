@@ -646,3 +646,7 @@ def test_ends_with():
     assert not functional.ends_with([1, 2, 3])((1, 2))
     assert functional.ends_with([1, 2])((3, 1, 2))
     assert not functional.ends_with([1])(())
+
+
+def test_flip():
+    assert functional.flip(operator.truediv)(2, 6) == 3.0

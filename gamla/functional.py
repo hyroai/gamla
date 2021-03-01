@@ -776,9 +776,16 @@ def drop(n: int):
 
 
 def flip(func: Callable):
+    """
+    Call the function call with the arguments flipped.
+
+    >>> import operator; flip(operator.truediv)(2, 6)
+    3.0
+    """
+
     @currying.curry
     def flip(a, b):
-        return toolz.flip(func, a, b)
+        return func(b, a)
 
     return flip
 
