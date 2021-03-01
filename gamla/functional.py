@@ -775,6 +775,14 @@ def drop(n: int):
     return drop
 
 
+def flip(func: Callable):
+    @currying.curry
+    def flip(a, b):
+        return toolz.flip(func, a, b)
+
+    return flip
+
+
 frequencies = toolz.frequencies
 
 #: The first element in a sequence.
