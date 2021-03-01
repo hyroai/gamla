@@ -775,6 +775,21 @@ def drop(n: int):
     return drop
 
 
+def flip(func: Callable):
+    """
+    Call the function call with the arguments flipped.
+
+    >>> import operator; flip(operator.truediv)(2, 6)
+    3.0
+    """
+
+    @currying.curry
+    def flip(a, b):
+        return func(b, a)
+
+    return flip
+
+
 frequencies = toolz.frequencies
 
 #: The first element in a sequence.
