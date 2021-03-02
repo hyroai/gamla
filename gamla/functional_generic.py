@@ -400,6 +400,14 @@ class PipeNotGivenAnyFunctions(Exception):
 
 
 def pipe(val, *funcs):
+    """Pipe a value through a sequence of functions
+
+    I.e. ``pipe(val, f, g, h)`` is equivalent to ``h(g(f(val)))``
+
+    >>> double = lambda i: 2 * i
+    >>> pipe(3, double, str)
+    '6'
+    """
     if not funcs:
         raise PipeNotGivenAnyFunctions
     return compose_left(*funcs)(val)

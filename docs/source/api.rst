@@ -100,6 +100,7 @@ functional
    eq_by
    eq_str_ignore_case
    equals
+   flip
    frequencies
    get_all_n_grams
    greater_equals
