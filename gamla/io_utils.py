@@ -233,3 +233,21 @@ async def post_json_with_extra_headers_async(
 #:
 #:    >>> response = post_json_async(30, "https://www.someurl.com/post_data", { "name": "Danny" })
 post_json_async = post_json_with_extra_headers_async({})
+
+
+@currying.curry
+async def post_params_with_extra_headers_async(
+    extra_headers: Dict[Text, Text], timeout: float, url: Text, params: Dict[Text, Text]
+):
+    """Performs an http POST request with URL parametersof (and without json data). Additional headers may be specified.
+    Expects the params to be a dictionary object.
+
+    >>> response = await post_params_with_extra_headers_async({"Authorization" : "Bearer TOKEN" }, 30, "https://www.someurl.com/post_data", { "name": "Danny" })
+    """
+    async with httpx.AsyncClient() as client:
+        return await client.post(
+            url=url,
+            params=params,
+            headers=toolz.merge({"content_type": "application/json"}, extra_headers),
+            timeout=timeout,
+        )
