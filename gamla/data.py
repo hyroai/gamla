@@ -18,14 +18,11 @@ def _immutable(self, *args, **kws):
 
 class frozendict(dict):  # noqa: N801
     def __init__(self, *args, **kwargs):
-        self._hash = None
         self.__setattr__ = _immutable
         super(frozendict, self).__init__(*args, **kwargs)
 
     def __hash__(self):
-        if self._hash is None:
-            self._hash = hash(tuple(self.items()))
-        return self._hash
+        return hash(tuple(self.items()))
 
     # TODO(nitzo): Disabled since we need to be able to un-serialize with dill/pickle.
     # __setitem__ = _immutable
