@@ -212,7 +212,11 @@ async def get_async(timeout: float, url: Text):
 
 @currying.curry
 async def post_json_with_extra_headers_and_params_async(
-    params: Dict[Text, Text], extra_headers: Dict[Text, Text], timeout: float, url: Text, payload
+    params: Dict[Text, Text],
+    extra_headers: Dict[Text, Text],
+    timeout: float,
+    url: Text,
+    payload,
 ):
     """Performs an http POST request with json data and URL parameters. Additional headers may be specified.
     Expects the params to be a dictionary object and the payload to be a json serializable object.
@@ -227,6 +231,7 @@ async def post_json_with_extra_headers_and_params_async(
             headers=toolz.merge({"content_type": "application/json"}, extra_headers),
             timeout=timeout,
         )
+
 
 post_json_with_extra_headers_async = post_json_with_extra_headers_and_params_async({})
 
