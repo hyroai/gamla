@@ -211,43 +211,27 @@ async def get_async(timeout: float, url: Text):
 
 
 @currying.curry
-async def post_json_with_extra_headers_async(
-    extra_headers: Dict[Text, Text], timeout: float, url: Text, payload
+async def post_json_with_extra_headers_and_params_async(
+    params: Dict[Text, Text], extra_headers: Dict[Text, Text], timeout: float, url: Text, payload
 ):
-    """Performs an http POST request of json data. Additional headers may be specified.
-    Expects the payload to be a json serializable object.
+    """Performs an http POST request with json data and URL parameters. Additional headers may be specified.
+    Expects the params to be a dictionary object and the payload to be a json serializable object.
 
-    >>> response = await post_json_with_extra_headers_async({"Authorization" : "Bearer TOKEN" }, 30, "https://www.someurl.com/post_data", { "name": "Danny" })
-    """
-    async with httpx.AsyncClient() as client:
-        return await client.post(
-            url=url,
-            json=payload,
-            headers=toolz.merge({"content_type": "application/json"}, extra_headers),
-            timeout=timeout,
-        )
-
-
-#: Performs an http POST request of json data.
-#: Expects the payload to be a json serializable object.
-#:
-#:    >>> response = post_json_async(30, "https://www.someurl.com/post_data", { "name": "Danny" })
-post_json_async = post_json_with_extra_headers_async({})
-
-
-@currying.curry
-async def post_params_with_extra_headers_async(
-    extra_headers: Dict[Text, Text], timeout: float, url: Text, params: Dict[Text, Text]
-):
-    """Performs an http POST request with URL parametersof (and without json data). Additional headers may be specified.
-    Expects the params to be a dictionary object.
-
-    >>> response = await post_params_with_extra_headers_async({"Authorization" : "Bearer TOKEN" }, 30, "https://www.someurl.com/post_data", { "name": "Danny" })
+    >>> response = await post_json_with_extra_headers_and_params_async({"Date": "07/08/2022"}, {"Authorization": "Bearer TOKEN" }, 30, "https://www.someurl.com/post_data", { "name": "Danny" })
     """
     async with httpx.AsyncClient() as client:
         return await client.post(
             url=url,
             params=params,
+            json=payload,
             headers=toolz.merge({"content_type": "application/json"}, extra_headers),
             timeout=timeout,
         )
+
+post_json_with_extra_headers_async = post_json_with_extra_headers_and_params_async({})
+
+#: Performs an http POST request of json data.
+#: Expects the payload to be a json serializable object.
+#:
+#:    >>> response = post_json_async(30, "https://www.someurl.com/post_data", { "name": "Danny" })
+post_json_async = post_json_with_extra_headers_and_params_async({}, {})
