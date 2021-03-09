@@ -233,6 +233,10 @@ async def post_json_with_extra_headers_and_params_async(
         )
 
 
+#: Performs an http POST request of json data with specified headers.
+#: Expects the payload to be a json serializable object and the headers to be a dictionary.
+#:
+#:    >>> response = post_json_with_extra_headers_async({"username": "First Last", 30, "https://www.someurl.com/post_data", { "name": "Danny" })
 post_json_with_extra_headers_async = post_json_with_extra_headers_and_params_async({})
 
 #: Performs an http POST request of json data.
