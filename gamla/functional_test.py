@@ -10,6 +10,12 @@ from gamla import currying, dict_utils, functional, functional_generic
 pytestmark = pytest.mark.asyncio
 
 
+def _generator():
+    yield 1
+    yield 2
+    yield 5
+
+
 async def _opposite_async(x):
     await asyncio.sleep(0.01)
     return not x
@@ -641,11 +647,27 @@ def test_partition_all():
 
 
 def test_ends_with():
+    assert functional.ends_with([1, 2, 3])((0, 1, 2, 3)) is True
+    assert functional.ends_with([1, 2, 3])((1, 2)) is False
+    assert functional.ends_with([1, 2])((3, 1, 2)) is True
+    assert functional.ends_with([1])(()) is False
     assert functional.ends_with([1, 2, 3])((0, 1, 2, 3))
     assert functional.ends_with(range(1, 4))(range(0, 4))
     assert not functional.ends_with([1, 2, 3])((1, 2))
     assert functional.ends_with([1, 2])((3, 1, 2))
     assert not functional.ends_with([1])(())
+
+
+def test_len_equals():
+    assert functional.len_equals(3)(_generator())
+
+
+def test_not_empty():
+    assert functional.empty(_generator()) is False
+
+
+def test_is_empty():
+    assert functional.empty([]) is True
 
 
 def test_flip():
