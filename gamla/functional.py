@@ -251,17 +251,21 @@ def inside(val, container):
 
 @currying.curry
 def len_equals(length: int, seq):
-    return len(seq) == length
+    return count(seq) == length
 
 
 @currying.curry
 def len_greater(length: int, seq):
-    return len(seq) > length
+    return count(seq) > length
 
 
 @currying.curry
 def len_smaller(length: int, seq):
-    return len(seq) < length
+    return count(seq) < length
+
+
+def empty(seq):
+    return count(seq) == 0
 
 
 @currying.curry
