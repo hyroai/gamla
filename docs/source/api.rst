@@ -1,6 +1,19 @@
 API
 ===
 
+apply_utils
+-----------
+
+.. currentmodule:: gamla.apply_utils
+
+.. autosummary::
+   apply
+   apply_async
+   apply_fn_with_args
+   apply_method
+   apply_method_async
+   invoke
+
 currying
 --------
 
@@ -15,10 +28,51 @@ data
 .. currentmodule:: gamla.data
 
 .. autosummary::
+   csv_to_list_of_dicts
    freeze_deep
    get_encode_config
    match
    tuple_of_tuples_to_csv
+
+debug_utils
+-----------
+
+.. currentmodule:: gamla.debug_utils
+
+.. autosummary::
+   debug
+   debug_after
+   debug_before
+   debug_compose
+   debug_compose_left
+   debug_exception
+   log_text
+   logger
+
+dict_utils
+----------
+
+.. currentmodule:: gamla.dict_utils
+
+.. autosummary::
+   dict_to_getter_with_default
+   get_in
+   get_in_or_none
+   get_in_or_none_uncurried
+   get_in_with_default
+   get_or_identity
+   itemgetter
+   itemgetter_or_none
+   itemgetter_with_default
+   make_index
+
+excepts_decorator
+-----------------
+
+.. currentmodule:: gamla.excepts_decorator
+
+.. autosummary::
+   excepts
 
 functional
 ----------
@@ -28,7 +82,6 @@ functional
 .. autosummary::
    add
    add_key_value
-   apply
    assert_that
    assoc_in
    attrgetter
@@ -47,12 +100,9 @@ functional
    eq_by
    eq_str_ignore_case
    equals
+   flip
    frequencies
    get_all_n_grams
-   get_in
-   get_in_or_none
-   get_in_or_none_uncurried
-   get_in_with_default
    greater_equals
    greater_than
    groupby_many_reduce
@@ -61,11 +111,8 @@ functional
    ignore_input
    inside
    interpose
-   invoke
    is_instance
-   itemgetter
-   itemgetter_or_none
-   itemgetter_with_default
+   is_iterable
    just
    just_raise
    last
@@ -74,7 +121,6 @@ functional
    len_smaller
    less_equals
    less_than
-   log_text
    make_call_key
    make_raise
    multiply
@@ -82,6 +128,7 @@ functional
    nth
    pack
    partition_after
+   partition_all
    partition_before
    pmap
    prefix
@@ -92,6 +139,7 @@ functional
    second
    singleize
    skip
+   sliding_window
    sort
    sort_by
    sort_by_reversed
@@ -100,8 +148,6 @@ functional
    suffix
    tail
    take
-   take_last_while
-   take_while
    to_json
    top
    translate_exception
@@ -109,9 +155,9 @@ functional
    unique_by
    update_in
    wrap_dict
+   wrap_frozenset
    wrap_str
    wrap_tuple
-   wrapped_partial
 
 functional_async
 ----------------
@@ -135,8 +181,10 @@ functional_generic
    after
    alljuxt
    allmap
+   allstack
    anyjuxt
    anymap
+   anystack
    apply_spec
    average
    before
@@ -148,11 +196,10 @@ functional_generic
    compose
    compose_left
    compose_many_to_one
-   compose_sync
+   count_by
    countby_many
    curried_filter
    curried_map
-   curried_ternary
    curried_to_binary
    find
    find_index
@@ -170,11 +217,13 @@ functional_generic
    mapcat
    merge
    merge_with
+   packstack
    pair_right
    pair_with
    pipe
    reduce_curried
    remove
+   side_effect
    stack
    ternary
    to_awaitable
@@ -190,27 +239,38 @@ graph
 .. currentmodule:: gamla.graph
 
 .. autosummary::
+   cliques_to_graph
+   edges_to_graph
+   general_graph_traverse_many
+   get_connectivity_components
+   graph_to_edges
    graph_traverse
    graph_traverse_many
-   general_graph_traverse_many
-   traverse_graph_by_radius
-   edges_to_graph
-   graph_to_edges
-   reverse_graph
-   cliques_to_graph
-   get_connectivity_components
    groupby_many
    has_cycle
+   reverse_graph
+   traverse_graph_by_radius
 
 graph_async
 -----------
+
 .. currentmodule:: gamla.graph_async
 
 .. autosummary::
    agraph_traverse
    agraph_traverse_many
-   agroupby_many
    atraverse_graph_by_radius
+
+higher_order
+------------
+
+.. currentmodule:: gamla.higher_order
+
+.. autosummary::
+   on_first
+   on_second
+   prepare_and_apply
+   prepare_and_apply_async
 
 io_utils
 --------
@@ -221,6 +281,7 @@ io_utils
    batch_calls
    get_async
    post_json_async
+   post_json_with_extra_headers_and_params_async
    post_json_with_extra_headers_async
    queue_identical_calls
    requests_with_retry
@@ -234,26 +295,9 @@ string
 .. currentmodule:: gamla.string
 
 .. autosummary::
+   capitalize
    replace_in_text
-   split_in_text
-
-
-transducer
---------
-
-.. currentmodule:: gamla.transducer
-
-.. autosummary::
-   apply_spec
-   concat
-   count_by
-   filter
-   groupby
-   groupby_many
-   juxt
-   map
-   mapcat
-   transduce
+   split_text
 
 tree
 ----
@@ -263,18 +307,35 @@ tree
 .. autosummary::
    filter_leaves
    get_leaves_by_ancestor_predicate
+   json_tree_reduce
 
+url_utils
+---------
+
+.. currentmodule:: gamla.url_utils
+
+.. autosummary::
+   add_to_query_string
 
 Definitions
 -----------
 
-.. automodule:: gamla.__init__
+.. automodule:: gamla.apply_utils
    :members:
 
 .. automodule:: gamla.currying
    :members:
 
 .. automodule:: gamla.data
+   :members:
+
+.. automodule:: gamla.debug_utils
+   :members:
+
+.. automodule:: gamla.dict_utils
+   :members:
+
+.. automodule:: gamla.excepts_decorator
    :members:
 
 .. automodule:: gamla.functional
@@ -292,14 +353,18 @@ Definitions
 .. automodule:: gamla.graph_async
    :members:
 
+.. automodule:: gamla.higher_order
+   :members:
+
 .. automodule:: gamla.io_utils
    :members:
 
 .. automodule:: gamla.string
    :members:
 
-.. automodule:: gamla.transducer
-   :members:
-
 .. automodule:: gamla.tree
    :members:
+
+.. automodule:: gamla.url_utils
+   :members:
+

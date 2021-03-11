@@ -595,10 +595,6 @@ def test_add():
     assert functional.add(["c"])(["a", "b"]) == ["a", "b", "c"]
 
 
-def test_apply():
-    assert functional.apply(1)(functional.add(2)) == 3
-
-
 def test_assert_that():
     functional.assert_that(functional.equals(2))(2)
 
@@ -641,10 +637,6 @@ async def test_side_effect_async():
     assert side_result == [True]
 
 
-async def test_apply_fn_with_args():
-    assert functional.apply_fn_with_args(lambda x, y: x + y, 1, 3) == 4
-
-
 def test_sliding_window():
     assert list(functional.sliding_window(2)([1, 2, 3, 4])) == [(1, 2), (2, 3), (3, 4)]
 
@@ -659,6 +651,11 @@ def test_ends_with():
     assert functional.ends_with([1, 2, 3])((1, 2)) is False
     assert functional.ends_with([1, 2])((3, 1, 2)) is True
     assert functional.ends_with([1])(()) is False
+    assert functional.ends_with([1, 2, 3])((0, 1, 2, 3))
+    assert functional.ends_with(range(1, 4))(range(0, 4))
+    assert not functional.ends_with([1, 2, 3])((1, 2))
+    assert functional.ends_with([1, 2])((3, 1, 2))
+    assert not functional.ends_with([1])(())
 
 
 def test_len_equals():
@@ -671,3 +668,7 @@ def test_not_empty():
 
 def test_is_empty():
     assert functional.empty([]) is True
+
+
+def test_flip():
+    assert functional.flip(operator.truediv)(2, 6) == 3.0

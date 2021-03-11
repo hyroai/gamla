@@ -80,7 +80,14 @@ def singleize(func: Callable) -> Callable:
     return wrapped
 
 
-def ignore_input(inner):
+def ignore_input(inner: Callable[[], Any]) -> Callable:
+    """
+    Returns `inner` function ignoring the provided inputs.
+
+    >>> ignore_input(lambda: 0)(1)
+    0
+    """
+
     def ignore_and_run(*args, **kwargs):
         return inner()
 
@@ -246,6 +253,15 @@ def profileit(func):
 
 @currying.curry
 def inside(val, container):
+    """
+    In operator.
+
+    >>> inside(1, [0, 1, 2])
+    True
+
+    >>> inside("a", "word")
+    False
+    """
     return val in container
 
 
@@ -297,10 +313,6 @@ def wrap_frozenset(x):
     frozenset({1})
     """
     return frozenset([x])
-
-
-def invoke(x):
-    return x()
 
 
 @currying.curry
@@ -470,20 +482,6 @@ def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
 
 
-def apply(*args, **kwargs):
-    """
-    Apply input on function.
-
-    >>> apply(1)(add(2))
-    3
-    """
-
-    def apply_inner(function):
-        return function(*args, **kwargs)
-
-    return apply_inner
-
-
 @currying.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
     return toolz.pipe(
@@ -530,6 +528,15 @@ def get_all_n_grams(seq):
 
 @currying.curry
 def is_instance(the_type, the_value):
+    """
+    Returns if `the_value` is an instance of `the_type`.
+
+    >>> is_instance(str, "hello")
+    True
+
+    >>> is_instance(int, "a")
+    False
+    """
     return type(the_value) == the_type
 
 
@@ -562,6 +569,8 @@ def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
     Dict[Text, Any]: Dictionary where key has been computed by the `key` function
     and value by the `reducer` function.
 
+    >>> groupby_many_reduce(head, lambda x, y: x + len(y) if x else len(y), ["hello", "hi", "test", "to"])
+    {'h': 7, 't': 6}
     """
     result: Dict[Any, Any] = {}
     for element in seq:
@@ -658,6 +667,16 @@ def add(x):
 
 
 def greater_than(x):
+    """
+    Greater than operator.
+
+    >>> greater_than(1)(2)
+    True
+
+    >>> greater_than(1)(0)
+    False
+    """
+
     def greater_than(y):
         return y > x
 
@@ -665,6 +684,15 @@ def greater_than(x):
 
 
 def greater_equals(x):
+    """Greater than or equal operator.
+
+    >>> greater_equals(1)(1)
+    True
+
+    >>> greater_equals(1)(0)
+    False
+    """
+
     def greater_equals(y):
         return y >= x
 
@@ -700,6 +728,13 @@ def divide_by(x):
 
 
 def interpose(el):
+    """
+    Introduces an element between each pair of elements in the input sequence.
+
+    >>> tuple(interpose("a")([1, 2, 3]))
+    (1, 'a', 2, 'a', 3)
+    """
+
     def interpose_inner(seq):
         return toolz.interpose(el, seq)
 
@@ -748,9 +783,19 @@ def drop(n: int):
     return drop
 
 
-def apply_fn_with_args(fn, *args):
-    """Returns the result of applying fn(*args)."""
-    return fn(*args)
+def flip(func: Callable):
+    """
+    Call the function call with the arguments flipped.
+
+    >>> import operator; flip(operator.truediv)(2, 6)
+    3.0
+    """
+
+    @currying.curry
+    def flip(a, b):
+        return func(b, a)
+
+    return flip
 
 
 frequencies = toolz.frequencies
@@ -815,9 +860,9 @@ def partition_all(n: int):
     return partition_all
 
 
-def ends_with(expected_tail_seq: Sequence) -> Callable[[Sequence], bool]:
+def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
     """
-    Returns a predicate that checks if a sequence ends with :expected_tail_seq:
+    Returns a predicate that checks if an iterabel ends with another iterable.
 
     >>> ends_with([1,2,3])((0,1,2,3))
     True
@@ -828,11 +873,21 @@ def ends_with(expected_tail_seq: Sequence) -> Callable[[Sequence], bool]:
     >>> ends_with([1])(())
     False
     """
-    take_tail_to_compare = tail(len(expected_tail_seq))
 
-    def does_end_with_expected(seq2):
-        return len(seq2) >= len(expected_tail_seq) and all(
-            a == b for (a, b) in zip(take_tail_to_compare(seq2), expected_tail_seq)
-        )
+    class Nothing:
+        pass
 
-    return does_end_with_expected
+    expected_tail_as_tuple = tuple(expected_tail)
+
+    def ends_with(seq: Iterable):
+        tail_of_seq = tail(len(expected_tail_as_tuple))(seq)
+        for a, b in itertools.zip_longest(
+            tail_of_seq,
+            expected_tail_as_tuple,
+            fillvalue=Nothing(),
+        ):
+            if a != b:
+                return False
+        return True
+
+    return ends_with
