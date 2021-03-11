@@ -265,7 +265,11 @@ def len_smaller(length: int, seq):
 
 
 def empty(seq):
-    return count(seq) == 0
+    try:
+        next(iter(seq))
+    except StopIteration:
+        return True
+    return False
 
 
 @currying.curry
