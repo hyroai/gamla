@@ -281,7 +281,7 @@ def len_smaller(length: int, seq):
 
 
 @currying.curry
-def between(low: int, high: int, seq):
+def len_between(low: int, high: int, seq):
     return low <= count(seq) <= high
 
 
