@@ -280,12 +280,21 @@ def len_smaller(length: int, seq):
     return count(seq) < length
 
 
+@currying.curry
+def between(low: int, high: int, seq):
+    return low <= count(seq) <= high
+
+
 def empty(seq):
     try:
         next(iter(seq))
     except StopIteration:
         return True
     return False
+
+
+def nonempty(seq):
+    return not empty(seq)
 
 
 @currying.curry
