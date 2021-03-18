@@ -9,7 +9,7 @@ import json
 import logging
 import random
 from concurrent import futures
-from typing import Any, Callable, Dict, Iterable, List, Sequence, Text, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Sequence, Text, TypeVar, Union
 
 import heapq_max
 import toolz
@@ -280,9 +280,11 @@ def len_smaller(length: int, seq):
     return count(seq) < length
 
 
-@currying.curry
-def len_between(low: int, high: int, seq):
-    return low <= count(seq) <= high
+def between(low: int, high: int):
+    def between(number: Union[int, float]):
+        return low <= number < high
+
+    return between
 
 
 def empty(seq):
