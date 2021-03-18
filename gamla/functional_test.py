@@ -679,8 +679,8 @@ def test_nonempty():
 
 
 def test_between():
-    assert functional.between(1, 3)("54") is True
+    assert functional.len_between(1, 3)([1, 2]) is True
 
 
 def test_not_between():
-    assert functional.between(2, 5)("1000000") is False
+    assert functional.len_between(2, 5)((1, 0, 0, 0, 0, 0, 0)) is False
