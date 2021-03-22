@@ -96,6 +96,7 @@ functional
    do_if
    drop
    drop_last_while
+   empty
    ends_with
    eq_by
    eq_str_ignore_case
