@@ -22,7 +22,7 @@ def tree_reduce(get_children, reduce_fn, tree_node):
 
 
 def tree_reduce_async(get_children, reduce_fn):
-    """Async version of `tree_reduce` (async `reduce_fn` and synchronous `get_children`)."""
+    """Async version of `tree_reduce`."""
 
     async def tree_reduce_async_inner(tree_node):
         return await reduce_fn(
