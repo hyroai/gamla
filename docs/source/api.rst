@@ -96,10 +96,12 @@ functional
    do_if
    drop
    drop_last_while
+   empty
    ends_with
    eq_by
    eq_str_ignore_case
    equals
+   flip
    frequencies
    get_all_n_grams
    greater_equals
@@ -280,6 +282,7 @@ io_utils
    batch_calls
    get_async
    post_json_async
+   post_json_with_extra_headers_and_params_async
    post_json_with_extra_headers_async
    queue_identical_calls
    requests_with_retry
