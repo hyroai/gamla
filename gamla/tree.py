@@ -8,11 +8,11 @@ from gamla import currying, dict_utils, functional, functional_generic
 
 
 @currying.curry
-def tree_reduce(get_children, reduce_fn, tree_node):
+def tree_reduce(get_children: Callable, reduce_fn: Callable, tree_node):
     """Reduces a tree from the bottom up.
 
-    Given `get_children`, a function from a node to its
-    children, and `reduce_fn`, which gets a node and the results of the reduce on the children,
+    Given `get_children`, a function from a node to its children,
+    and `reduce_fn`, which gets a node and the results of the reduce on the children,
     reduces a tree upwards.
     """
     return reduce_fn(
@@ -21,7 +21,7 @@ def tree_reduce(get_children, reduce_fn, tree_node):
     )
 
 
-def tree_reduce_async(get_children, reduce_fn):
+def tree_reduce_async(get_children: Callable, reduce_fn: Callable):
     """Async version of `tree_reduce`."""
 
     async def tree_reduce_async_inner(tree_node):
