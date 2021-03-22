@@ -8,11 +8,35 @@ from gamla import currying, dict_utils, functional, functional_generic
 
 
 @currying.curry
-def _tree_reduce(get_children, reduce_fn, tree_node):
+def tree_reduce(get_children, reduce_fn, tree_node):
+    """Reduces a tree from the bottom up.
+
+    Given `get_children`, a function from a node to its
+    children, and `reduce_fn`, which gets a node and the results of the reduce on the children,
+    reduces a tree upwards.
+    """
     return reduce_fn(
         tree_node,
-        map(_tree_reduce(get_children, reduce_fn), get_children(tree_node)),
+        map(tree_reduce(get_children, reduce_fn), get_children(tree_node)),
     )
+
+
+def tree_reduce_async(get_children, reduce_fn):
+    """Async version of `tree_reduce` (async `reduce_fn` and synchronous `get_children`)."""
+
+    async def tree_reduce_async_inner(tree_node):
+        return await reduce_fn(
+            tree_node,
+            await functional_generic.pipe(
+                tree_node,
+                get_children,
+                functional_generic.curried_map(
+                    tree_reduce_async(get_children, reduce_fn),
+                ),
+            ),
+        )
+
+    return tree_reduce_async_inner
 
 
 @dataclasses.dataclass(frozen=True)
@@ -97,7 +121,7 @@ def get_leaves_by_ancestor_predicate(predicate: Callable):
     Useful for retrieving values from large json objects, where the exact path is unimportant.
     """
     return functional_generic.compose_left(
-        _tree_reduce(_get_children, _get_anywhere_reducer(predicate)),
+        tree_reduce(_get_children, _get_anywhere_reducer(predicate)),
         _get_matched,
     )
 
@@ -118,8 +142,8 @@ def filter_leaves(predicate: Callable):
 
     Useful for retrieving values from large json objects, where the exact path is unimportant.
     """
-    return _tree_reduce(_get_children, _filter_leaves_reducer(predicate))
+    return tree_reduce(_get_children, _filter_leaves_reducer(predicate))
 
 
 #: Reduce a JSON like tree.
-json_tree_reduce = _tree_reduce(_get_children)
+json_tree_reduce = tree_reduce(_get_children)
