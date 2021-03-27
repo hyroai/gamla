@@ -56,13 +56,9 @@ Functional programming is mainly about how to split your code into composable pa
 
 The downside:
 
-Programming in this style in python means some tools won't be so useful (e.g. your debugger and static analysis tools).
+Programming in this style in python means some tools won't be so useful (e.g. stack traces, your debugger, static analysis tools).
 
 ## Debugging anonymous compositions
-
-### Stack traces
-
-Stack traces will give you the line and filename of anonymous compositions. Note the order is reversed when compared to the usual exception stack trace ordering.
 
 ### `gamla.debug`
 
@@ -119,6 +115,10 @@ def sometimes_has_a_bug(x):
     return x
 
 ```
+
+### Debug mode
+
+`gamla.compose(x, y, z)` produces a new function which doesn't have a proper name. If `x` raises an exception, it is sometimes hard to figure out where this occurred. To overcome this, set the env variable `GAMLA_DEBUG_MODE` (to anything) to get more useful exceptions. This is turned on only by flag because it incurs significant overhead so things might get slow.
 
 ## Mixing asynchronous and synchronous code
 
