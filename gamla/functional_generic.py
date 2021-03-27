@@ -2,7 +2,9 @@ import asyncio
 import functools
 import inspect
 import itertools
+import logging
 import operator
+import os
 from typing import (
     Any,
     Callable,
@@ -101,6 +103,9 @@ async def to_awaitable(value):
     return value
 
 
+_DEBUG_MODE = os.environ.get("GAMLA_DEBUG_MODE")
+
+
 # Copying `toolz` convention.
 # TODO(uri): Far from a perfect id, but should work most of the time.
 # Improve by having higher order functions create meaningful names (e.g. `map`).
@@ -166,17 +171,20 @@ def compose(*funcs):
     else:
         composed = _compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
-    original_frame = inspect.currentframe()
 
-    def reraise_and_log(e):
-        for frame in inspect.getouterframes(original_frame, 1):
-            if "gamla" in frame.filename:
-                continue
-        if "gamla" not in frame.filename:
-            raise type(e)(f"{frame.filename}:{frame.lineno}") from e
-        raise e
+    if _DEBUG_MODE:
+        original_frame = inspect.currentframe()
 
-    composed = excepts_decorator.excepts(Exception, reraise_and_log, composed)
+        def reraise_and_log(e):
+            logging.info("making expensive call for debug mode")
+            for frame in inspect.getouterframes(original_frame, 1):
+                if "gamla" in frame.filename:
+                    continue
+                raise type(e)(f"{frame.filename}:{frame.lineno}") from e
+            raise e
+
+        composed = excepts_decorator.excepts(Exception, reraise_and_log, composed)
+
     composed.__name__ = name
     return composed
 
