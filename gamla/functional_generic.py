@@ -169,12 +169,12 @@ def compose(*funcs):
     original_frame = inspect.currentframe()
 
     def reraise_and_log(e):
-        for frame in inspect.getouterframes(original_frame):
+        for frame in inspect.getouterframes(original_frame, 1):
             if "gamla" in frame.filename:
                 continue
-        raise type(e)(
-            f"Composition involved in exception: {frame.filename}:{frame.lineno}",
-        )
+        if "gamla" not in frame.filename:
+            raise type(e)(f"{frame.filename}:{frame.lineno}") from e
+        raise e
 
     composed = excepts_decorator.excepts(Exception, reraise_and_log, composed)
     composed.__name__ = name
