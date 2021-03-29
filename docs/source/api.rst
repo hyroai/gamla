@@ -309,6 +309,8 @@ tree
    filter_leaves
    get_leaves_by_ancestor_predicate
    json_tree_reduce
+   tree_reduce
+   tree_reduce_async
 
 url_utils
 ---------
