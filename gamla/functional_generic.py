@@ -2,7 +2,6 @@ import asyncio
 import functools
 import inspect
 import itertools
-import logging
 import operator
 import os
 from typing import (
@@ -12,6 +11,7 @@ from typing import (
     Dict,
     Generator,
     Iterable,
+    List,
     Mapping,
     Text,
     Tuple,
@@ -148,6 +148,15 @@ def _compose_sync(*funcs):
     return composed
 
 
+def _frame_data() -> List[Tuple[str, int]]:
+    frame = inspect.currentframe().f_back  # type: ignore
+    results = []
+    while frame:
+        results.append((frame.f_code.co_filename, frame.f_lineno))
+        frame = frame.f_back
+    return results
+
+
 def compose(*funcs):
     """Compose sync and async functions to operate in series.
 
@@ -173,15 +182,17 @@ def compose(*funcs):
     name = _get_name_for_function_group(funcs)
 
     if _DEBUG_MODE:
-        original_frame = inspect.currentframe()
+        frame_data = _frame_data()
 
         def reraise_and_log(e):
-            logging.info("making expensive call for debug mode")
-            for frame in inspect.getouterframes(original_frame, 1):
-                if "gamla" in frame.filename:
-                    continue
-                raise type(e)(f"{frame.filename}:{frame.lineno}") from e
-            raise e
+            raise type(e)(
+                "\n".join(
+                    itertools.starmap(
+                        lambda filename, lineno: f"{filename}:{lineno}",
+                        frame_data,
+                    ),
+                ),
+            )
 
         composed = excepts_decorator.excepts(Exception, reraise_and_log, composed)
 
