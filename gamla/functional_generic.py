@@ -369,10 +369,8 @@ def unless(condition, f_false):
 
 
 def first(*funcs, exception_type: Type[Exception]):
-    """Constructs a function that computes all functions from `funcs`, the
-    function is async if at least one of the ginven functions is async. The
-    returned function returns the value of the first function that doesn't
-    throw an exception of type `exception_type`. If all functions throw the
+    """Constructs a function that computes all functions from `funcs`, and returns the first function that doesn't throw an exception of type `exception_type. The
+    function is async if at least one of the given functions is async. If all functions throw the
     given `exception_type`, `exception_type` will be raised.
 
     >>> f = gamla.first(gamla.second, gamla.head, exception_type=StopIteration)
@@ -623,7 +621,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
     return _case(predicates, mappers)
 
 
-#:  Applies transformations to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
+#:  Applies functions to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
 #:    >>> f = case_dict({gamla.less_than(10): gamla.identity, gamla.greater_than(10): gamla.add(100)})
 #:    >>> f(5)
 #:    5
