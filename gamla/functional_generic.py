@@ -480,10 +480,22 @@ valmap = compose(
 
 
 def pair_with(f):
+    """Returns a function that given a value x, returns a tuple of the form: (f(x), x).
+
+    >>> add_one = pair_with(lambda x: x + 1)
+    >>> add_one(3)
+    (4, 3)
+    """
     return juxt(f, functional.identity)
 
 
 def pair_right(f):
+    """Returns a function that given a value x, returns a tuple of the form: (x, f(x)).
+
+    >>> add_one = pair_right(lambda x: x + 1)
+    >>> add_one(3)
+    (3, 4)
+    """
     return juxt(functional.identity, f)
 
 
