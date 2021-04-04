@@ -12,6 +12,14 @@ logger = functional_generic.side_effect(logging.info)
 
 
 def log_text(text: Text, level: int = logging.INFO):
+    """Logs given text and returns the execution input,
+    can also log the input itself by using {} in the text string.
+
+    >>> f = log_text("hello world {}")
+    >>> f("It's me!")
+    INFO hello world It's me!
+    'It's me!'
+    """
     return functional_generic.side_effect(lambda x: logging.log(level, text.format(x)))
 
 
