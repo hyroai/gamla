@@ -52,6 +52,12 @@ def curried_map_sync(f):
 
 
 def pack(*stuff):
+    """
+    Returns a list generated from the provided input.
+
+    >>> pack(1, 2, 3)
+    (1, 2, 3)
+    """
     return stuff
 
 
@@ -659,6 +665,16 @@ def equals(x):
 
 
 def not_equals(x):
+    """
+    Not_equals operator.
+
+    >>> not_equals(2)(2)
+    False
+
+    >>> not_equals("David")("Michael")
+    True
+    """
+
     def not_equals(y):
         return x != y
 
@@ -733,6 +749,12 @@ def greater_equals(x):
 
 
 def less_than(x):
+    """Less than operator.
+
+    >>> less_than(1)(1)
+    False
+    """
+
     def less_than(y):
         return y < x
 
@@ -740,6 +762,15 @@ def less_than(x):
 
 
 def less_equals(x):
+    """Less than or equal operator.
+
+    >>> less_equals(1)(1)
+    True
+
+    >>> less_equals(1)(3)
+    False
+    """
+
     def less_equals(y):
         return y <= x
 
@@ -747,6 +778,12 @@ def less_equals(x):
 
 
 def multiply(x):
+    """Multiply operator.
+
+    >>> multiply(2)(1)
+    2
+    """
+
     def multiply(y):
         return y * x
 
@@ -803,6 +840,12 @@ def take(n: int):
 
 
 def nth(n: int):
+    """Returns the nth element in a sequence
+
+    >>> nth(1, 'ABC')
+    ['B']
+    """
+
     def nth(seq):
         return toolz.nth(n, seq)
 
