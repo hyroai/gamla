@@ -52,6 +52,12 @@ def curried_map_sync(f):
 
 
 def pack(*stuff):
+    """
+    Returns a list generated from the provided input.
+
+    >>> pack(1, 2, 3)
+    (1, 2, 3)
+    """
     return stuff
 
 
@@ -100,10 +106,22 @@ def ignore_input(inner: Callable[[], Any]) -> Callable:
 
 
 def just_raise(exception):
+    """Raises the given exception.
+
+    >>> just_raise(KeyError)
+    raise exception KeyError
+    """
     raise exception
 
 
 def make_raise(exception):
+    """Returns a function that ignores the input and just raises the given exception.
+
+    >>> f = make_raise(KeyError)
+    >>> f(3)
+    raise exception KeyError
+    """
+
     def inner():
         raise exception
 
@@ -187,6 +205,12 @@ def pmap(f, n_workers, it):
 
 
 def just(x):
+    """Ignores the input upon execution and returns the given argument.
+
+    >>> f = just(1)
+    >>> f(2)
+    1
+    """
     return ignore_input(lambda: x)
 
 
@@ -267,16 +291,31 @@ def inside(val, container):
 
 @currying.curry
 def len_equals(length: int, seq):
+    """Measures if the length of a sequence equals to a given length.
+
+    >>> len_equals(3, [0, 1, 2])
+    True
+    """
     return count(seq) == length
 
 
 @currying.curry
 def len_greater(length: int, seq):
+    """Measures if the length of a sequence is greater than a given length.
+
+    >>> len_greater(2, [0, 1, 2])
+    True
+    """
     return count(seq) > length
 
 
 @currying.curry
 def len_smaller(length: int, seq):
+    """Measures if the length of a sequence is smaller than a given length.
+
+    >>> len_smaller(2, [0, 1, 2])
+    False
+    """
     return count(seq) < length
 
 
@@ -626,6 +665,16 @@ def equals(x):
 
 
 def not_equals(x):
+    """
+    Not_equals operator.
+
+    >>> not_equals(2)(2)
+    False
+
+    >>> not_equals("David")("Michael")
+    True
+    """
+
     def not_equals(y):
         return x != y
 
@@ -700,6 +749,12 @@ def greater_equals(x):
 
 
 def less_than(x):
+    """Less than operator.
+
+    >>> less_than(1)(1)
+    False
+    """
+
     def less_than(y):
         return y < x
 
@@ -707,6 +762,15 @@ def less_than(x):
 
 
 def less_equals(x):
+    """Less than or equal operator.
+
+    >>> less_equals(1)(1)
+    True
+
+    >>> less_equals(1)(3)
+    False
+    """
+
     def less_equals(y):
         return y <= x
 
@@ -714,6 +778,12 @@ def less_equals(x):
 
 
 def multiply(x):
+    """Multiply operator.
+
+    >>> multiply(2)(1)
+    2
+    """
+
     def multiply(y):
         return y * x
 
@@ -770,6 +840,12 @@ def take(n: int):
 
 
 def nth(n: int):
+    """Returns the nth element in a sequence
+
+    >>> nth(1, 'ABC')
+    ['B']
+    """
+
     def nth(seq):
         return toolz.nth(n, seq)
 
