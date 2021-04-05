@@ -1,4 +1,3 @@
-import asyncio
 import functools
 from typing import Any, Callable, Tuple, Union
 
@@ -11,7 +10,7 @@ def excepts(
     handler: Callable[[Exception], Any],
     function: Callable,
 ):
-    if asyncio.iscoroutinefunction(function):
+    if currying.iscoroutinefunction(function):
 
         async def excepts(*args, **kwargs):
             try:

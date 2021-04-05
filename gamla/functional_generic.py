@@ -61,7 +61,7 @@ def curried_map(f):
     >>> curried_map(inc)([3, 4, 5])
     [4, 5, 6]
     """
-    if asyncio.iscoroutinefunction(f):
+    if currying.iscoroutinefunction(f):
         return _async_curried_map(f)
     return functional.curried_map_sync(f)
 
@@ -85,7 +85,7 @@ def curried_to_binary(f):
 
 
 def _any_is_async(funcs):
-    return any(map(asyncio.iscoroutinefunction, funcs))
+    return any(map(currying.iscoroutinefunction, funcs))
 
 
 async def to_awaitable(value):
@@ -781,7 +781,7 @@ def reduce_curried(
     reducer: Callable[[_R, _E], _R],
     initial_value: _R,
 ) -> Callable[[Iterable[_E]], _R]:
-    if asyncio.iscoroutinefunction(reducer):
+    if currying.iscoroutinefunction(reducer):
 
         async def reduce_async(elements):
             state = initial_value
@@ -906,7 +906,7 @@ map_filter_empty = compose_left(curried_map, after(curried_filter(functional.ide
 
 
 def merge_with(f):
-    if asyncio.iscoroutinefunction(f):
+    if currying.iscoroutinefunction(f):
 
         async def merge_with(*dicts):
             result = _inner_merge_with(dicts)
@@ -966,7 +966,7 @@ def side_effect(f: Callable):
     2
     3
     """
-    if asyncio.iscoroutinefunction(f):
+    if currying.iscoroutinefunction(f):
 
         async def do(x):
             await f(x)

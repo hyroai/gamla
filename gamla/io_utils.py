@@ -61,7 +61,7 @@ def timeit(f):
 
     >>> timed_get_async = timeit(get_async)
     """
-    if asyncio.iscoroutinefunction(f):
+    if currying.iscoroutinefunction(f):
         return _async_timeit(f)
 
     @functools.wraps(f)

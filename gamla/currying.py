@@ -1,6 +1,10 @@
-import asyncio
 import functools
 import inspect
+import types
+
+
+def iscoroutinefunction(f) -> bool:
+    return isinstance(f, types.FunctionType) and f.__code__.co_flags & 128 == 128
 
 
 def _curry_helper(
@@ -78,7 +82,7 @@ def curry(f):
         len(f_len_args) > 1
     ), f"Curry function must have at least 2 parameters, {f} has {len(f_len_args)}"
     defaults = _infer_defaults(f)
-    is_coroutine = asyncio.iscoroutinefunction(f)
+    is_coroutine = iscoroutinefunction(f)
 
     @functools.wraps(f)
     def indirection(*args, **kwargs):

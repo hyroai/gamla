@@ -1,4 +1,3 @@
-import asyncio
 import builtins
 import functools
 import logging
@@ -6,7 +5,7 @@ from typing import Text
 
 import toolz
 
-from gamla import functional, functional_generic
+from gamla import currying, functional, functional_generic
 
 logger = functional_generic.side_effect(logging.info)
 
@@ -66,7 +65,7 @@ def debug_exception(f):
         gamla.debug_exception(gamla.itemgetter("some_key")),  # Now we can see the cause of the exception - we expect a `dict` but get a `str`.
     )
     """
-    if asyncio.iscoroutinefunction(f):
+    if currying.iscoroutinefunction(f):
 
         async def debug_exception(*x, **kwargs):
             try:
