@@ -290,10 +290,10 @@ io_utils
    timeit
    timeout
 
-string
-------
+string_utils
+------------
 
-.. currentmodule:: gamla.string
+.. currentmodule:: gamla.string_utils
 
 .. autosummary::
    capitalize
@@ -362,7 +362,7 @@ Definitions
 .. automodule:: gamla.io_utils
    :members:
 
-.. automodule:: gamla.string
+.. automodule:: gamla.string_utils
    :members:
 
 .. automodule:: gamla.tree
