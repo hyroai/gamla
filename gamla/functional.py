@@ -22,6 +22,10 @@ def identity(x):
     return x
 
 
+#: Count the number of items in a sequence.
+#: Like builtin function 'len' but works on iterators/generators as well
+#:    >>> count(1 for in range(4))
+#:    '4'
 count = toolz.count
 
 
@@ -447,6 +451,14 @@ def dataclass_transform(
     attr_transformer: Callable[[Any], Any],
     dataclass_instance,
 ):
+    """Return a new instance of the dataclass where new_dataclass_instance.attr_name = attr_transformer(dataclass_instance.attr_name)
+    >>> @dataclasses.dataclass(frozen=True)
+    ... class C:
+    ...    x: int
+    >>> c = C(5)
+    >>> d = dataclass_transform('x', lambda i: i * 2, c)
+    >>> assert d.x == 10
+    """
     return dataclasses.replace(
         dataclass_instance,
         **{
@@ -588,9 +600,13 @@ def sample(n: int):
 
 @currying.curry
 def eq_by(f, value_1, value_2):
+    """Check if two values are equal when applying f on both of them."""
     return f(value_1) == f(value_2)
 
 
+#: Check if two strings are equal, ignoring case.
+#:    >>> eq_str_ignore_case("HeLlO wOrLd", "hello world")
+#:    True
 eq_str_ignore_case = eq_by(str.lower)
 
 
@@ -874,6 +890,9 @@ def flip(func: Callable):
     return flip
 
 
+#: Return a dict with number of occurrences of each value in a sequence.
+#:    >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
+#:    {'cat': 3, 'ox': 1, 'pig': 2}
 frequencies = toolz.frequencies
 
 #: The first element in a sequence.
