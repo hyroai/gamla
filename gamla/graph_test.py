@@ -53,3 +53,20 @@ def test_groupby_many():
         "f": frozenset({"frank"}),
         "k": frozenset({"frank"}),
     }
+
+
+def test_find_graph_sources():
+    assert (
+        graph.find_sources(
+            {"1": ["2", "3"], "2": ["3"], "3": [], "4": []},
+        )
+        == frozenset({"1", "4"})
+    )
+
+
+def test_reverse_graph():
+    assert graph.reverse_graph({"1": ["2", "3"], "2": ["3"], "3": ["4"], "4": []}) == {
+        "2": frozenset({"1"}),
+        "3": frozenset({"1", "2"}),
+        "4": frozenset({"3"}),
+    }
