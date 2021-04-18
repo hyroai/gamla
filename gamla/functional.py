@@ -9,7 +9,18 @@ import json
 import logging
 import random
 from concurrent import futures
-from typing import Any, Callable, Dict, Iterable, List, Sequence, Text, TypeVar
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Sequence,
+    Text,
+    TypeVar,
+    Union,
+)
 
 import heapq_max
 import toolz
@@ -30,6 +41,11 @@ count = toolz.count
 
 
 def sort_by(key: Callable):
+    """Return a new list containing all items from the iterable in ascending order, sorted by a key.
+    >>> sort_by(len)(["hi!", "my", "name", "is"])
+    ['my', 'is', 'hi!', 'name']
+    """
+
     def sort_by(seq: Iterable):
         return sorted(seq, key=key)
 
@@ -37,13 +53,25 @@ def sort_by(key: Callable):
 
 
 def sort_by_reversed(key: Callable):
+    """Return a new list containing all items from the iterable in descending order, sorted by a key.
+    >>> sort_by_reversed(lambda x: x % 10)([2231, 47, 19, 100])
+    [19, 47, 2231, 100]
+    """
+
     def sort_by_reversed(seq: Iterable):
         return sorted(seq, key=key, reverse=True)
 
     return sort_by_reversed
 
 
+#: Return a new list containing all items from the iterable in ascending order
+#: >>> sort([5,2,4,1])
+#: '[1,2,4,5]'
 sort = sort_by(identity)
+
+#: Return a new list containing all items from the iterable in descending order
+#: >>> sort([5,2,4,1])
+#: '[5,4,2,1]'
 sort_reversed = sort_by_reversed(identity)
 
 
@@ -332,7 +360,11 @@ def empty(seq):
 
 
 @currying.curry
-def skip(n, seq):
+def skip(n: int, seq: Iterable):
+    """Skip the first n elements of a sequence. i.e, Return a generator that yields all elements after the n'th element.
+    >>> tuple(skip(3, [i for i in range(6)]))
+    (3, 4, 5)
+    """
     for i, x in enumerate(seq):
         if i < n:
             continue
@@ -349,7 +381,7 @@ def wrap_tuple(x: Any):
     return (x,)
 
 
-def wrap_frozenset(x):
+def wrap_frozenset(x: Any):
     """Wraps x with frozenset.
 
     >>> wrap_frozenset(1)
@@ -384,7 +416,12 @@ def add_key_value(key, value):
 
 
 def remove_key(key):
-    def remove_key(d):
+    """Given a dictionary, return a new dictionary with 'key' removed.
+    >>> remove_key("two")({"one": 1, "two": 2, "three": 3})
+    {'one': 1, 'three': 3}
+    """
+
+    def remove_key(d: dict):
         updated = d.copy()
         del updated[key]
         return updated
@@ -392,7 +429,7 @@ def remove_key(key):
     return remove_key
 
 
-def wrap_dict(key):
+def wrap_dict(key: Any):
     """
     Wrap a key and a value in a dict (in a curried fashion).
 
@@ -592,7 +629,9 @@ def is_instance(the_type, the_value):
 
 
 def sample(n: int):
-    def sample_inner(population):
+    """Chooses n unique random elements from a population sequence or set"""
+
+    def sample_inner(population: Union[Sequence, AbstractSet]):
         return random.sample(population, n)
 
     return sample_inner
