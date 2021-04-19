@@ -351,12 +351,23 @@ def len_smaller(length: int, seq):
     return count(seq) < length
 
 
+def between(low: int, high: int):
+    def between(number: Union[int, float]):
+        return low <= number < high
+
+    return between
+
+
 def empty(seq):
     try:
         next(iter(seq))
     except StopIteration:
         return True
     return False
+
+
+def nonempty(seq):
+    return not empty(seq)
 
 
 @currying.curry

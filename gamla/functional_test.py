@@ -672,3 +672,15 @@ def test_is_empty():
 
 def test_flip():
     assert functional.flip(operator.truediv)(2, 6) == 3.0
+
+
+def test_nonempty():
+    assert functional.nonempty(_generator()) is True
+
+
+def test_between():
+    assert functional.between(1, 100)(30) is True
+
+
+def test_not_between():
+    assert functional.between(2, 5)(14) is False

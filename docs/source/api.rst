@@ -242,6 +242,7 @@ graph
 .. autosummary::
    cliques_to_graph
    edges_to_graph
+   find_sources
    general_graph_traverse_many
    get_connectivity_components
    graph_to_edges
