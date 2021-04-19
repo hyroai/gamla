@@ -9,7 +9,18 @@ import json
 import logging
 import random
 from concurrent import futures
-from typing import Any, Callable, Dict, Iterable, List, Sequence, Text, TypeVar, Union
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Sequence,
+    Text,
+    TypeVar,
+    Union,
+)
 
 import heapq_max
 import toolz
@@ -22,10 +33,19 @@ def identity(x):
     return x
 
 
+#: Count the number of items in a sequence.
+#: Like builtin function 'len' but works on iterators/generators as well
+#:    >>> count(1 for in range(4))
+#:    '4'
 count = toolz.count
 
 
 def sort_by(key: Callable):
+    """Return a new list containing all items from the iterable in ascending order, sorted by a key.
+    >>> sort_by(len)(["hi!", "my", "name", "is"])
+    ['my', 'is', 'hi!', 'name']
+    """
+
     def sort_by(seq: Iterable):
         return sorted(seq, key=key)
 
@@ -33,13 +53,25 @@ def sort_by(key: Callable):
 
 
 def sort_by_reversed(key: Callable):
+    """Return a new list containing all items from the iterable in descending order, sorted by a key.
+    >>> sort_by_reversed(lambda x: x % 10)([2231, 47, 19, 100])
+    [19, 47, 2231, 100]
+    """
+
     def sort_by_reversed(seq: Iterable):
         return sorted(seq, key=key, reverse=True)
 
     return sort_by_reversed
 
 
+#: Return a new list containing all items from the iterable in ascending order
+#: >>> sort([5,2,4,1])
+#: '[1,2,4,5]'
 sort = sort_by(identity)
+
+#: Return a new list containing all items from the iterable in descending order
+#: >>> sort([5,2,4,1])
+#: '[5,4,2,1]'
 sort_reversed = sort_by_reversed(identity)
 
 
@@ -52,6 +84,12 @@ def curried_map_sync(f):
 
 
 def pack(*stuff):
+    """
+    Returns a list generated from the provided input.
+
+    >>> pack(1, 2, 3)
+    (1, 2, 3)
+    """
     return stuff
 
 
@@ -100,10 +138,22 @@ def ignore_input(inner: Callable[[], Any]) -> Callable:
 
 
 def just_raise(exception):
+    """Raises the given exception.
+
+    >>> just_raise(KeyError)
+    raise exception KeyError
+    """
     raise exception
 
 
 def make_raise(exception):
+    """Returns a function that ignores the input and just raises the given exception.
+
+    >>> f = make_raise(KeyError)
+    >>> f(3)
+    raise exception KeyError
+    """
+
     def inner():
         raise exception
 
@@ -187,6 +237,12 @@ def pmap(f, n_workers, it):
 
 
 def just(x):
+    """Ignores the input upon execution and returns the given argument.
+
+    >>> f = just(1)
+    >>> f(2)
+    1
+    """
     return ignore_input(lambda: x)
 
 
@@ -267,16 +323,31 @@ def inside(val, container):
 
 @currying.curry
 def len_equals(length: int, seq):
+    """Measures if the length of a sequence equals to a given length.
+
+    >>> len_equals(3, [0, 1, 2])
+    True
+    """
     return count(seq) == length
 
 
 @currying.curry
 def len_greater(length: int, seq):
+    """Measures if the length of a sequence is greater than a given length.
+
+    >>> len_greater(2, [0, 1, 2])
+    True
+    """
     return count(seq) > length
 
 
 @currying.curry
 def len_smaller(length: int, seq):
+    """Measures if the length of a sequence is smaller than a given length.
+
+    >>> len_smaller(2, [0, 1, 2])
+    False
+    """
     return count(seq) < length
 
 
@@ -300,7 +371,11 @@ def nonempty(seq):
 
 
 @currying.curry
-def skip(n, seq):
+def skip(n: int, seq: Iterable):
+    """Skip the first n elements of a sequence. i.e, Return a generator that yields all elements after the n'th element.
+    >>> tuple(skip(3, [i for i in range(6)]))
+    (3, 4, 5)
+    """
     for i, x in enumerate(seq):
         if i < n:
             continue
@@ -317,7 +392,7 @@ def wrap_tuple(x: Any):
     return (x,)
 
 
-def wrap_frozenset(x):
+def wrap_frozenset(x: Any):
     """Wraps x with frozenset.
 
     >>> wrap_frozenset(1)
@@ -352,7 +427,12 @@ def add_key_value(key, value):
 
 
 def remove_key(key):
-    def remove_key(d):
+    """Given a dictionary, return a new dictionary with 'key' removed.
+    >>> remove_key("two")({"one": 1, "two": 2, "three": 3})
+    {'one': 1, 'three': 3}
+    """
+
+    def remove_key(d: dict):
         updated = d.copy()
         del updated[key]
         return updated
@@ -360,7 +440,7 @@ def remove_key(key):
     return remove_key
 
 
-def wrap_dict(key):
+def wrap_dict(key: Any):
     """
     Wrap a key and a value in a dict (in a curried fashion).
 
@@ -419,6 +499,14 @@ def dataclass_transform(
     attr_transformer: Callable[[Any], Any],
     dataclass_instance,
 ):
+    """Return a new instance of the dataclass where new_dataclass_instance.attr_name = attr_transformer(dataclass_instance.attr_name)
+    >>> @dataclasses.dataclass(frozen=True)
+    ... class C:
+    ...    x: int
+    >>> c = C(5)
+    >>> d = dataclass_transform('x', lambda i: i * 2, c)
+    >>> assert d.x == 10
+    """
     return dataclasses.replace(
         dataclass_instance,
         **{
@@ -552,7 +640,9 @@ def is_instance(the_type, the_value):
 
 
 def sample(n: int):
-    def sample_inner(population):
+    """Chooses n unique random elements from a population sequence or set"""
+
+    def sample_inner(population: Union[Sequence, AbstractSet]):
         return random.sample(population, n)
 
     return sample_inner
@@ -560,9 +650,13 @@ def sample(n: int):
 
 @currying.curry
 def eq_by(f, value_1, value_2):
+    """Check if two values are equal when applying f on both of them."""
     return f(value_1) == f(value_2)
 
 
+#: Check if two strings are equal, ignoring case.
+#:    >>> eq_str_ignore_case("HeLlO wOrLd", "hello world")
+#:    True
 eq_str_ignore_case = eq_by(str.lower)
 
 
@@ -637,6 +731,16 @@ def equals(x):
 
 
 def not_equals(x):
+    """
+    Not_equals operator.
+
+    >>> not_equals(2)(2)
+    False
+
+    >>> not_equals("David")("Michael")
+    True
+    """
+
     def not_equals(y):
         return x != y
 
@@ -711,6 +815,12 @@ def greater_equals(x):
 
 
 def less_than(x):
+    """Less than operator.
+
+    >>> less_than(1)(1)
+    False
+    """
+
     def less_than(y):
         return y < x
 
@@ -718,6 +828,15 @@ def less_than(x):
 
 
 def less_equals(x):
+    """Less than or equal operator.
+
+    >>> less_equals(1)(1)
+    True
+
+    >>> less_equals(1)(3)
+    False
+    """
+
     def less_equals(y):
         return y <= x
 
@@ -725,6 +844,12 @@ def less_equals(x):
 
 
 def multiply(x):
+    """Multiply operator.
+
+    >>> multiply(2)(1)
+    2
+    """
+
     def multiply(y):
         return y * x
 
@@ -781,6 +906,12 @@ def take(n: int):
 
 
 def nth(n: int):
+    """Returns the nth element in a sequence
+
+    >>> nth(1, 'ABC')
+    ['B']
+    """
+
     def nth(seq):
         return toolz.nth(n, seq)
 
@@ -809,6 +940,9 @@ def flip(func: Callable):
     return flip
 
 
+#: Return a dict with number of occurrences of each value in a sequence.
+#:    >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
+#:    {'cat': 3, 'ox': 1, 'pig': 2}
 frequencies = toolz.frequencies
 
 #: The first element in a sequence.

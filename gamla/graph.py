@@ -1,4 +1,5 @@
 import itertools
+import operator
 from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
 import toolz
@@ -237,3 +238,15 @@ def has_cycle(graph):
         ),
         any,
     )
+
+
+#: Gets a directional graph and returns its sources.
+#:
+#:  >>> find_sources({'1': ['2', '3'], '2': ['3'], '3': [], '4': []})
+#:  frozenset({'1', '4'})
+find_sources = functional_generic.compose_left(
+    functional_generic.pair_right(reverse_graph),
+    functional_generic.curried_map(dict.keys),
+    functional.star(operator.sub),
+    frozenset,
+)

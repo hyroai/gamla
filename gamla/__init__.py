@@ -13,7 +13,7 @@ from .graph import *
 from .graph_async import *
 from .higher_order import *
 from .io_utils import *
-from .string import *
+from .string_utils import *
 from .tree import *
 from .url_utils import *
 

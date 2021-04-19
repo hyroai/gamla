@@ -62,9 +62,9 @@ Programming in this style in python means some tools won't be so useful (e.g. st
 
 ### `gamla.debug`
 
-It is sometimes hard to debug pipelines because you can't place ordinary breakpoints. For this `gamla.debug` and `gamla.debug_exception` were created.
+Classic breakpoints are less useful when working with compositions, as there isn't always a line of code to place the breakpoint on. Instead one can use `gamla.debug` and `gamla.debug_exception`.
 
-`gamla.debug` can be used within pipelines and provide a pdb breakpoint prompt where the value at this position can be referenced by `x`.
+`gamla.debug` can be used within pipelines and will provide a `pdb` breakpoint prompt where the value at this position can be referenced by `x`.
 
 ```python
 
