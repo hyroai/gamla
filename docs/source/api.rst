@@ -96,6 +96,7 @@ functional
    do_if
    drop
    drop_last_while
+   empty
    ends_with
    eq_by
    eq_str_ignore_case
@@ -241,6 +242,7 @@ graph
 .. autosummary::
    cliques_to_graph
    edges_to_graph
+   find_sources
    general_graph_traverse_many
    get_connectivity_components
    graph_to_edges
@@ -289,10 +291,10 @@ io_utils
    timeit
    timeout
 
-string
-------
+string_utils
+------------
 
-.. currentmodule:: gamla.string
+.. currentmodule:: gamla.string_utils
 
 .. autosummary::
    capitalize
@@ -308,6 +310,8 @@ tree
    filter_leaves
    get_leaves_by_ancestor_predicate
    json_tree_reduce
+   tree_reduce
+   tree_reduce_async
 
 url_utils
 ---------
@@ -359,7 +363,7 @@ Definitions
 .. automodule:: gamla.io_utils
    :members:
 
-.. automodule:: gamla.string
+.. automodule:: gamla.string_utils
    :members:
 
 .. automodule:: gamla.tree
