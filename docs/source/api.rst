@@ -85,6 +85,7 @@ functional
    assert_that
    assoc_in
    attrgetter
+   between
    bottom
    concat_with
    contains
@@ -125,6 +126,7 @@ functional
    make_call_key
    make_raise
    multiply
+   nonempty
    not_equals
    nth
    pack
