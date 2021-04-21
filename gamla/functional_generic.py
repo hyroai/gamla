@@ -773,14 +773,15 @@ def value_to_dict(key: Text):
     )
 
 
-_R = TypeVar("_R")
-_E = TypeVar("_E")
+_ReducerState = TypeVar("_ReducerState")
+_ReducedElement = TypeVar("_ReducedElement")
+Reducer = Callable[[_ReducerState, _ReducedElement], _ReducerState]
 
 
 def reduce_curried(
-    reducer: Callable[[_R, _E], _R],
-    initial_value: _R,
-) -> Callable[[Iterable[_E]], _R]:
+    reducer: Reducer,
+    initial_value: _ReducerState,
+) -> Callable[[Iterable[_ReducedElement]], _ReducerState]:
     if asyncio.iscoroutinefunction(reducer):
 
         async def reduce_async(elements):
@@ -798,6 +799,32 @@ def reduce_curried(
         return state
 
     return reduce
+
+
+def scan(
+    reducer: Reducer,
+    initial_value: _ReducerState,
+) -> Callable[[Iterable[_ReducedElement]], Tuple[_ReducerState, ...]]:
+    """Like `reduce`, but keeps history of states.
+
+    See https://en.wikipedia.org/wiki/Prefix_sum#Scan_higher_order_function."""
+
+    if asyncio.iscoroutinefunction(reducer):
+
+        async def reduce_keeping_history_async(
+            past_states: Tuple[_ReducerState, ...], element: _ReducedElement
+        ) -> Tuple[_ReducerState, ...]:
+            return (*past_states, await reducer(functional.last(past_states), element))
+
+        return reduce_curried(reduce_keeping_history_async, (initial_value,))
+
+    def reduce_keeping_history(
+        past_states: Tuple[_ReducerState, ...],
+        element: _ReducedElement,
+    ) -> Tuple[_ReducerState, ...]:
+        return (*past_states, reducer(functional.last(past_states), element))
+
+    return reduce_curried(reduce_keeping_history, (initial_value,))
 
 
 #: Constructs a function that will return the first element of an iterable,
@@ -929,8 +956,8 @@ _K = TypeVar("_K")
 
 
 def groupby(
-    key: Callable[[_E], _K],
-) -> Callable[[Iterable[_E]], Mapping[_K, Tuple[_E, ...]]]:
+    key: Callable[[_ReducedElement], _K],
+) -> Callable[[Iterable[_ReducedElement]], Mapping[_K, Tuple[_ReducedElement, ...]]]:
     """Return a mapping `{y: {x s.t. key(x) = y}}.`
 
     >>> names = ['alice', 'bob', 'barbara', 'frank', 'fred']
