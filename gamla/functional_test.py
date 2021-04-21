@@ -368,10 +368,10 @@ def test_reduce_aync():
 
 
 async def test_scan():
-    def slow_addition(x, y):
+    def addition(x, y):
         return x + y
 
-    assert (functional_generic.scan(slow_addition, 0)([1, 2, 3])) == (
+    assert (functional_generic.scan(addition, 0)([1, 2, 3])) == (
         0,
         1,
         3,
