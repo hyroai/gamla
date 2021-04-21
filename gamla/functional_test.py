@@ -367,6 +367,31 @@ def test_reduce_aync():
     assert functional_generic.reduce_curried(addition, 0)([1, 2, 3]) == 6
 
 
+async def test_scan():
+    def addition(x, y):
+        return x + y
+
+    assert (functional_generic.scan(addition, 0)([1, 2, 3])) == (
+        0,
+        1,
+        3,
+        6,
+    )
+
+
+async def test_scan_async():
+    async def slow_addition(x, y):
+        asyncio.sleep(0.01)
+        return x + y
+
+    assert await (functional_generic.scan(slow_addition, 0)([1, 2, 3])) == (
+        0,
+        1,
+        3,
+        6,
+    )
+
+
 def test_find():
     seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
 
