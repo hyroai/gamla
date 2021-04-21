@@ -226,6 +226,7 @@ functional_generic
    pipe
    reduce_curried
    remove
+   scan
    side_effect
    stack
    ternary
