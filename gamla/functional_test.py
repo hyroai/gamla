@@ -368,6 +368,18 @@ def test_reduce_aync():
 
 
 async def test_scan():
+    def slow_addition(x, y):
+        return x + y
+
+    assert (functional_generic.scan(slow_addition, 0)([1, 2, 3])) == (
+        0,
+        1,
+        3,
+        6,
+    )
+
+
+async def test_scan_async():
     async def slow_addition(x, y):
         asyncio.sleep(0.01)
         return x + y
