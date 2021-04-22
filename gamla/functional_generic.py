@@ -369,7 +369,7 @@ def unless(condition, f_false):
 
 
 def first(*funcs, exception_type: Type[Exception]):
-    """Constructs a function that computes all functions from `funcs`, and returns the first function that doesn't throw an exception of type `exception_type. The
+    """Constructs a function that computes all functions from `funcs`, and returns the first function that doesn't throw an exception of type `exception_type`. The
     function is async if at least one of the given functions is async. If all functions throw the
     given `exception_type`, `exception_type` will be raised.
 
