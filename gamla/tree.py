@@ -1,9 +1,6 @@
 import dataclasses
 from typing import Any, Callable
 
-import toolz
-from toolz import curried
-
 from gamla import currying, dict_utils, functional, functional_generic
 
 
@@ -85,7 +82,7 @@ def _make_matched_unmatched(matched, unmatched):
 
 
 _merge_children_as_matched = functional_generic.compose_left(
-    curried.mapcat(functional_generic.juxtcat(_get_matched, _get_unmatched)),
+    functional_generic.mapcat(functional_generic.juxtcat(_get_matched, _get_unmatched)),
     tuple,
     functional_generic.pair_right(functional.just(())),
     functional.star(_make_matched_unmatched),
@@ -93,8 +90,11 @@ _merge_children_as_matched = functional_generic.compose_left(
 
 _merge_children = functional_generic.compose_left(
     functional_generic.bifurcate(
-        functional_generic.compose_left(curried.mapcat(_get_matched), tuple),
-        functional_generic.compose_left(curried.mapcat(_get_unmatched), tuple),
+        functional_generic.compose_left(functional_generic.mapcat(_get_matched), tuple),
+        functional_generic.compose_left(
+            functional_generic.mapcat(_get_unmatched),
+            tuple,
+        ),
     ),
     functional.star(_make_matched_unmatched),
 )
@@ -130,7 +130,7 @@ def get_leaves_by_ancestor_predicate(predicate: Callable):
 def _filter_leaves_reducer(predicate, node, children):
     if _is_terminal(node) and predicate(node):
         return (node,)
-    return toolz.concat(children)
+    return functional_generic.concat(children)
 
 
 def filter_leaves(predicate: Callable):

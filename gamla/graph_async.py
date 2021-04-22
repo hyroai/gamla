@@ -1,9 +1,6 @@
 from typing import Any, AsyncGenerator, Callable, Text, Tuple
 
-import toolz
-from toolz import curried
-
-from gamla import currying, functional
+from gamla import currying, functional, functional_generic
 
 
 @currying.curry
@@ -93,6 +90,6 @@ async def atraverse_graph_by_radius(
     async for s in agraph_traverse(
         source=(source, 0),
         aget_neighbors=get_neighbors_limiting_radius,
-        key=curried.compose_left(toolz.first, key),
+        key=functional_generic.compose_left(functional.head, key),
     ):
-        yield toolz.first(s)
+        yield functional.head(s)

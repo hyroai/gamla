@@ -9,10 +9,9 @@ import async_timeout
 import httpx
 import requests
 import requests.adapters
-import toolz
 from requests.packages.urllib3.util import retry
 
-from gamla import currying, functional
+from gamla import currying, functional, functional_generic
 
 
 def _time_to_readable(time_s: float) -> datetime.datetime:
@@ -110,7 +109,7 @@ def batch_calls(max_batch_size: int, f: Callable):
         await asyncio.sleep(0.1)
         if not queue:
             return
-        slice_from_queue = tuple(toolz.take(max_batch_size, queue))
+        slice_from_queue = tuple(functional.take(max_batch_size)(queue))
         promises = tuple(map(queue.__getitem__, slice_from_queue))
         requests = tuple(slice_from_queue)
         for x in slice_from_queue:
@@ -228,7 +227,10 @@ async def post_json_with_extra_headers_and_params_async(
             url=url,
             params=params,
             json=payload,
-            headers=toolz.merge({"content_type": "application/json"}, extra_headers),
+            headers=functional_generic.merge(
+                {"content_type": "application/json"},
+                extra_headers,
+            ),
             timeout=timeout,
         )
 

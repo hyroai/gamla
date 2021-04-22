@@ -5,9 +5,7 @@ import json
 from typing import Any, Dict, List, Text, Tuple
 
 import dataclasses_json
-import toolz
 from toolz import curried
-from toolz.curried import operator
 
 from gamla import currying, functional, functional_generic
 
@@ -89,7 +87,7 @@ def tuple_of_tuples_to_csv(
     """
     return functional_generic.pipe(
         tuple_of_tuples,
-        curried.map(
+        functional_generic.curried_map(
             functional_generic.compose_left(
                 functional_generic.curried_map(str),
                 tuple,
@@ -145,19 +143,19 @@ def match(dataclass_pattern):
         dataclass_pattern,
         functional_generic.juxt(_field_getters, itertools.repeat),
         functional_generic.juxt(
-            toolz.first,
+            functional.head,
             functional.star(
                 curried.map(
                     functional_generic.compose_left(
-                        toolz.apply,
+                        lambda f, x: f(x),
                         functional_generic.case(
                             (
                                 (
-                                    operator.eq(Any),
+                                    functional.equals(Any),
                                     functional.just(functional.just(True)),
                                 ),
                                 (dataclasses.is_dataclass, match),
-                                (functional.just(True), operator.eq),
+                                (functional.just(True), functional.equals),
                             ),
                         ),
                     ),

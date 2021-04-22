@@ -1,9 +1,6 @@
 import itertools
 from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
-import toolz
-from toolz import curried
-
 from gamla import currying, dict_utils, functional, functional_generic
 
 
@@ -98,7 +95,7 @@ def traverse_graph_by_radius(
             )
 
     return map(
-        toolz.first,
+        functional.head,
         graph_traverse(source=(source, 0), get_neighbors=get_neighbors_limiting_radius),
     )
 
@@ -111,10 +108,10 @@ edges_to_graph = functional_generic.compose(
     functional_generic.valmap(
         functional_generic.compose(
             frozenset,
-            functional_generic.curried_map(toolz.second),
+            functional_generic.curried_map(functional.second),
         ),
     ),
-    curried.groupby(toolz.first),
+    functional_generic.groupby(functional.head),
 )
 
 #: Gets a graph and returns an iterator of all edges in it.
@@ -124,7 +121,7 @@ edges_to_graph = functional_generic.compose(
 graph_to_edges = functional_generic.compose_left(
     functional_generic.keymap(functional.wrap_tuple),
     dict.items,
-    curried.mapcat(functional.star(itertools.product)),
+    functional_generic.mapcat(functional.star(itertools.product)),
 )
 
 #: Gets a graph and returns the graph with its edges reversed
@@ -142,7 +139,7 @@ reverse_graph = functional_generic.compose_left(
 #:  >>> cliques_to_graph([{1, 2}, {3, 4}])
 #:  {1: frozenset({2}), 2: frozenset({1}), 3: frozenset({4}), 4: frozenset({3})}
 cliques_to_graph = functional_generic.compose_left(
-    curried.mapcat(lambda clique: itertools.permutations(clique, r=2)),
+    functional_generic.mapcat(lambda clique: itertools.permutations(clique, r=2)),
     edges_to_graph,
 )
 
@@ -160,7 +157,7 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
     while nodes_left:
         result = frozenset(
             graph_traverse(
-                source=toolz.first(nodes_left),
+                source=functional.head(nodes_left),
                 get_neighbors=functional_generic.compose(
                     functional_generic.curried_filter(functional.contains(nodes_left)),
                     graph.get,
@@ -194,7 +191,7 @@ def groupby_many(f: Callable, it: Iterable) -> Dict[Text, Any]:
      'k': frozenset({'frank'})}"""
     return functional_generic.pipe(
         it,
-        curried.mapcat(
+        functional_generic.mapcat(
             functional_generic.compose_left(
                 lambda element: (f(element), [element]),
                 functional.star(itertools.product),

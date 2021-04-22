@@ -3,7 +3,6 @@ import operator
 import time
 
 import pytest
-import toolz
 
 from gamla import currying, dict_utils, functional, functional_generic
 
@@ -201,8 +200,8 @@ async def test_filter_curried_async_sync_mix():
     )
 
 
-async def test_wrap_str():
-    assert toolz.pipe("john", functional.wrap_str("hi {}")) == "hi john"
+def test_wrap_str():
+    assert functional_generic.pipe("john", functional.wrap_str("hi {}")) == "hi john"
 
 
 def test_case_single_predicate():
@@ -320,7 +319,7 @@ async def test_async_bifurcate():
 
     average = await functional_generic.pipe(
         gen(),
-        functional_generic.bifurcate(async_sum, toolz.count),
+        functional_generic.bifurcate(async_sum, functional.count),
         functional.star(operator.truediv),
     )
 
@@ -447,7 +446,7 @@ def test_compositions_have_name():
         functional_generic.compose_left(
             functional.identity,
             functional.identity,
-            toolz.unique,
+            functional.unique,
         ).__name__
         == "unique_OF_identity_OF_identity"
     )
@@ -462,7 +461,7 @@ def test_async_compositions_have_name():
         functional_generic.compose_left(
             functional.identity,
             async_identity,
-            toolz.unique,
+            functional.unique,
         ).__name__
         == "unique_OF_async_identity_OF_identity"
     )
@@ -478,7 +477,7 @@ def test_latency():
         functional_generic.pipe(
             True,
             functional_generic.juxt(functional.equals(True), functional.equals(False)),
-            toolz.first,
+            functional.head,
             functional.just("bla"),
             functional.attrgetter("lower"),
         )
@@ -507,7 +506,7 @@ def test_merge():
 
 def test_merge_with():
     assert (
-        functional_generic.merge_with(toolz.first)(
+        functional_generic.merge_with(functional.head)(
             {"1": 1, "2": 2},
             {"2": 3, "3": 3},
         )
