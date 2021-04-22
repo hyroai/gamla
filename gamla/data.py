@@ -1,11 +1,9 @@
 import csv
 import dataclasses
-import itertools
 import json
 from typing import Any, Dict, List, Text, Tuple
 
 import dataclasses_json
-from toolz import curried
 
 from gamla import currying, functional, functional_generic
 
@@ -95,83 +93,6 @@ def tuple_of_tuples_to_csv(
             ),
         ),
         "\n".join,
-    )
-
-
-_field_getters = functional_generic.compose_left(
-    dataclasses.fields,
-    functional_generic.curried_map(
-        functional_generic.compose_left(
-            functional.attrgetter("name"),
-            functional.attrgetter,
-        ),
-    ),
-    tuple,
-)
-
-
-def match(dataclass_pattern):
-    """
-    Create a function that returns true if input matches dataclass_pattern.
-    Use data.Any as wildcard for field value.
-    Supports recursive patterns.
-
-    >>> @dataclasses.dataclass(frozen=True)
-    >>> class MockDataclassA:
-    >>>     a: int
-
-    >>> @dataclasses.dataclass(frozen=True)
-    >>> class MockDataclassB:
-    >>>     b: MockDataclassA
-
-    >>> match(MockDataclassB(MockDataclassA(5)))(
-    >>>    MockDataclassB(MockDataclassA(4)),
-    >>> )
-    False
-
-    >>> match(MockDataclassB(MockDataclassA(Any)))(
-    >>>    MockDataclassB(MockDataclassA(4)),
-    >>> )
-    True
-
-    >>> match(MockDataclassB(Any))(MockDataclassB(MockDataclassA(4)))
-    True
-    """
-    # pattern -> ( (getter,...), pattern) -> ((getter,...), (value,...)) ->
-    # ((getter,...), (eq(value),...)) -> alljuxt( compose_left(getter,eq(value)),... )
-    return functional_generic.pipe(
-        dataclass_pattern,
-        functional_generic.juxt(_field_getters, itertools.repeat),
-        functional_generic.juxt(
-            functional.head,
-            functional.star(
-                curried.map(
-                    functional_generic.compose_left(
-                        lambda f, x: f(x),
-                        functional_generic.case(
-                            (
-                                (
-                                    functional.equals(Any),
-                                    functional.just(functional.just(True)),
-                                ),
-                                (dataclasses.is_dataclass, match),
-                                (functional.just(True), functional.equals),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-        functional.star(
-            curried.map(functional_generic.compose_left),
-        ),
-        functional.prefix(
-            functional_generic.compose_left(
-                type,
-                functional.equals(type(dataclass_pattern)),
-            ),
-        ),
-        functional.star(functional_generic.alljuxt),
     )
 
 
