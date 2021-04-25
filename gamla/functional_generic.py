@@ -3,7 +3,6 @@ import functools
 import inspect
 import itertools
 import operator
-import os
 from typing import (
     Any,
     Callable,
@@ -11,7 +10,6 @@ from typing import (
     Dict,
     Generator,
     Iterable,
-    List,
     Mapping,
     Text,
     Tuple,
@@ -20,7 +18,7 @@ from typing import (
     Union,
 )
 
-from gamla import apply_utils, currying, data, excepts_decorator, functional
+from gamla import apply_utils, data, excepts_decorator, functional
 
 
 def compose_left(*funcs):
@@ -103,9 +101,6 @@ async def to_awaitable(value):
     return value
 
 
-_DEBUG_MODE = os.environ.get("GAMLA_DEBUG_MODE")
-
-
 # Copying `toolz` convention.
 # TODO(uri): Far from a perfect id, but should work most of the time.
 # Improve by having higher order functions create meaningful names (e.g. `map`).
@@ -148,15 +143,6 @@ def _compose_sync(*funcs):
     return composed
 
 
-def _frame_data() -> List[Tuple[str, int]]:
-    frame = inspect.currentframe().f_back  # type: ignore
-    results = []
-    while frame:
-        results.append((frame.f_code.co_filename, frame.f_lineno))
-        frame = frame.f_back
-    return results
-
-
 def compose(*funcs):
     """Compose sync and async functions to operate in series.
 
@@ -180,22 +166,10 @@ def compose(*funcs):
     else:
         composed = _compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
-
-    if _DEBUG_MODE:
-        frame_data = _frame_data()
-
-        def reraise_and_log(e):
-            raise type(e)(
-                "\n".join(
-                    itertools.starmap(
-                        lambda filename, lineno: f"{filename}:{lineno}",
-                        frame_data,
-                    ),
-                ),
-            )
-
-        composed = excepts_decorator.excepts(Exception, reraise_and_log, composed)
-
+    frame = inspect.currentframe().f_back.f_back
+    composed.__code__ = composed.__code__.replace(
+        co_name=f"{frame.f_code.co_filename}:{frame.f_lineno}",
+    )
     composed.__name__ = name
     return composed
 
@@ -217,22 +191,28 @@ def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
     return compose_left(juxt(*incoming), functional.star(f))
 
 
-@currying.curry
-def after(f1, f2):
+def after(f1):
     """Second-order composition of `f1` over `f2`."""
-    return compose(f1, f2)
+
+    def after(f2):
+        return compose(f1, f2)
+
+    return after
 
 
-@currying.curry
-def before(f1, f2):
+def before(f1):
     """Second-order composition of `f2` over `f1`."""
-    return compose_left(f1, f2)
+
+    def before(f2):
+        return compose_left(f1, f2)
+
+    return before
 
 
 def lazyjuxt(
     *funcs: Tuple[Callable, ...]
 ) -> Union[Callable[..., Generator], Callable[..., Coroutine[None, None, Tuple]]]:
-    """Create a function that applies each function in :funcs: to its arguments and returns a generator for the results.
+    """Create a function that applies each function in `funcs` to its arguments and returns a generator for the results.
 
     Applies the supplied functions lazily as the returned generator is iterated.
     Reverts to eager implementation if any of `funcs` is async.
@@ -419,7 +399,11 @@ def pipe(val, *funcs):
     """
     if not funcs:
         raise PipeNotGivenAnyFunctions
-    return compose_left(*funcs)(val)
+    if _any_is_async(funcs):
+        return _compose_async(*reversed(funcs))(val)
+    for f in funcs:
+        val = f(val)
+    return val
 
 
 #:  Map an iterable using a function, return `True` iff all mapped values are `True`-ish.
