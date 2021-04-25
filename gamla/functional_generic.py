@@ -212,7 +212,7 @@ def before(f1):
 def lazyjuxt(
     *funcs: Tuple[Callable, ...]
 ) -> Union[Callable[..., Generator], Callable[..., Coroutine[None, None, Tuple]]]:
-    """Create a function that applies each function in :funcs: to its arguments and returns a generator for the results.
+    """Create a function that applies each function in `funcs` to its arguments and returns a generator for the results.
 
     Applies the supplied functions lazily as the returned generator is iterated.
     Reverts to eager implementation if any of `funcs` is async.
