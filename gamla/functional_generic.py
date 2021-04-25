@@ -3,7 +3,6 @@ import functools
 import inspect
 import itertools
 import operator
-import os
 from typing import (
     Any,
     Callable,
@@ -11,7 +10,6 @@ from typing import (
     Dict,
     Generator,
     Iterable,
-    List,
     Mapping,
     Text,
     Tuple,
@@ -103,9 +101,6 @@ async def to_awaitable(value):
     return value
 
 
-_DEBUG_MODE = os.environ.get("GAMLA_DEBUG_MODE")
-
-
 # Copying `toolz` convention.
 # TODO(uri): Far from a perfect id, but should work most of the time.
 # Improve by having higher order functions create meaningful names (e.g. `map`).
@@ -148,15 +143,6 @@ def _compose_sync(*funcs):
     return composed
 
 
-def _frame_data() -> List[Tuple[str, int]]:
-    frame = inspect.currentframe().f_back  # type: ignore
-    results = []
-    while frame:
-        results.append((frame.f_code.co_filename, frame.f_lineno))
-        frame = frame.f_back
-    return results
-
-
 def compose(*funcs):
     """Compose sync and async functions to operate in series.
 
@@ -180,22 +166,10 @@ def compose(*funcs):
     else:
         composed = _compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
-
-    if _DEBUG_MODE:
-        frame_data = _frame_data()
-
-        def reraise_and_log(e):
-            raise type(e)(
-                "\n".join(
-                    itertools.starmap(
-                        lambda filename, lineno: f"{filename}:{lineno}",
-                        frame_data,
-                    ),
-                ),
-            )
-
-        composed = excepts_decorator.excepts(Exception, reraise_and_log, composed)
-
+    frame = inspect.currentframe().f_back.f_back  # type: ignore
+    composed.__code__ = composed.__code__.replace(
+        co_name=f"{frame.f_code.co_filename}:{frame.f_lineno}",
+    )
     composed.__name__ = name
     return composed
 
