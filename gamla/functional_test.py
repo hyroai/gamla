@@ -85,7 +85,7 @@ async def test_anyjuxt_async():
 
 
 async def test_anymap():
-    assert functional_generic.anymap(_opposite_async)([True, True, False])
+    assert await functional_generic.anymap(_opposite_async)([True, True, False])
 
 
 async def test_allmap():
@@ -352,15 +352,14 @@ def test_countby_many():
 
 async def test_reduce_async():
     async def slow_addition(x, y):
-        asyncio.sleep(0.1)
+        await asyncio.sleep(0.1)
         return x + y
 
     assert await (functional_generic.reduce_curried(slow_addition, 0)([1, 2, 3])) == 6
 
 
-def test_reduce_aync():
+def test_reduce():
     def addition(x, y):
-        asyncio.sleep(0.01)
         return x + y
 
     assert functional_generic.reduce_curried(addition, 0)([1, 2, 3]) == 6
@@ -380,7 +379,7 @@ async def test_scan():
 
 async def test_scan_async():
     async def slow_addition(x, y):
-        asyncio.sleep(0.01)
+        await asyncio.sleep(0.01)
         return x + y
 
     assert await (functional_generic.scan(slow_addition, 0)([1, 2, 3])) == (
