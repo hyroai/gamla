@@ -18,7 +18,7 @@ from typing import (
     Union,
 )
 
-from gamla import apply_utils, currying, data, excepts_decorator, functional
+from gamla import apply_utils, data, excepts_decorator, functional
 
 
 def compose_left(*funcs):
@@ -191,16 +191,22 @@ def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
     return compose_left(juxt(*incoming), functional.star(f))
 
 
-@currying.curry
-def after(f1, f2):
+def after(f1):
     """Second-order composition of `f1` over `f2`."""
-    return compose(f1, f2)
+
+    def after(f2):
+        return compose(f1, f2)
+
+    return after
 
 
-@currying.curry
-def before(f1, f2):
+def before(f1):
     """Second-order composition of `f2` over `f1`."""
-    return compose_left(f1, f2)
+
+    def before(f2):
+        return compose_left(f1, f2)
+
+    return before
 
 
 def lazyjuxt(
@@ -393,7 +399,11 @@ def pipe(val, *funcs):
     """
     if not funcs:
         raise PipeNotGivenAnyFunctions
-    return compose_left(*funcs)(val)
+    if _any_is_async(funcs):
+        return _compose_async(*reversed(funcs))(val)
+    for f in funcs:
+        val = f(val)
+    return val
 
 
 #:  Map an iterable using a function, return `True` iff all mapped values are `True`-ish.
