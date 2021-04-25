@@ -166,7 +166,7 @@ def compose(*funcs):
     else:
         composed = _compose_sync(*funcs)
     name = _get_name_for_function_group(funcs)
-    frame = inspect.currentframe().f_back.f_back  # type: ignore
+    frame = inspect.currentframe().f_back.f_back
     composed.__code__ = composed.__code__.replace(
         co_name=f"{frame.f_code.co_filename}:{frame.f_lineno}",
     )
