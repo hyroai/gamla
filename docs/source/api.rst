@@ -85,7 +85,6 @@ functional
    assert_that
    assoc_in
    attrgetter
-   between
    bottom
    concat_with
    contains
@@ -126,7 +125,6 @@ functional
    make_call_key
    make_raise
    multiply
-   nonempty
    not_equals
    nth
    pack
@@ -226,7 +224,6 @@ functional_generic
    pipe
    reduce_curried
    remove
-   scan
    side_effect
    stack
    ternary
@@ -245,7 +242,6 @@ graph
 .. autosummary::
    cliques_to_graph
    edges_to_graph
-   find_sources
    general_graph_traverse_many
    get_connectivity_components
    graph_to_edges

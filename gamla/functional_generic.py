@@ -192,7 +192,14 @@ def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
 
 
 def after(f1):
-    """Second-order composition of `f1` over `f2`."""
+    """
+    Second-order composition of `f1` over `f2`.
+
+    A 'delayed' pipeline, i.e return a function that, given f2, will wait for f2's arguments, and when given, will return f1(f2(args)).
+    >>> allmap = gamla.compose_left(gamla.map, gamla.after(all))
+    >>> allmap(lambda x: x == 1)([1, 2, 3])
+    False
+    """
 
     def after(f2):
         return compose(f1, f2)
