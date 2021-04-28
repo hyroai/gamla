@@ -80,7 +80,7 @@ def test_explode():
             ],
             "z",
         ],
-        data.explode(0, 2),
+        data.explode(1),
         tuple,
     ) == (
         ("x", "y1", "z"),
