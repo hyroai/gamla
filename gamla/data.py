@@ -124,7 +124,7 @@ def explode(*positions: Collection[int]):
     """Flattens a non homogeneous iterable.
 
     For an iterable where some positions are iterable and some are not,
-    duplicates the ones which are single elements, then flattens.
+    "explodes" the ones which are single elements into iterables, and transposes.
 
     >>> functional_generic.pipe(
         [
