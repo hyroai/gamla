@@ -1,7 +1,7 @@
 import os
 import pickle
 
-from gamla import data
+from gamla import data, functional_generic
 
 
 def test_freeze_deep():
@@ -66,4 +66,24 @@ def test_tuple_of_tuples_to_csv_custom_separator():
             " ",
         )
         == "name age\nDavid 23\nItay 26"
+    )
+
+
+def test_explode():
+    assert functional_generic.pipe(
+        [
+            "x",
+            [
+                "y1",
+                "y2",
+                "y3",
+            ],
+            "z",
+        ],
+        data.explode(0, 2),
+        tuple,
+    ) == (
+        ("x", "y1", "z"),
+        ("x", "y2", "z"),
+        ("x", "y3", "z"),
     )

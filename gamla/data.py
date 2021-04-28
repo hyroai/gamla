@@ -1,7 +1,8 @@
 import csv
 import dataclasses
+import itertools
 import json
-from typing import Any, Dict, List, Text, Tuple
+from typing import Any, Collection, Dict, List, Text, Tuple
 
 import dataclasses_json
 
@@ -101,3 +102,50 @@ class Enum(frozenset):
         if name in self:
             return name
         raise AttributeError
+
+
+def _do_on_positions(f, positions):
+    return functional_generic.compose_left(
+        enumerate,
+        functional_generic.curried_map(
+            functional_generic.ternary(
+                functional_generic.compose_left(
+                    functional.head,
+                    functional.contains(positions),
+                ),
+                functional_generic.compose_left(functional.second, f),
+                functional.second,
+            ),
+        ),
+    )
+
+
+def explode(*positions: Collection[int]):
+    """Flattens a non homogeneous iterable.
+
+    For an iterable where some positions are iterable and some are not,
+    duplicates the ones which are single elements, then flattens.
+
+    >>> functional_generic.pipe(
+        [
+            "x",
+            [
+                "y1",
+                "y2",
+                "y3",
+            ],
+            "z",
+        ],
+        data.explode(0, 2),
+        tuple,
+    )
+    (
+        ("x", "y1", "z"),
+        ("x", "y2", "z"),
+        ("x", "y3", "z"),
+    )
+    """
+    return functional_generic.compose_left(
+        _do_on_positions(functional.wrap_tuple, positions),
+        functional.star(itertools.product),
+    )
