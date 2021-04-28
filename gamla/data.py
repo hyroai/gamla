@@ -32,9 +32,7 @@ class frozendict(dict):  # noqa: N801
 
 
 def get_encode_config():
-    """
-    Display dataclass field as a tuple of JSON strings.
-    """
+    """Display dataclass field as a tuple of JSON strings."""
     return dataclasses.field(
         metadata=dataclasses_json.config(
             encoder=lambda lst: sorted(lst, key=json.dumps, reverse=False),
@@ -59,13 +57,12 @@ freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identi
 
 @currying.curry
 def csv_to_list_of_dicts(csv_file_path, fieldnames=None) -> List:
-    """
-    Return a list of dicts given a CSV file path.
+    """Return a list of dicts given a CSV file path.
 
-     >>> csv_to_list_of_dicts("data_test_example_with_headers.csv")
-     [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
-     >>> csv_to_list_of_dicts("data_test_example_without_headers.csv", ["name", "age"])
-     [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
+    >>> csv_to_list_of_dicts("data_test_example_with_headers.csv")
+    [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
+    >>> csv_to_list_of_dicts("data_test_example_without_headers.csv", ["name", "age"])
+    [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
     """
     with open(csv_file_path, encoding="utf-8") as csvf:
         return list(csv.DictReader(csvf, fieldnames))
@@ -76,8 +73,7 @@ def tuple_of_tuples_to_csv(
     tuple_of_tuples: Tuple[Tuple[Any], ...],
     separator: Text = "\t",
 ) -> Text:
-    """
-    Return a CSV formatted string given a tuple of tuples. Each element is separated by the character "separator" (default is \t).
+    """Return a CSV formatted string given a tuple of tuples. Each element is separated by the character "separator" (default is \t).
 
     >>> tuple_of_tuples_to_csv((("name", "age"), ("David", "23"), ("Itay", "26")))
     'name\\tage\\nDavid\\t23\\nItay\\t26'
