@@ -1,7 +1,8 @@
 import csv
 import dataclasses
+import itertools
 import json
-from typing import Any, Dict, List, Text, Tuple
+from typing import Any, Callable, Collection, Dict, List, Text, Tuple
 
 import dataclasses_json
 
@@ -31,9 +32,7 @@ class frozendict(dict):  # noqa: N801
 
 
 def get_encode_config():
-    """
-    Display dataclass field as a tuple of JSON strings.
-    """
+    """Display dataclass field as a tuple of JSON strings."""
     return dataclasses.field(
         metadata=dataclasses_json.config(
             encoder=lambda lst: sorted(lst, key=json.dumps, reverse=False),
@@ -58,13 +57,12 @@ freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identi
 
 @currying.curry
 def csv_to_list_of_dicts(csv_file_path, fieldnames=None) -> List:
-    """
-    Return a list of dicts given a CSV file path.
+    """Return a list of dicts given a CSV file path.
 
-     >>> csv_to_list_of_dicts("data_test_example_with_headers.csv")
-     [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
-     >>> csv_to_list_of_dicts("data_test_example_without_headers.csv", ["name", "age"])
-     [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
+    >>> csv_to_list_of_dicts("data_test_example_with_headers.csv")
+    [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
+    >>> csv_to_list_of_dicts("data_test_example_without_headers.csv", ["name", "age"])
+    [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
     """
     with open(csv_file_path, encoding="utf-8") as csvf:
         return list(csv.DictReader(csvf, fieldnames))
@@ -75,8 +73,7 @@ def tuple_of_tuples_to_csv(
     tuple_of_tuples: Tuple[Tuple[Any], ...],
     separator: Text = "\t",
 ) -> Text:
-    """
-    Return a CSV formatted string given a tuple of tuples. Each element is separated by the character "separator" (default is \t).
+    """Return a CSV formatted string given a tuple of tuples. Each element is separated by the character "separator" (default is \t).
 
     >>> tuple_of_tuples_to_csv((("name", "age"), ("David", "23"), ("Itay", "26")))
     'name\\tage\\nDavid\\t23\\nItay\\t26'
@@ -101,3 +98,53 @@ class Enum(frozenset):
         if name in self:
             return name
         raise AttributeError
+
+
+def _do_on_positions(f, predicate: Callable[[int], bool]):
+    return functional_generic.compose_left(
+        enumerate,
+        functional_generic.curried_map(
+            functional_generic.ternary(
+                functional_generic.compose_left(
+                    functional.head,
+                    predicate,
+                ),
+                functional_generic.compose_left(functional.second, f),
+                functional.second,
+            ),
+        ),
+    )
+
+
+def explode(*positions: Collection[int]):
+    """Flattens a non homogeneous iterable.
+
+    For an iterable where some positions are iterable and some are not,
+    "explodes" the iterable, so that each element appears in a single row, and duplicates the non iterable.
+
+    >>> functional_generic.pipe(
+        [
+            "x",
+            [
+                "y1",
+                "y2",
+                "y3",
+            ],
+            "z",
+        ],
+        data.explode(1),
+        tuple,
+    )
+    (
+        ("x", "y1", "z"),
+        ("x", "y2", "z"),
+        ("x", "y3", "z"),
+    )
+    """
+    return functional_generic.compose_left(
+        _do_on_positions(
+            functional.wrap_tuple,
+            functional_generic.complement(functional.contains(positions)),
+        ),
+        functional.star(itertools.product),
+    )
