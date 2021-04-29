@@ -243,7 +243,11 @@ def just(x):
     >>> f(2)
     1
     """
-    return ignore_input(lambda: x)
+
+    def just(*args, **kwargs):
+        return x
+
+    return just
 
 
 # To get a unique caching key for each function invocation, we take `args` and `items()`
@@ -321,14 +325,17 @@ def inside(val, container):
     return val in container
 
 
-@currying.curry
-def len_equals(length: int, seq):
+def len_equals(length: int):
     """Measures if the length of a sequence equals to a given length.
 
-    >>> len_equals(3, [0, 1, 2])
+    >>> len_equals(3)([0, 1, 2])
     True
     """
-    return count(seq) == length
+
+    def len_equals(x: Iterable) -> bool:
+        return count(x) == length
+
+    return len_equals
 
 
 @currying.curry
