@@ -19,6 +19,7 @@ from typing import (
 )
 
 from gamla import apply_utils, data, excepts_decorator, functional
+from gamla.optimized import async_functions, sync
 
 
 def compose_left(*funcs):
@@ -42,13 +43,6 @@ def compose_left(*funcs):
     return compose(*reversed(funcs))
 
 
-def _async_curried_map(f):
-    async def async_curried_map(it):
-        return await asyncio.gather(*map(f, it))
-
-    return async_curried_map
-
-
 def curried_map(f):
     """
     Constructs a function that maps elements of a given iterable using the given function.
@@ -60,8 +54,8 @@ def curried_map(f):
     [4, 5, 6]
     """
     if asyncio.iscoroutinefunction(f):
-        return _async_curried_map(f)
-    return functional.curried_map_sync(f)
+        return async_functions.map(f)
+    return sync.map(f)
 
 
 def curried_to_binary(f):
@@ -86,61 +80,11 @@ def _any_is_async(funcs):
     return any(map(asyncio.iscoroutinefunction, funcs))
 
 
-async def to_awaitable(value):
-    """Wraps a value in a coroutine.
-    If value is a future, it will await it. Otherwise it will simply return the value.
-    Useful when we have a mix of coroutines and regular functions.
-
-    >>> run_sync(await to_awaitable(5))
-    '5'
-    >>> run_sync(await to_awaitable(some_coroutine_that_returns_its_input(5)))
-    '5'
-    """
-    if inspect.isawaitable(value):
-        return await value
-    return value
-
-
 # Copying `toolz` convention.
 # TODO(uri): Far from a perfect id, but should work most of the time.
 # Improve by having higher order functions create meaningful names (e.g. `map`).
 def _get_name_for_function_group(funcs):
     return "_OF_".join(map(lambda x: x.__name__, funcs))
-
-
-def _compose_async(*funcs):
-    @functools.wraps(functional.last(funcs))
-    async def async_composed(*args, **kwargs):
-        for f in reversed(funcs):
-            args = [await to_awaitable(f(*args, **kwargs))]
-            kwargs = {}
-        return functional.head(args)
-
-    return async_composed
-
-
-def _compose_sync(*funcs):
-    """Compose sync functions to operate in series.
-
-    Returns a function that applies other functions in sequence.
-
-    Functions are applied from right to left so that
-    ``compose(f, g, h)(x, y)`` is the same as ``f(g(h(x, y)))``.
-
-    >>> inc = lambda i: i + 1
-    >>> compose(str, inc)(3)
-    '4'
-
-    """
-
-    @functools.wraps(functional.last(funcs))
-    def composed(*args, **kwargs):
-        for f in reversed(funcs):
-            args = [f(*args, **kwargs)]
-            kwargs = {}
-        return functional.head(args)
-
-    return composed
 
 
 def compose(*funcs):
@@ -162,9 +106,10 @@ def compose(*funcs):
         pipe
     """
     if _any_is_async(funcs):
-        composed = _compose_async(*funcs)
+        composed = async_functions.compose(*funcs)
     else:
-        composed = _compose_sync(*funcs)
+        composed = sync.compose(*funcs)
+    composed = functools.wraps(functional.last(funcs))(composed)
     name = _get_name_for_function_group(funcs)
     frame = inspect.currentframe().f_back.f_back
     composed.__code__ = composed.__code__.replace(
@@ -230,7 +175,7 @@ def lazyjuxt(
     (11, 20)
     """
     if _any_is_async(funcs):
-        funcs = tuple(map(after(to_awaitable), funcs))
+        funcs = tuple(map(after(async_functions.to_awaitable), funcs))
 
         async def lazyjuxt_async(*args, **kwargs):
             return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
@@ -253,7 +198,7 @@ def juxt(*funcs: Callable) -> Callable[..., Tuple]:
     (11, 20)
     """
     if _any_is_async(funcs):
-        funcs = tuple(map(after(to_awaitable), funcs))
+        funcs = tuple(map(after(async_functions.to_awaitable), funcs))
 
         async def juxt_async(*args, **kwargs):
             return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
@@ -311,21 +256,14 @@ def ternary(condition, f_true, f_false):
 
         async def ternary_inner_async(*args, **kwargs):
             return (
-                await to_awaitable(f_true(*args, **kwargs))
-                if await to_awaitable(condition(*args, **kwargs))
-                else await to_awaitable(f_false(*args, **kwargs))
+                await async_functions.to_awaitable(f_true(*args, **kwargs))
+                if await async_functions.to_awaitable(condition(*args, **kwargs))
+                else await async_functions.to_awaitable(f_false(*args, **kwargs))
             )
 
         return ternary_inner_async
 
-    def ternary_inner(*args, **kwargs):
-        return (
-            f_true(*args, **kwargs)
-            if condition(*args, **kwargs)
-            else f_false(*args, **kwargs)
-        )
-
-    return ternary_inner
+    return sync.ternary(condition, f_true, f_false)
 
 
 def when(condition: Callable, f_true: Callable) -> Callable:
@@ -373,7 +311,7 @@ def first(*funcs, exception_type: Type[Exception]):
         async def inner_async(*args, **kwargs):
             for func in funcs:
                 try:
-                    return await to_awaitable(func(*args, **kwargs))
+                    return await async_functions.to_awaitable(func(*args, **kwargs))
                 except exception_type:
                     pass
             raise exception_type
@@ -407,7 +345,7 @@ def pipe(val, *funcs):
     if not funcs:
         raise PipeNotGivenAnyFunctions
     if _any_is_async(funcs):
-        return _compose_async(*reversed(funcs))(val)
+        return async_functions.compose(*reversed(funcs))(val)
     for f in funcs:
         val = f(val)
     return val
@@ -490,15 +428,6 @@ def pair_right(f):
     return juxt(functional.identity, f)
 
 
-def _sync_curried_filter(f):
-    def curried_filter(it):
-        for x in it:
-            if f(x):
-                yield x
-
-    return curried_filter
-
-
 #: Constructs a function that filters elements of a given iterable for which function returns true.
 #: Returns an async function iff the filter function is async, else returns a sync function.
 #:
@@ -509,7 +438,7 @@ curried_filter = compose(
     after(
         compose(
             functional.curried_map_sync(functional.second),
-            _sync_curried_filter(functional.head),
+            sync.filter(functional.head),
         ),
     ),
     curried_map,
@@ -586,8 +515,8 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     predicates = tuple(predicates)
     mappers = tuple(mappers)
     if _any_is_async(mappers + predicates):
-        predicates = tuple(map(after(to_awaitable), predicates))
-        mappers = tuple(map(after(to_awaitable), mappers))
+        predicates = tuple(map(after(async_functions.to_awaitable), predicates))
+        mappers = tuple(map(after(async_functions.to_awaitable), mappers))
 
         async def case_async(*args, **kwargs):
             for is_matched, mapper in zip(
@@ -644,8 +573,8 @@ async def _await_dict(value):
             valmap(_await_dict),
         )
     if isinstance(value, Iterable):
-        return await pipe(value, _async_curried_map(_await_dict), type(value))
-    return await to_awaitable(value)
+        return await pipe(value, async_functions.map(_await_dict), type(value))
+    return await async_functions.to_awaitable(value)
 
 
 def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
@@ -699,7 +628,10 @@ def apply_spec(spec: Dict):
         async def apply_spec_async(*args, **kwargs):
             return await map_dict(
                 functional.identity,
-                compose_left(apply_utils.apply(*args, **kwargs), to_awaitable),
+                compose_left(
+                    apply_utils.apply(*args, **kwargs),
+                    async_functions.to_awaitable,
+                ),
             )(spec)
 
         return apply_spec_async
@@ -859,21 +791,6 @@ find_index = compose_left(
 )
 
 
-def check(condition, exception):
-    """Apply function `condition` to value, raise `exception` if return value is `False`-ish or return the value as-is.
-
-    >>> f = check(gamla.greater_than(10), ValueError)
-    >>> f(5)
-    `ValueError`
-    >>> f(15)
-    15
-    """
-    return functional.do_if(
-        complement(condition),
-        functional.make_raise(exception),
-    )
-
-
 def countby_many(f):
     """Count elements of a collection by a function which returns a tuple of keys
     for single element.
@@ -934,7 +851,7 @@ def merge_with(f):
 
     def merge_with(*dicts):
         result = _inner_merge_with(dicts)
-        return valmap(f)(result)
+        return sync.valmap(f)(result)
 
     return merge_with
 
@@ -972,7 +889,7 @@ def groupby(
                 concat,
             ),
         ),
-        valmap(tuple),
+        sync.valmap(tuple),
     )
 
 

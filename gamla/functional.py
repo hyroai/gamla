@@ -25,6 +25,7 @@ import toolz
 from toolz import curried
 
 from gamla import currying
+from gamla.optimized import sync
 
 
 def identity(x):
@@ -73,12 +74,7 @@ sort = sort_by(identity)
 sort_reversed = sort_by_reversed(identity)
 
 
-def curried_map_sync(f):
-    def curried_map(it):
-        for x in it:
-            yield f(x)
-
-    return curried_map
+curried_map_sync = sync.map
 
 
 def pack(*stuff):
@@ -614,7 +610,7 @@ def partition_before(
 def get_all_n_grams(seq):
     return toolz.pipe(
         range(1, len(seq) + 1),
-        curried.mapcat(curried.sliding_window(seq=seq)),
+        sync.mapcat(curried.sliding_window(seq=seq)),
     )
 
 

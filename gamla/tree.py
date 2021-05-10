@@ -2,6 +2,7 @@ import dataclasses
 from typing import Any, Callable
 
 from gamla import currying, dict_utils, functional, functional_generic
+from gamla.optimized import sync
 
 
 @currying.curry
@@ -61,7 +62,7 @@ def _get_children(element):
             ),
             functional.is_instance(KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
-                functional_generic.ternary(
+                sync.ternary(
                     _is_terminal,
                     functional.wrap_tuple,
                     _get_children,
@@ -82,21 +83,21 @@ def _make_matched_unmatched(matched, unmatched):
 
 
 _merge_children_as_matched = functional_generic.compose_left(
-    functional_generic.mapcat(functional_generic.juxtcat(_get_matched, _get_unmatched)),
+    sync.mapcat(sync.juxtcat(_get_matched, _get_unmatched)),
     tuple,
     functional_generic.pair_right(functional.just(())),
-    functional.star(_make_matched_unmatched),
+    sync.star(_make_matched_unmatched),
 )
 
-_merge_children = functional_generic.compose_left(
+_merge_children = sync.compose_left(
     functional_generic.bifurcate(
-        functional_generic.compose_left(functional_generic.mapcat(_get_matched), tuple),
-        functional_generic.compose_left(
-            functional_generic.mapcat(_get_unmatched),
+        sync.compose_left(sync.mapcat(_get_matched), tuple),
+        sync.compose_left(
+            sync.mapcat(_get_unmatched),
             tuple,
         ),
     ),
-    functional.star(_make_matched_unmatched),
+    sync.star(_make_matched_unmatched),
 )
 
 

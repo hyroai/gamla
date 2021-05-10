@@ -1,4 +1,5 @@
 from gamla import functional, functional_generic
+from gamla.optimized import async_functions
 
 
 def prepare_and_apply(f):
@@ -34,8 +35,8 @@ def prepare_and_apply_async(f):
     """
 
     async def prepare_and_apply(value):
-        return await functional_generic.to_awaitable(
-            (await functional_generic.to_awaitable(f(value)))(value),
+        return await async_functions.to_awaitable(
+            (await async_functions.to_awaitable(f(value)))(value),
         )
 
     return prepare_and_apply

@@ -1,7 +1,8 @@
 import asyncio
 from typing import Any, AsyncGenerator, Awaitable, Callable, Iterable, Type
 
-from gamla import currying, functional_generic
+from gamla import currying
+from gamla.optimized import async_functions
 
 
 def run_sync(f):
@@ -104,7 +105,7 @@ def afirst(*funcs: Callable, exception_type: Type[Exception]):
     async def afirst_inner(x: Any):
         for f in funcs:
             try:
-                return await functional_generic.to_awaitable(f(x))
+                return await async_functions.to_awaitable(f(x))
             except exception_type:
                 pass
         raise exception_type

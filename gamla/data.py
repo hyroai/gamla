@@ -7,6 +7,7 @@ from typing import Any, Callable, Collection, Dict, List, Text, Tuple
 import dataclasses_json
 
 from gamla import currying, functional, functional_generic
+from gamla.optimized import sync
 
 
 def _immutable(self, *args, **kws):
@@ -104,7 +105,7 @@ def _do_on_positions(f, predicate: Callable[[int], bool]):
     return functional_generic.compose_left(
         enumerate,
         functional_generic.curried_map(
-            functional_generic.ternary(
+            sync.ternary(
                 functional_generic.compose_left(
                     functional.head,
                     predicate,
