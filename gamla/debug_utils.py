@@ -93,16 +93,18 @@ def _print_stats():
     logging.info(
         "\n\n\n"
         + tabulate.tabulate(
-            map(
-                lambda stat: [
-                    f"{stat.ttot:2f}",
-                    f"{stat.tsub:2f}",
-                    stat.ncall,
-                    stat.name,
-                    f"{stat.module}:{stat.lineno}",
-                ],
-                yappi.get_func_stats(),
-            ),
+            tuple(
+                map(
+                    lambda stat: [
+                        f"{stat.ttot:2f}",
+                        f"{stat.tsub:2f}",
+                        stat.ncall,
+                        stat.name,
+                        f"{stat.module}:{stat.lineno}",
+                    ],
+                    yappi.get_func_stats(),
+                ),
+            )[:100],
             [
                 "ttot",
                 "tsub",

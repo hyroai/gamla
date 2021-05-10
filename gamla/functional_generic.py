@@ -19,6 +19,7 @@ from typing import (
 )
 
 from gamla import apply_utils, data, excepts_decorator, functional
+from gamla.optimized import async_functions
 
 
 def compose_left(*funcs):
@@ -86,21 +87,6 @@ def _any_is_async(funcs):
     return any(map(asyncio.iscoroutinefunction, funcs))
 
 
-async def to_awaitable(value):
-    """Wraps a value in a coroutine.
-    If value is a future, it will await it. Otherwise it will simply return the value.
-    Useful when we have a mix of coroutines and regular functions.
-
-    >>> run_sync(await to_awaitable(5))
-    '5'
-    >>> run_sync(await to_awaitable(some_coroutine_that_returns_its_input(5)))
-    '5'
-    """
-    if inspect.isawaitable(value):
-        return await value
-    return value
-
-
 # Copying `toolz` convention.
 # TODO(uri): Far from a perfect id, but should work most of the time.
 # Improve by having higher order functions create meaningful names (e.g. `map`).
@@ -112,7 +98,9 @@ def _compose_async(*funcs):
     @functools.wraps(functional.last(funcs))
     async def async_composed(*args, **kwargs):
         for f in reversed(funcs):
-            args = [await to_awaitable(f(*args, **kwargs))]
+            args = [
+                await async_functions.async_functions.to_awaitable(f(*args, **kwargs)),
+            ]
             kwargs = {}
         return functional.head(args)
 
@@ -230,7 +218,7 @@ def lazyjuxt(
     (11, 20)
     """
     if _any_is_async(funcs):
-        funcs = tuple(map(after(to_awaitable), funcs))
+        funcs = tuple(map(after(async_functions.to_awaitable), funcs))
 
         async def lazyjuxt_async(*args, **kwargs):
             return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
@@ -253,7 +241,7 @@ def juxt(*funcs: Callable) -> Callable[..., Tuple]:
     (11, 20)
     """
     if _any_is_async(funcs):
-        funcs = tuple(map(after(to_awaitable), funcs))
+        funcs = tuple(map(after(async_functions.to_awaitable), funcs))
 
         async def juxt_async(*args, **kwargs):
             return await asyncio.gather(*map(lambda f: f(*args, **kwargs), funcs))
@@ -311,9 +299,9 @@ def ternary(condition, f_true, f_false):
 
         async def ternary_inner_async(*args, **kwargs):
             return (
-                await to_awaitable(f_true(*args, **kwargs))
-                if await to_awaitable(condition(*args, **kwargs))
-                else await to_awaitable(f_false(*args, **kwargs))
+                await async_functions.to_awaitable(f_true(*args, **kwargs))
+                if await async_functions.to_awaitable(condition(*args, **kwargs))
+                else await async_functions.to_awaitable(f_false(*args, **kwargs))
             )
 
         return ternary_inner_async
@@ -373,7 +361,7 @@ def first(*funcs, exception_type: Type[Exception]):
         async def inner_async(*args, **kwargs):
             for func in funcs:
                 try:
-                    return await to_awaitable(func(*args, **kwargs))
+                    return await async_functions.to_awaitable(func(*args, **kwargs))
                 except exception_type:
                     pass
             raise exception_type
@@ -586,8 +574,8 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     predicates = tuple(predicates)
     mappers = tuple(mappers)
     if _any_is_async(mappers + predicates):
-        predicates = tuple(map(after(to_awaitable), predicates))
-        mappers = tuple(map(after(to_awaitable), mappers))
+        predicates = tuple(map(after(async_functions.to_awaitable), predicates))
+        mappers = tuple(map(after(async_functions.to_awaitable), mappers))
 
         async def case_async(*args, **kwargs):
             for is_matched, mapper in zip(
@@ -645,7 +633,7 @@ async def _await_dict(value):
         )
     if isinstance(value, Iterable):
         return await pipe(value, _async_curried_map(_await_dict), type(value))
-    return await to_awaitable(value)
+    return await async_functions.to_awaitable(value)
 
 
 def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
@@ -699,7 +687,10 @@ def apply_spec(spec: Dict):
         async def apply_spec_async(*args, **kwargs):
             return await map_dict(
                 functional.identity,
-                compose_left(apply_utils.apply(*args, **kwargs), to_awaitable),
+                compose_left(
+                    apply_utils.apply(*args, **kwargs),
+                    async_functions.to_awaitable,
+                ),
             )(spec)
 
         return apply_spec_async
