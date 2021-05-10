@@ -99,7 +99,7 @@ def _compose_async(*funcs):
     async def async_composed(*args, **kwargs):
         for f in reversed(funcs):
             args = [
-                await async_functions.async_functions.to_awaitable(f(*args, **kwargs)),
+                await async_functions.to_awaitable(f(*args, **kwargs)),
             ]
             kwargs = {}
         return functional.head(args)

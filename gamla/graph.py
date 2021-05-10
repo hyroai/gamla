@@ -2,6 +2,7 @@ import itertools
 from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
 from gamla import currying, dict_utils, functional, functional_generic
+from gamla.optimized import sync
 
 
 @currying.curry
@@ -113,15 +114,14 @@ edges_to_graph = functional_generic.compose(
     ),
     functional_generic.groupby(functional.head),
 )
-
 #: Gets a graph and returns an iterator of all edges in it.
 #:
 #:  >>> list(graph_to_edges({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}))
 #:  [('1', '2'), ('1', '3'), ('2', '3'), ('3', '4')]
 graph_to_edges = functional_generic.compose_left(
-    functional_generic.keymap(functional.wrap_tuple),
+    sync.keymap(functional.wrap_tuple),
     dict.items,
-    functional_generic.mapcat(functional.star(itertools.product)),
+    sync.mapcat(sync.star(itertools.product)),
 )
 
 #: Gets a graph and returns the graph with its edges reversed
@@ -139,7 +139,7 @@ reverse_graph = functional_generic.compose_left(
 #:  >>> cliques_to_graph([{1, 2}, {3, 4}])
 #:  {1: frozenset({2}), 2: frozenset({1}), 3: frozenset({4}), 4: frozenset({3})}
 cliques_to_graph = functional_generic.compose_left(
-    functional_generic.mapcat(lambda clique: itertools.permutations(clique, r=2)),
+    sync.mapcat(lambda clique: itertools.permutations(clique, r=2)),
     edges_to_graph,
 )
 
