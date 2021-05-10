@@ -13,9 +13,12 @@ from .graph import *
 from .graph_async import *
 from .higher_order import *
 from .io_utils import *
+from .optimized import async_functions
 from .string_utils import *
 from .tree import *
 from .url_utils import *
 
 map = functional_generic.curried_map
 filter = functional_generic.curried_filter
+
+to_awaitable = async_functions.to_awaitable
