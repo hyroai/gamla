@@ -49,8 +49,6 @@ _is_terminal = functional_generic.anyjuxt(
     functional.is_instance(float),
 )
 
-from gamla.optimized import sync
-
 
 def _get_children(element):
     return functional_generic.case_dict(
