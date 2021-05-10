@@ -19,5 +19,6 @@ setuptools.setup(
         "pytest",
         "requests",
         "toolz",
+        "yappi",
     ],
 )

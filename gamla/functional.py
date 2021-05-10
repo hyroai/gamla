@@ -1,4 +1,3 @@
-import cProfile
 import dataclasses
 import functools
 import hashlib
@@ -6,7 +5,6 @@ import heapq
 import inspect
 import itertools
 import json
-import logging
 import random
 from concurrent import futures
 from typing import (
@@ -297,18 +295,6 @@ def bottom(iterable, key=identity):
         heapq.heappush(h, (key(value), i, value))
     while h:
         yield toolz.nth(2, heapq.heappop(h))
-
-
-def profileit(func):
-    def wrapper(*args, **kwargs):
-        filename = func.__name__ + ".profile"
-        prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs)
-        prof.dump_stats(filename)
-        logging.info(f"Saved profiling stats to {filename}")
-        return retval
-
-    return wrapper
 
 
 @currying.curry

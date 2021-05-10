@@ -5,6 +5,7 @@ import logging
 from typing import Text
 
 import toolz
+import yappi
 
 from gamla import functional, functional_generic
 
@@ -85,3 +86,27 @@ def debug_exception(f):
                 raise e
 
     return functools.wraps(f)(debug_exception)
+
+
+def profileit(f):
+    if asyncio.iscoroutinefunction(f):
+
+        @functools.wraps(f)
+        async def wrapper(*args, **kwargs):
+            yappi.set_clock_type("WALL")
+            with yappi.run():
+                result = await f(*args, **kwargs)
+            yappi.get_func_stats().print_all()
+            return result
+
+        return wrapper
+
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        yappi.set_clock_type("WALL")
+        with yappi.run():
+            result = f(*args, **kwargs)
+        yappi.get_func_stats().print_all()
+        return result
+
+    return wrapper
