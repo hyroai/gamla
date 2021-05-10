@@ -112,7 +112,7 @@ edges_to_graph = functional_generic.compose(
             functional_generic.curried_map(functional.second),
         ),
     ),
-    functional_generic.groupby(functional.head),
+    sync.groupby(functional.head),
 )
 #: Gets a graph and returns an iterator of all edges in it.
 #:

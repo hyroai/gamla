@@ -458,7 +458,7 @@ def pair_with(f):
     >>> add_one(3)
     (4, 3)
     """
-    return juxt(f, functional.identity)
+    return sync.juxt(f, functional.identity)
 
 
 def pair_right(f):
@@ -468,7 +468,7 @@ def pair_right(f):
     >>> add_one(3)
     (3, 4)
     """
-    return juxt(functional.identity, f)
+    return sync.juxt(functional.identity, f)
 
 
 #: Constructs a function that filters elements of a given iterable for which function returns true.
@@ -909,7 +909,7 @@ def merge_with(f):
 
     def merge_with(*dicts):
         result = _inner_merge_with(dicts)
-        return valmap(f)(result)
+        return sync.valmap(f)(result)
 
     return merge_with
 
@@ -947,7 +947,7 @@ def groupby(
                 concat,
             ),
         ),
-        valmap(tuple),
+        sync.valmap(tuple),
     )
 
 

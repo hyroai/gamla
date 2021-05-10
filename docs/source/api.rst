@@ -31,7 +31,6 @@ data
    csv_to_list_of_dicts
    freeze_deep
    get_encode_config
-   match
    tuple_of_tuples_to_csv
 
 debug_utils

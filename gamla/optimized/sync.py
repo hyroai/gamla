@@ -63,7 +63,11 @@ def remove(f):
     return remove
 
 
-# TODO(uri): Anything below this line was not deduplicated.
+def juxt(*functions):
+    def juxt(*args, **kwargs):
+        return tuple(f(*args, **kwargs) for f in functions)
+
+    return juxt
 
 
 def valmap(mapper):
@@ -112,6 +116,9 @@ def groupby_many(grouper):
     return groupby_many
 
 
+# TODO(uri): Anything below this line was not deduplicated.
+
+
 def compose(*functions):
     def compose(x):
         for f in reversed(functions):
@@ -147,9 +154,9 @@ def ternary(c, f, g):
 
 def check(f, exception):
     def check(x):
-        if not f(x):
-            raise exception
-        return x
+        if f(x):
+            return x
+        raise exception
 
     return check
 
@@ -210,13 +217,6 @@ def after(f):
         return compose_left(g, f)
 
     return after
-
-
-def juxt(*functions):
-    def juxt(*args, **kwargs):
-        return tuple(f(*args, **kwargs) for f in functions)
-
-    return juxt
 
 
 juxtduct = compose_left(juxt, after(star(itertools.product)))
