@@ -87,43 +87,6 @@ def _get_name_for_function_group(funcs):
     return "_OF_".join(map(lambda x: x.__name__, funcs))
 
 
-def _compose_async(*funcs):
-    @functools.wraps(functional.last(funcs))
-    async def async_composed(*args, **kwargs):
-        for f in reversed(funcs):
-            args = [
-                await async_functions.to_awaitable(f(*args, **kwargs)),
-            ]
-            kwargs = {}
-        return functional.head(args)
-
-    return async_composed
-
-
-def _compose_sync(*funcs):
-    """Compose sync functions to operate in series.
-
-    Returns a function that applies other functions in sequence.
-
-    Functions are applied from right to left so that
-    ``compose(f, g, h)(x, y)`` is the same as ``f(g(h(x, y)))``.
-
-    >>> inc = lambda i: i + 1
-    >>> compose(str, inc)(3)
-    '4'
-
-    """
-
-    @functools.wraps(functional.last(funcs))
-    def composed(*args, **kwargs):
-        for f in reversed(funcs):
-            args = [f(*args, **kwargs)]
-            kwargs = {}
-        return functional.head(args)
-
-    return composed
-
-
 def compose(*funcs):
     """Compose sync and async functions to operate in series.
 
@@ -143,9 +106,10 @@ def compose(*funcs):
         pipe
     """
     if _any_is_async(funcs):
-        composed = _compose_async(*funcs)
+        composed = async_functions.compose(*funcs)
     else:
-        composed = _compose_sync(*funcs)
+        composed = sync.compose(*funcs)
+    composed = functools.wraps(functional.last(funcs))(composed)
     name = _get_name_for_function_group(funcs)
     frame = inspect.currentframe().f_back.f_back
     composed.__code__ = composed.__code__.replace(
@@ -381,7 +345,7 @@ def pipe(val, *funcs):
     if not funcs:
         raise PipeNotGivenAnyFunctions
     if _any_is_async(funcs):
-        return _compose_async(*reversed(funcs))(val)
+        return async_functions.compose(*reversed(funcs))(val)
     for f in funcs:
         val = f(val)
     return val

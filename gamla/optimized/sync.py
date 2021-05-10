@@ -143,18 +143,31 @@ def check(condition, exception):
     return check
 
 
-# TODO(uri): Anything below this line was not deduplicated.
-
-
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def compose(*functions):
-    def compose(x):
+    """Compose sync functions to operate in series.
+
+    Returns a function that applies other functions in sequence.
+
+    Functions are applied from right to left so that
+    ``compose(f, g, h)(x, y)`` is the same as ``f(g(h(x, y)))``.
+
+    >>> inc = lambda i: i + 1
+    >>> compose(str, inc)(3)
+    '4'
+
+    """
+
+    def compose(*args, **kwargs):
         for f in reversed(functions):
-            x = f(x)
-        return x
+            args = [f(*args, **kwargs)]
+            kwargs = {}
+        return args[0]
 
     return compose
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def compose_left(*functions):
     def compose_left(*args, **kwargs):
         for f in functions:
@@ -166,10 +179,12 @@ def compose_left(*functions):
     return compose_left
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def pipe(x, *functions):
     return compose_left(*functions)(x)
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def anyjuxt(*functions):
     def anyjuxt(x):
         for f in functions:
@@ -180,6 +195,7 @@ def anyjuxt(*functions):
     return anyjuxt
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def star(f):
     def starred(args):
         return f(*args)
@@ -187,6 +203,7 @@ def star(f):
     return starred
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def pair_left(f):
     def pair_left(x):
         return f(x), x
@@ -194,6 +211,7 @@ def pair_left(f):
     return pair_left
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def reduce(f, initial):
     def reduce(it):
         state = initial
@@ -204,6 +222,7 @@ def reduce(f, initial):
     return reduce
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def merge_with_reducer(reducer):
     def merge_with_reducer(*dictionaries):
         new_d = {}
@@ -218,9 +237,11 @@ def merge_with_reducer(reducer):
     return merge_with_reducer
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 merge = star(merge_with_reducer(lambda _, x: x))
 
 
+# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def after(f):
     def after(g):
         return compose_left(g, f)

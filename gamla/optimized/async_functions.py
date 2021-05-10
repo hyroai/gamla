@@ -18,10 +18,7 @@ async def to_awaitable(value):
     return value
 
 
-# TODO(uri): Anything below this line was not deduplicated.
-
-
-def compose_left_async(*funcs):
+def compose_left(*funcs):
     async def compose_left_async(*args, **kwargs):
         for f in funcs:
             args = [await to_awaitable(f(*args, **kwargs))]
@@ -29,6 +26,16 @@ def compose_left_async(*funcs):
         return args[0]
 
     return compose_left_async
+
+
+def compose(*funcs):
+    async def compose(*args, **kwargs):
+        for f in reversed(funcs):
+            args = [await to_awaitable(f(*args, **kwargs))]
+            kwargs = {}
+        return args[0]
+
+    return compose
 
 
 def map(f):
