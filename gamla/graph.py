@@ -236,7 +236,7 @@ def has_cycle(graph):
     )
 
 
-_non_sources = functional_generic.compose_left(
+_non_sources = sync.compose_left(
     dict.values,
     functional_generic.concat,
     frozenset,
@@ -248,8 +248,8 @@ _non_sources = functional_generic.compose_left(
 #:  >>> find_sources({'1': ['2', '3'], '2': ['3'], '3': [], '4': []})
 #:  frozenset({'1', '4'})
 def find_sources(graph: Dict) -> FrozenSet:
-    return functional_generic.pipe(
+    return sync.pipe(
         graph,
-        functional_generic.remove(functional.contains(_non_sources(graph))),
+        sync.remove(functional.contains(_non_sources(graph))),
         frozenset,
     )

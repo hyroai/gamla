@@ -54,9 +54,6 @@ def filter(f):
     return filter
 
 
-# TODO(uri): Anything below this line was not deduplicated.
-
-
 def remove(f):
     def remove(it):
         for x in it:
@@ -64,6 +61,9 @@ def remove(f):
                 yield x
 
     return remove
+
+
+# TODO(uri): Anything below this line was not deduplicated.
 
 
 def valmap(mapper):
