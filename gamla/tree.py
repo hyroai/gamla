@@ -49,6 +49,8 @@ _is_terminal = functional_generic.anyjuxt(
     functional.is_instance(float),
 )
 
+from gamla.optimized import sync
+
 
 def _get_children(element):
     return functional_generic.case_dict(
@@ -62,7 +64,7 @@ def _get_children(element):
             ),
             functional.is_instance(KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
-                functional_generic.ternary(
+                sync.ternary(
                     _is_terminal,
                     functional.wrap_tuple,
                     _get_children,

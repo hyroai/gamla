@@ -5,6 +5,7 @@ import time
 import pytest
 
 from gamla import currying, dict_utils, functional, functional_generic
+from gamla.optimized import sync
 
 pytestmark = pytest.mark.asyncio
 
@@ -108,7 +109,7 @@ async def test_allmap_in_async_pipe():
         [True, True, False],
         functional_generic.allmap(_opposite_async),
         # Check that the `pipe` serves a value and not a future.
-        functional_generic.check(functional.is_instance(bool), AssertionError),
+        sync.check(functional.is_instance(bool), AssertionError),
     )
 
 

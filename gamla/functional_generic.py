@@ -299,14 +299,7 @@ def ternary(condition, f_true, f_false):
 
         return ternary_inner_async
 
-    def ternary_inner(*args, **kwargs):
-        return (
-            f_true(*args, **kwargs)
-            if condition(*args, **kwargs)
-            else f_false(*args, **kwargs)
-        )
-
-    return ternary_inner
+    return sync.ternary(condition, f_true, f_false)
 
 
 def when(condition: Callable, f_true: Callable) -> Callable:
@@ -832,21 +825,6 @@ find_index = compose_left(
     before(enumerate),
     after(ternary(functional.equals(None), functional.just(-1), functional.head)),
 )
-
-
-def check(condition, exception):
-    """Apply function `condition` to value, raise `exception` if return value is `False`-ish or return the value as-is.
-
-    >>> f = check(gamla.greater_than(10), ValueError)
-    >>> f(5)
-    `ValueError`
-    >>> f(15)
-    15
-    """
-    return functional.do_if(
-        complement(condition),
-        functional.make_raise(exception),
-    )
 
 
 def countby_many(f):

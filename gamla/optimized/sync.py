@@ -116,6 +116,33 @@ def groupby_many(grouper):
     return groupby_many
 
 
+def ternary(condition, f_true, f_false):
+    def ternary(*args, **kwargs):
+        if condition(*args, **kwargs):
+            return f_true(*args, **kwargs)
+        return f_false(*args, **kwargs)
+
+    return ternary
+
+
+def check(condition, exception):
+    """Apply function `condition` to value, raise `exception` if return value is `False`-ish or return the value as-is.
+
+    >>> f = check(gamla.greater_than(10), ValueError)
+    >>> f(5)
+    `ValueError`
+    >>> f(15)
+    15
+    """
+
+    def check(x):
+        if condition(x):
+            return x
+        raise exception
+
+    return check
+
+
 # TODO(uri): Anything below this line was not deduplicated.
 
 
@@ -141,24 +168,6 @@ def compose_left(*functions):
 
 def pipe(x, *functions):
     return compose_left(*functions)(x)
-
-
-def ternary(c, f, g):
-    def ternary(x):
-        if c(x):
-            return f(x)
-        return g(x)
-
-    return ternary
-
-
-def check(f, exception):
-    def check(x):
-        if f(x):
-            return x
-        raise exception
-
-    return check
 
 
 def anyjuxt(*functions):

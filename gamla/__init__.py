@@ -13,11 +13,12 @@ from .graph import *
 from .graph_async import *
 from .higher_order import *
 from .io_utils import *
-from .optimized import async_functions
+from .optimized import async_functions, sync
 from .string_utils import *
 from .tree import *
 from .url_utils import *
 
+check = sync.check
 map = functional_generic.curried_map
 filter = functional_generic.curried_filter
 
