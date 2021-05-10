@@ -4,6 +4,7 @@ import functools
 import logging
 from typing import Text
 
+import tabulate
 import toolz
 import yappi
 
@@ -88,6 +89,31 @@ def debug_exception(f):
     return functools.wraps(f)(debug_exception)
 
 
+def _print_stats():
+    logging.info(
+        "\n\n\n"
+        + tabulate.tabulate(
+            map(
+                lambda stat: [
+                    f"{stat.ttot:2f}",
+                    f"{stat.tsub:2f}",
+                    stat.ncall,
+                    stat.name,
+                    f"{stat.module}:{stat.lineno}",
+                ],
+                yappi.get_func_stats(),
+            ),
+            [
+                "ttot",
+                "tsub",
+                "ncall",
+                "name",
+                "module:lineno",
+            ],
+        ),
+    )
+
+
 def profileit(f):
     if asyncio.iscoroutinefunction(f):
 
@@ -96,7 +122,7 @@ def profileit(f):
             yappi.set_clock_type("WALL")
             with yappi.run():
                 result = await f(*args, **kwargs)
-            yappi.get_func_stats().print_all()
+            _print_stats()
             return result
 
         return wrapper
@@ -106,7 +132,7 @@ def profileit(f):
         yappi.set_clock_type("WALL")
         with yappi.run():
             result = f(*args, **kwargs)
-        yappi.get_func_stats().print_all()
+        _print_stats()
         return result
 
     return wrapper

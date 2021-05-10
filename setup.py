@@ -18,6 +18,7 @@ setuptools.setup(
         "pytest-asyncio",
         "pytest",
         "requests",
+        "tabulate",
         "toolz",
         "yappi",
     ],
