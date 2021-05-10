@@ -74,12 +74,7 @@ sort = sort_by(identity)
 sort_reversed = sort_by_reversed(identity)
 
 
-def curried_map_sync(f):
-    def curried_map(it):
-        for x in it:
-            yield f(x)
-
-    return curried_map
+curried_map_sync = sync.map
 
 
 def pack(*stuff):

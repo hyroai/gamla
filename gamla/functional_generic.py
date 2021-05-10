@@ -19,7 +19,7 @@ from typing import (
 )
 
 from gamla import apply_utils, data, excepts_decorator, functional
-from gamla.optimized import async_functions
+from gamla.optimized import async_functions, sync
 
 
 def compose_left(*funcs):
@@ -43,13 +43,6 @@ def compose_left(*funcs):
     return compose(*reversed(funcs))
 
 
-def _async_curried_map(f):
-    async def async_curried_map(it):
-        return await asyncio.gather(*map(f, it))
-
-    return async_curried_map
-
-
 def curried_map(f):
     """
     Constructs a function that maps elements of a given iterable using the given function.
@@ -61,8 +54,8 @@ def curried_map(f):
     [4, 5, 6]
     """
     if asyncio.iscoroutinefunction(f):
-        return _async_curried_map(f)
-    return functional.curried_map_sync(f)
+        return async_functions.map(f)
+    return sync.map(f)
 
 
 def curried_to_binary(f):
@@ -478,15 +471,6 @@ def pair_right(f):
     return juxt(functional.identity, f)
 
 
-def _sync_curried_filter(f):
-    def curried_filter(it):
-        for x in it:
-            if f(x):
-                yield x
-
-    return curried_filter
-
-
 #: Constructs a function that filters elements of a given iterable for which function returns true.
 #: Returns an async function iff the filter function is async, else returns a sync function.
 #:
@@ -497,7 +481,7 @@ curried_filter = compose(
     after(
         compose(
             functional.curried_map_sync(functional.second),
-            _sync_curried_filter(functional.head),
+            sync.filter(functional.head),
         ),
     ),
     curried_map,
@@ -632,7 +616,7 @@ async def _await_dict(value):
             valmap(_await_dict),
         )
     if isinstance(value, Iterable):
-        return await pipe(value, _async_curried_map(_await_dict), type(value))
+        return await pipe(value, async_functions.map(_await_dict), type(value))
     return await async_functions.to_awaitable(value)
 
 

@@ -159,7 +159,7 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
             graph_traverse(
                 source=functional.head(nodes_left),
                 get_neighbors=functional_generic.compose(
-                    functional_generic.curried_filter(functional.contains(nodes_left)),
+                    sync.filter(functional.contains(nodes_left)),
                     graph.get,
                 ),
             ),
