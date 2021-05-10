@@ -458,7 +458,7 @@ def pair_with(f):
     >>> add_one(3)
     (4, 3)
     """
-    return sync.juxt(f, functional.identity)
+    return juxt(f, functional.identity)
 
 
 def pair_right(f):
@@ -468,7 +468,7 @@ def pair_right(f):
     >>> add_one(3)
     (3, 4)
     """
-    return sync.juxt(functional.identity, f)
+    return juxt(functional.identity, f)
 
 
 #: Constructs a function that filters elements of a given iterable for which function returns true.
