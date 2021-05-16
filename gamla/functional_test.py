@@ -708,3 +708,7 @@ def test_between():
 
 def test_not_between():
     assert functional.between(2, 5)(14) is False
+
+
+def test_intersect():
+    assert tuple(functional.intersect([[1, 2, 3, 4], [4, 5], [4, 2]])) == (4,)
