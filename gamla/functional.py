@@ -1002,7 +1002,7 @@ def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
     return ends_with
 
 
-def intersect(iterables: Iterable[Collection]) -> Iterable:
+def intersect(collections: Iterable[Collection]) -> Iterable:
     """Intersects a group of collections.
 
     >>> tuple(
@@ -1017,7 +1017,7 @@ def intersect(iterables: Iterable[Collection]) -> Iterable:
     (4,)
 
     """
-    first_collection, *rest = iterables
+    first_collection, *rest = collections
     for x in first_collection:
         if all(x in container for container in rest):
             yield x
