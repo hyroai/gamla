@@ -1002,7 +1002,7 @@ def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
     return ends_with
 
 
-def intersect(collections: Iterable[Collection]) -> Iterable:
+def intersect(collections: Collection[Collection]) -> Iterable:
     """Intersects a group of collections.
 
     >>> tuple(
