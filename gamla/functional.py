@@ -1002,11 +1002,11 @@ def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
     return ends_with
 
 
-def intersect(iterables: Iterable[Collection]):
+def intersect(iterables: Iterable[Collection]) -> Iterable:
     """Intersects a group of collections.
 
     >>> tuple(
-            functional.intersect(
+            gamla.intersect(
                 [
                     [1, 2, 3, 4],
                     [4, 5],
