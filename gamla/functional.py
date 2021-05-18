@@ -539,8 +539,7 @@ def prefix(val: Any, it: Iterable):
 
 @currying.curry
 def concat_with(new_it: Iterable, it: Iterable):
-    """
-    Concat two iterables.
+    """Concat two iterables.
 
     >>> tuple(concat_with((3, 4), (1, 2)))
     (1, 2, 3, 4)
@@ -550,8 +549,7 @@ def concat_with(new_it: Iterable, it: Iterable):
 
 @currying.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
-    """
-    Wrap a string in a wrapping string.
+    """Wrap a string in a wrapping string.
 
     >>> wrap_str("hello {}", "world")
     'hello world'
@@ -725,8 +723,7 @@ def not_equals(x):
 
 
 def contains(x):
-    """
-    Contains operator.
+    """Contains operator.
 
     >>> contains([1, 2, 3])(2)
     True
@@ -742,8 +739,7 @@ def contains(x):
 
 
 def add(x):
-    """
-    Addition operator.
+    """Addition operator.
 
     >>> add(1)(2)
     3
@@ -759,8 +755,7 @@ def add(x):
 
 
 def greater_than(x):
-    """
-    Greater than operator.
+    """Greater than operator.
 
     >>> greater_than(1)(2)
     True
