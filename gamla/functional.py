@@ -11,6 +11,7 @@ from typing import (
     AbstractSet,
     Any,
     Callable,
+    Collection,
     Dict,
     Iterable,
     List,
@@ -78,8 +79,7 @@ curried_map_sync = sync.map
 
 
 def pack(*stuff):
-    """
-    Returns a list generated from the provided input.
+    """Returns a list generated from the provided input.
 
     >>> pack(1, 2, 3)
     (1, 2, 3)
@@ -113,8 +113,7 @@ def singleize(func: Callable) -> Callable:
 
 
 def ignore_input(inner: Callable[[], Any]) -> Callable:
-    """
-    Returns `inner` function ignoring the provided inputs.
+    """Returns `inner` function ignoring the provided inputs.
 
     >>> ignore_input(lambda: 0)(1)
     0
@@ -156,8 +155,7 @@ def make_raise(exception):
 
 @currying.curry
 def translate_exception(func: Callable, exc1: Exception, exc2: Exception):
-    """
-    A functional try/except block: if `func` fails with `exc1`, raise `exc2`.
+    """A functional try/except block: if `func` fails with `exc1`, raise `exc2`.
 
     >>> from gamla import functional_generic
     >>> functional_generic.pipe(iter([]), translate_exception(next, StopIteration, ValueError))
@@ -167,8 +165,7 @@ def translate_exception(func: Callable, exc1: Exception, exc2: Exception):
 
 
 def to_json(obj):
-    """
-    Return a `JSON` representation of a 'dictionary' or an object.
+    """Return a `JSON` representation of a 'dictionary' or an object.
 
     >>> to_json({"one": 1, "two": 2})
     '{"one": 1, "two": 2}'
@@ -190,8 +187,7 @@ def compute_stable_json_hash(item) -> Text:
 
 
 def star(function: Callable) -> Callable:
-    """
-    Turns a variadic function into an unary one that gets a tuple of args to the original function.
+    """Turns a variadic function into an unary one that gets a tuple of args to the original function.
 
     >>> from gamla import functional_generic
     >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
@@ -215,8 +211,7 @@ def _assert_f_output_on_inp(f, inp):
 
 
 def assert_that(f):
-    """
-    Assert a function `f` on the input.
+    """Assert a function `f` on the input.
 
     >>> assert_that(equals(2))(2)
     2
@@ -276,8 +271,7 @@ def top(iterable: Iterable, key=identity):
 
 @currying.curry
 def bottom(iterable, key=identity):
-    """
-    Generates elements from min to max.
+    """Generates elements from min to max.
 
     >>> tuple(bottom((3, 2, 1)))
     (1, 2, 3)
@@ -295,8 +289,7 @@ def bottom(iterable, key=identity):
 
 @currying.curry
 def inside(val, container):
-    """
-    In operator.
+    """A functional `in` operator.
 
     >>> inside(1, [0, 1, 2])
     True
@@ -372,8 +365,7 @@ def skip(n: int, seq: Iterable):
 
 
 def wrap_tuple(x: Any):
-    """
-    Wrap an element in a tuple.
+    """Wrap an element in a tuple.
 
     >>> wrap_tuple("hello")
     ('hello',)
@@ -392,8 +384,7 @@ def wrap_frozenset(x: Any):
 
 @currying.curry
 def assoc_in(d, keys, value, factory=dict):
-    """
-    Associate a value to the input dict given the path "keys".
+    """Associate a value to the input dict given the path "keys".
 
     >>> assoc_in({"a": {"b": 1}}, ["a", "b"], 2)
     {'a': {'b': 2}}
@@ -402,8 +393,7 @@ def assoc_in(d, keys, value, factory=dict):
 
 
 def add_key_value(key, value):
-    """
-    Associate a key-value pair to the input dict.
+    """Associate a key-value pair to the input dict.
 
     >>> add_key_value("1", "1")({"2": "2"})
     {'2': '2', '1': '1'}
@@ -430,8 +420,7 @@ def remove_key(key):
 
 
 def wrap_dict(key: Any):
-    """
-    Wrap a key and a value in a dict (in a curried fashion).
+    """Wrap a key and a value in a dict (in a curried fashion).
 
     >>> wrap_dict("one") (1)
     {'one': 1}
@@ -445,8 +434,7 @@ def wrap_dict(key: Any):
 
 @currying.curry
 def update_in(d: dict, keys: Iterable, func: Callable, default=None, factory=dict):
-    """
-    Gets a (potentially nested) dictionary, key(s) and a function, and return new `dictionary` d' where d'[key] = func(d[key]).
+    """Gets a (potentially nested) dictionary, key(s) and a function, and return new `dictionary` d' where d'[key] = func(d[key]).
 
     >>> inc = lambda x: x + 1
     >>> update_in({'a': 0}, ['a'], inc)
@@ -528,8 +516,7 @@ def reduce(
 
 @currying.curry
 def suffix(val: Any, it: Iterable):
-    """
-    Add a value to the end of an iterable. Return an iterable.
+    """Add a value to the end of an iterable. Return an iterable.
 
     >>> tuple(suffix(4, (1, 2, 3)))
     (1, 2, 3, 4)
@@ -539,8 +526,7 @@ def suffix(val: Any, it: Iterable):
 
 @currying.curry
 def prefix(val: Any, it: Iterable):
-    """
-    Add a value to the beginning of an iterable. Return an iterable.
+    """Add a value to the beginning of an iterable. Return an iterable.
 
     >>> tuple(prefix(1, (2, 3, 4)))
     (1, 2, 3, 4)
@@ -616,8 +602,7 @@ def get_all_n_grams(seq):
 
 @currying.curry
 def is_instance(the_type, the_value):
-    """
-    Returns if `the_value` is an instance of `the_type`.
+    """Returns if `the_value` is an instance of `the_type`.
 
     >>> is_instance(str, "hello")
     True
@@ -651,8 +636,7 @@ eq_str_ignore_case = eq_by(str.lower)
 
 @currying.curry
 def groupby_many_reduce(key: Callable, reducer: Callable, seq: Iterable):
-    """
-    Group a collection by a key function, when the value is given by a reducer function.
+    """Group a collection by a key function, when the value is given by a reducer function.
 
     Parameters:
     key (Callable): Key function (given object in collection outputs key).
@@ -699,8 +683,7 @@ unique = unique_by(identity)
 
 
 def attrgetter(attr):
-    """
-    Access the object attribute by its name `attr`.
+    """Access the object attribute by its name `attr`.
 
     >>> attrgetter("lower")("ASD")()
     'asd'
@@ -720,8 +703,7 @@ def equals(x):
 
 
 def not_equals(x):
-    """
-    Not_equals operator.
+    """A functional !=.
 
     >>> not_equals(2)(2)
     False
@@ -853,8 +835,7 @@ def divide_by(x):
 
 
 def interpose(el):
-    """
-    Introduces an element between each pair of elements in the input sequence.
+    """Introduces an element between each pair of elements in the input sequence.
 
     >>> tuple(interpose("a")([1, 2, 3]))
     (1, 'a', 2, 'a', 3)
@@ -867,8 +848,7 @@ def interpose(el):
 
 
 def tail(n: int):
-    """
-    Get the last n elements of a sequence.
+    """Get the last n elements of a sequence.
 
     >>> tail(3) ([1, 2, 3, 4, 5])
     [3, 4, 5]
@@ -881,8 +861,7 @@ def tail(n: int):
 
 
 def take(n: int):
-    """
-    Get an iterator for the first n elements of a sequence.
+    """Get an iterator for the first n elements of a sequence.
 
     >>> tuple(take(3) ([1, 2, 3, 4, 5]))
     (1, 2, 3)
@@ -915,8 +894,7 @@ def drop(n: int):
 
 
 def flip(func: Callable):
-    """
-    Call the function call with the arguments flipped.
+    """Call the function call with the arguments flipped.
 
     >>> import operator; flip(operator.truediv)(2, 6)
     3.0
@@ -963,8 +941,7 @@ is_iterable = toolz.isiterable
 
 
 def sliding_window(n: int):
-    """
-    A sequence of overlapping subsequences.
+    """A sequence of overlapping subsequences.
 
     >>> list(sliding_window(2)([1, 2, 3, 4]))
     [(1, 2), (2, 3), (3, 4)]
@@ -977,8 +954,7 @@ def sliding_window(n: int):
 
 
 def partition_all(n: int):
-    """
-    Partition all elements of sequence into tuples of length at most n.
+    """Partition all elements of sequence into tuples of length at most n.
     The final tuple may be shorter to accommodate extra elements.
 
     >>> list(partition_all(2)([1, 2, 3, 4]))
@@ -995,8 +971,7 @@ def partition_all(n: int):
 
 
 def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
-    """
-    Returns a predicate that checks if an iterabel ends with another iterable.
+    """Returns a predicate that checks if an iterabel ends with another iterable.
 
     >>> ends_with([1,2,3])((0,1,2,3))
     True
@@ -1025,3 +1000,26 @@ def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
         return True
 
     return ends_with
+
+
+def intersect(collections: Collection[Collection]) -> Iterable:
+    """Intersects a group of collections.
+
+    Caller is responsible to give collections with O(1) containment checks.
+
+    >>> tuple(
+            gamla.intersect(
+                [
+                    [1, 2, 3, 4],
+                    [4, 5],
+                    [4, 2],
+                ]
+            )
+        )
+    (4,)
+
+    """
+    first_collection, *rest = collections
+    for x in first_collection:
+        if all(x in container for container in rest):
+            yield x
