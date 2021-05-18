@@ -222,7 +222,6 @@ def reduce(f, initial):
     return reduce
 
 
-# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def merge_with_reducer(reducer):
     def merge_with_reducer(*dictionaries):
         new_d = {}
@@ -237,11 +236,9 @@ def merge_with_reducer(reducer):
     return merge_with_reducer
 
 
-# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 merge = star(merge_with_reducer(lambda _, x: x))
 
 
-# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def after(f):
     def after(g):
         return compose_left(g, f)

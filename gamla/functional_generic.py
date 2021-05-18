@@ -856,7 +856,7 @@ def merge_with(f):
     return merge_with
 
 
-merge = merge_with(functional.last)
+merge = sync.merge
 concat = itertools.chain.from_iterable
 mapcat = compose_left(curried_map, after(concat))
 
