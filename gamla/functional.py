@@ -205,18 +205,17 @@ def star(function: Callable) -> Callable:
     return star_and_run
 
 
-@currying.curry
-def _assert_f_output_on_inp(f, inp):
-    assert f(inp)
-
-
 def assert_that(f):
     """Assert a function `f` on the input.
 
     >>> assert_that(equals(2))(2)
     2
     """
-    return curried.do(_assert_f_output_on_inp(f))
+
+    def assert_that_f(inp):
+        assert f(inp)
+
+    return curried.do(assert_that_f)
 
 
 @currying.curry
@@ -234,6 +233,7 @@ def just(x):
     """
 
     def just(*args, **kwargs):
+        del args, kwargs
         return x
 
     return just
@@ -287,17 +287,20 @@ def bottom(iterable, key=identity):
         yield toolz.nth(2, heapq.heappop(h))
 
 
-@currying.curry
-def inside(val, container):
+def inside(val):
     """A functional `in` operator.
 
-    >>> inside(1, [0, 1, 2])
+    >>> inside(1)([0, 1, 2])
     True
 
     >>> inside("a", "word")
     False
     """
-    return val in container
+
+    def inside(container):
+        return val in container
+
+    return inside
 
 
 def len_equals(length: int):
@@ -313,24 +316,30 @@ def len_equals(length: int):
     return len_equals
 
 
-@currying.curry
-def len_greater(length: int, seq):
+def len_greater(length: int):
     """Measures if the length of a sequence is greater than a given length.
 
-    >>> len_greater(2, [0, 1, 2])
+    >>> len_greater(2)([0, 1, 2])
     True
     """
-    return count(seq) > length
+
+    def len_greater(seq):
+        return count(seq) > length
+
+    return len_greater
 
 
-@currying.curry
 def len_smaller(length: int, seq):
     """Measures if the length of a sequence is smaller than a given length.
 
-    >>> len_smaller(2, [0, 1, 2])
+    >>> len_smaller(2)([0, 1, 2])
     False
     """
-    return count(seq) < length
+
+    def len_smaller(seq):
+        return count(seq) < length
+
+    return len_smaller
 
 
 def between(low: int, high: int):
@@ -352,16 +361,19 @@ def nonempty(seq):
     return not empty(seq)
 
 
-@currying.curry
-def skip(n: int, seq: Iterable):
+def skip(n: int):
     """Skip the first n elements of a sequence. i.e, Return a generator that yields all elements after the n'th element.
-    >>> tuple(skip(3, [i for i in range(6)]))
+    >>> tuple(skip(3)([i for i in range(6)]))
     (3, 4, 5)
     """
-    for i, x in enumerate(seq):
-        if i < n:
-            continue
-        yield x
+
+    def skip(seq: Iterable):
+        for i, x in enumerate(seq):
+            if i < n:
+                continue
+            yield x
+
+    return skip
 
 
 def wrap_tuple(x: Any):
@@ -470,35 +482,36 @@ def update_in(d: dict, keys: Iterable, func: Callable, default=None, factory=dic
     return rv
 
 
-@currying.curry
 def dataclass_transform(
     attr_name: Text,
     attr_transformer: Callable[[Any], Any],
-    dataclass_instance,
 ):
     """Return a new instance of the dataclass where new_dataclass_instance.attr_name = attr_transformer(dataclass_instance.attr_name)
     >>> @dataclasses.dataclass(frozen=True)
     ... class C:
     ...    x: int
     >>> c = C(5)
-    >>> d = dataclass_transform('x', lambda i: i * 2, c)
+    >>> d = dataclass_transform('x', lambda i: i * 2)(c)
     >>> assert d.x == 10
     """
-    return dataclasses.replace(
-        dataclass_instance,
-        **{
-            attr_name: toolz.pipe(
-                dataclass_instance,
-                attrgetter(attr_name),
-                attr_transformer,
-            ),
-        },
+    transformation = sync.compose_left(
+        attrgetter(attr_name),
+        attr_transformer,
     )
 
+    def dataclass_transform(dataclass_instance):
+        return dataclasses.replace(
+            dataclass_instance,
+            **{
+                attr_name: transformation(dataclass_instance),
+            },
+        )
 
-@currying.curry
-def dataclass_replace(attr_name: Text, attr_value: Any, dataclass_instance):
-    return dataclasses.replace(dataclass_instance, **{attr_name: attr_value})
+    return dataclass_transform
+
+
+def dataclass_replace(attr_name: Text, attr_value: Any):
+    return dataclass_transform(attr_name, lambda _: attr_value)
 
 
 _R = TypeVar("_R")
@@ -558,7 +571,7 @@ def wrap_str(wrapping_string: Text, x: Text) -> Text:
 
 @currying.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
-    return toolz.pipe(
+    return sync.pipe(
         seq,
         reversed,
         currying.curry(itertools.dropwhile)(predicate),
@@ -594,23 +607,26 @@ def partition_before(
 
 
 def get_all_n_grams(seq):
-    return toolz.pipe(
+    return sync.pipe(
         range(1, len(seq) + 1),
         sync.mapcat(curried.sliding_window(seq=seq)),
     )
 
 
-@currying.curry
-def is_instance(the_type, the_value):
+def is_instance(the_type):
     """Returns if `the_value` is an instance of `the_type`.
 
-    >>> is_instance(str, "hello")
+    >>> is_instance(str)("hello")
     True
 
-    >>> is_instance(int, "a")
+    >>> is_instance(int)("a")
     False
     """
-    return type(the_value) == the_type
+
+    def is_instance(the_value):
+        return type(the_value) == the_type
+
+    return is_instance
 
 
 def sample(n: int):
