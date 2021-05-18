@@ -1,16 +1,19 @@
 import asyncio
+import dataclasses
 
 import pytest
 
-from gamla import excepts_decorator, functional
+from gamla import excepts_decorator, functional, functional_generic
 
 pytestmark = pytest.mark.asyncio
 
 
-def test_excepts_sync():
-    class SomeException(Exception):
-        pass
+@dataclasses.dataclass(frozen=True)
+class SomeException(Exception):
+    pass
 
+
+def test_excepts_sync():
     assert (
         excepts_decorator.excepts(
             SomeException,
@@ -30,9 +33,6 @@ def test_excepts_sync():
 
 
 async def test_excepts_async():
-    class SomeException(Exception):
-        pass
-
     async def async_raise(x):
         raise SomeException
 
@@ -58,10 +58,7 @@ async def test_excepts_async():
     )
 
 
-def test_try_and_excepts_sync():
-    class SomeException(Exception):
-        pass
-
+def test_try_and_excepts_no_exception():
     assert (
         excepts_decorator.try_and_excepts(
             SomeException,
@@ -70,11 +67,14 @@ def test_try_and_excepts_sync():
         )(1)
         == 1
     )
+
+
+def test_try_and_excepts_with_exception():
     assert (
         excepts_decorator.try_and_excepts(
             SomeException,
-            lambda _, x: x,
+            functional_generic.compose_left(functional.pack, functional.identity),
             functional.make_raise(SomeException),
         )(1)
-        == 1
+        == (SomeException(), 1)
     )
