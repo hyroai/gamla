@@ -56,3 +56,25 @@ async def test_excepts_async():
         )(1)
         is None
     )
+
+
+def test_try_and_excepts_sync():
+    class SomeException(Exception):
+        pass
+
+    assert (
+        excepts_decorator.try_and_excepts(
+            SomeException,
+            functional.just(None),
+            functional.identity,
+        )(1)
+        == 1
+    )
+    assert (
+        excepts_decorator.try_and_excepts(
+            SomeException,
+            lambda _, x: x,
+            functional.make_raise(SomeException),
+        )(1)
+        == 1
+    )
