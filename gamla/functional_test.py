@@ -145,12 +145,8 @@ async def test_itemfilter_async_sync_mixed():
     assert (
         await functional_generic.pipe(
             {1: 1, 2: 1, 3: 3},
-            functional_generic.itemfilter(
-                functional.star(_equals),
-            ),
-            functional_generic.itemfilter(
-                functional.star(lambda key, val: val == 1),
-            ),
+            functional_generic.itemfilter(functional_generic.star(_equals)),
+            functional_generic.itemfilter(sync.star(lambda _, val: val == 1)),
         )
         == {1: 1}
     )
@@ -321,7 +317,7 @@ async def test_async_bifurcate():
     average = await functional_generic.pipe(
         gen(),
         functional_generic.bifurcate(async_sum, functional.count),
-        functional.star(operator.truediv),
+        sync.star(operator.truediv),
     )
 
     assert average == 2

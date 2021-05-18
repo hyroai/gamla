@@ -43,3 +43,10 @@ def map(f):
         return await asyncio.gather(*(f(x) for x in it))
 
     return map
+
+
+def star(f):
+    async def star(x):
+        return await f(*x)
+
+    return star

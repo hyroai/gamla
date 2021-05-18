@@ -186,25 +186,6 @@ def compute_stable_json_hash(item) -> Text:
     ).hexdigest()
 
 
-def star(function: Callable) -> Callable:
-    """Turns a variadic function into an unary one that gets a tuple of args to the original function.
-
-    >>> from gamla import functional_generic
-    >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
-    5
-    """
-
-    def star_and_run(x):
-        return function(*x)
-
-    async def star_and_run_async(x):
-        return await function(*x)
-
-    if inspect.iscoroutinefunction(function):
-        return star_and_run_async
-    return star_and_run
-
-
 def assert_that(f):
     """Assert a function `f` on the input.
 

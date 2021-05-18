@@ -8,7 +8,8 @@ import tabulate
 import toolz
 import yappi
 
-from gamla import functional, functional_generic
+from gamla import functional_generic
+from gamla.optimized import sync
 
 logger = functional_generic.side_effect(logging.info)
 
@@ -45,7 +46,7 @@ debug_before = functional_generic.before(debug)
 def _debug_generic(f):
     return functional_generic.compose_left(
         lambda *funcs: toolz.interleave([funcs, [debug] * len(funcs)]),
-        functional.star(f),
+        sync.star(f),
     )
 
 

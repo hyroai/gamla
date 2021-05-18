@@ -147,5 +147,5 @@ def explode(*positions: Collection[int]):
             functional.wrap_tuple,
             functional_generic.complement(functional.contains(positions)),
         ),
-        functional.star(itertools.product),
+        sync.star(itertools.product),
     )

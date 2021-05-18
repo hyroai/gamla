@@ -229,8 +229,10 @@ async def post_json_with_extra_headers_and_params_async(
             params=params,
             json=payload,
             headers=sync.merge(
-                {"content_type": "application/json"},
-                extra_headers,
+                [
+                    {"content_type": "application/json"},
+                    extra_headers,
+                ],
             ),
             timeout=timeout,
         )
