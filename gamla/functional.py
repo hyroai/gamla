@@ -1005,6 +1005,8 @@ def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
 def intersect(collections: Collection[Collection]) -> Iterable:
     """Intersects a group of collections.
 
+    Caller is responsible to give collections with O(1) containment checks.
+
     >>> tuple(
             gamla.intersect(
                 [
