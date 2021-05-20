@@ -464,7 +464,7 @@ def update_in(d: dict, keys: Iterable, func: Callable, default=None, factory=dic
     return rv
 
 
-def dataclass_transform_attribute(attribute):
+def dataclass_transform_attribute(attribute: Text) -> Callable:
     """A curried version of `dataclass_transform`."""
 
     def dataclass_transform_attribute(f):
