@@ -194,7 +194,7 @@ def groupby_many(f: Callable, it: Iterable) -> Dict[Text, Any]:
         functional_generic.mapcat(
             functional_generic.compose_left(
                 lambda element: (f(element), [element]),
-                functional.star(itertools.product),
+                sync.star(itertools.product),
             ),
         ),
         edges_to_graph,

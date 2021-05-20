@@ -11,7 +11,8 @@ import requests
 import requests.adapters
 from requests.packages.urllib3.util import retry
 
-from gamla import currying, functional, functional_generic
+from gamla import currying, functional
+from gamla.optimized import sync
 
 
 def _time_to_readable(time_s: float) -> datetime.datetime:
@@ -227,9 +228,11 @@ async def post_json_with_extra_headers_and_params_async(
             url=url,
             params=params,
             json=payload,
-            headers=functional_generic.merge(
-                {"content_type": "application/json"},
-                extra_headers,
+            headers=sync.merge(
+                [
+                    {"content_type": "application/json"},
+                    extra_headers,
+                ],
             ),
             timeout=timeout,
         )

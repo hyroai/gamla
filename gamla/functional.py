@@ -17,13 +17,13 @@ from typing import (
     List,
     Sequence,
     Text,
+    Tuple,
     TypeVar,
     Union,
 )
 
 import heapq_max
 import toolz
-from toolz import curried
 
 from gamla import currying
 from gamla.optimized import sync
@@ -186,37 +186,18 @@ def compute_stable_json_hash(item) -> Text:
     ).hexdigest()
 
 
-def star(function: Callable) -> Callable:
-    """Turns a variadic function into an unary one that gets a tuple of args to the original function.
-
-    >>> from gamla import functional_generic
-    >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
-    5
-    """
-
-    def star_and_run(x):
-        return function(*x)
-
-    async def star_and_run_async(x):
-        return await function(*x)
-
-    if inspect.iscoroutinefunction(function):
-        return star_and_run_async
-    return star_and_run
-
-
-@currying.curry
-def _assert_f_output_on_inp(f, inp):
-    assert f(inp)
-
-
 def assert_that(f):
     """Assert a function `f` on the input.
 
     >>> assert_that(equals(2))(2)
     2
     """
-    return curried.do(_assert_f_output_on_inp(f))
+
+    def assert_that_f(inp):
+        assert f(inp)
+        return inp
+
+    return assert_that_f
 
 
 @currying.curry
@@ -234,6 +215,7 @@ def just(x):
     """
 
     def just(*args, **kwargs):
+        del args, kwargs
         return x
 
     return just
@@ -266,7 +248,7 @@ def top(iterable: Iterable, key=identity):
         # Use the index as a tie breaker.
         heapq_max.heappush_max(h, (key(value), i, value))
     while h:
-        yield toolz.nth(2, heapq_max.heappop_max(h))
+        yield nth(2)(heapq_max.heappop_max(h))
 
 
 @currying.curry
@@ -284,20 +266,23 @@ def bottom(iterable, key=identity):
         # Use the index as a tie breaker.
         heapq.heappush(h, (key(value), i, value))
     while h:
-        yield toolz.nth(2, heapq.heappop(h))
+        yield nth(2)(heapq.heappop(h))
 
 
-@currying.curry
-def inside(val, container):
+def inside(val):
     """A functional `in` operator.
 
-    >>> inside(1, [0, 1, 2])
+    >>> inside(1)([0, 1, 2])
     True
 
     >>> inside("a", "word")
     False
     """
-    return val in container
+
+    def inside(container):
+        return val in container
+
+    return inside
 
 
 def len_equals(length: int):
@@ -313,24 +298,30 @@ def len_equals(length: int):
     return len_equals
 
 
-@currying.curry
-def len_greater(length: int, seq):
+def len_greater(length: int):
     """Measures if the length of a sequence is greater than a given length.
 
-    >>> len_greater(2, [0, 1, 2])
+    >>> len_greater(2)([0, 1, 2])
     True
     """
-    return count(seq) > length
+
+    def len_greater(seq):
+        return count(seq) > length
+
+    return len_greater
 
 
-@currying.curry
 def len_smaller(length: int, seq):
     """Measures if the length of a sequence is smaller than a given length.
 
-    >>> len_smaller(2, [0, 1, 2])
+    >>> len_smaller(2)([0, 1, 2])
     False
     """
-    return count(seq) < length
+
+    def len_smaller(seq):
+        return count(seq) < length
+
+    return len_smaller
 
 
 def between(low: int, high: int):
@@ -352,16 +343,19 @@ def nonempty(seq):
     return not empty(seq)
 
 
-@currying.curry
-def skip(n: int, seq: Iterable):
+def skip(n: int):
     """Skip the first n elements of a sequence. i.e, Return a generator that yields all elements after the n'th element.
-    >>> tuple(skip(3, [i for i in range(6)]))
+    >>> tuple(skip(3)([i for i in range(6)]))
     (3, 4, 5)
     """
-    for i, x in enumerate(seq):
-        if i < n:
-            continue
-        yield x
+
+    def skip(seq: Iterable):
+        for i, x in enumerate(seq):
+            if i < n:
+                continue
+            yield x
+
+    return skip
 
 
 def wrap_tuple(x: Any):
@@ -470,36 +464,42 @@ def update_in(d: dict, keys: Iterable, func: Callable, default=None, factory=dic
     return rv
 
 
-@currying.curry
 def dataclass_transform(
     attr_name: Text,
     attr_transformer: Callable[[Any], Any],
-    dataclass_instance,
 ):
     """Return a new instance of the dataclass where new_dataclass_instance.attr_name = attr_transformer(dataclass_instance.attr_name)
     >>> @dataclasses.dataclass(frozen=True)
     ... class C:
     ...    x: int
     >>> c = C(5)
-    >>> d = dataclass_transform('x', lambda i: i * 2, c)
+    >>> d = dataclass_transform('x', lambda i: i * 2)(c)
     >>> assert d.x == 10
     """
-    return dataclasses.replace(
-        dataclass_instance,
-        **{
-            attr_name: toolz.pipe(
-                dataclass_instance,
-                attrgetter(attr_name),
-                attr_transformer,
-            ),
-        },
+    transformation = sync.compose_left(
+        attrgetter(attr_name),
+        attr_transformer,
     )
 
+    def dataclass_transform(dataclass_instance):
+        return dataclasses.replace(
+            dataclass_instance,
+            **{
+                attr_name: transformation(dataclass_instance),
+            },
+        )
 
-@currying.curry
-def dataclass_replace(attr_name: Text, attr_value: Any, dataclass_instance):
-    return dataclasses.replace(dataclass_instance, **{attr_name: attr_value})
+    return dataclass_transform
 
+
+dataclass_transform_attribute = sync.binary_curry(dataclass_transform)
+
+
+def dataclass_replace(attr_name: Text, attr_value) -> Callable:
+    return dataclass_transform(attr_name, lambda _: attr_value)
+
+
+dataclass_replace_attribute = sync.binary_curry(dataclass_replace)
 
 _R = TypeVar("_R")
 _E = TypeVar("_E")
@@ -536,8 +536,7 @@ def prefix(val: Any, it: Iterable):
 
 @currying.curry
 def concat_with(new_it: Iterable, it: Iterable):
-    """
-    Concat two iterables.
+    """Concat two iterables.
 
     >>> tuple(concat_with((3, 4), (1, 2)))
     (1, 2, 3, 4)
@@ -547,8 +546,7 @@ def concat_with(new_it: Iterable, it: Iterable):
 
 @currying.curry
 def wrap_str(wrapping_string: Text, x: Text) -> Text:
-    """
-    Wrap a string in a wrapping string.
+    """Wrap a string in a wrapping string.
 
     >>> wrap_str("hello {}", "world")
     'hello world'
@@ -558,7 +556,7 @@ def wrap_str(wrapping_string: Text, x: Text) -> Text:
 
 @currying.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
-    return toolz.pipe(
+    return sync.pipe(
         seq,
         reversed,
         currying.curry(itertools.dropwhile)(predicate),
@@ -593,24 +591,26 @@ def partition_before(
     )
 
 
-def get_all_n_grams(seq):
-    return toolz.pipe(
-        range(1, len(seq) + 1),
-        sync.mapcat(curried.sliding_window(seq=seq)),
-    )
+def get_all_n_grams(seq: Sequence) -> Iterable[Tuple]:
+    for i in range(len(seq)):
+        for j in range(i + 1, len(seq) + 1):
+            yield tuple(seq[i:j])
 
 
-@currying.curry
-def is_instance(the_type, the_value):
+def is_instance(the_type):
     """Returns if `the_value` is an instance of `the_type`.
 
-    >>> is_instance(str, "hello")
+    >>> is_instance(str)("hello")
     True
 
-    >>> is_instance(int, "a")
+    >>> is_instance(int)("a")
     False
     """
-    return type(the_value) == the_type
+
+    def is_instance(the_value):
+        return type(the_value) == the_type
+
+    return is_instance
 
 
 def sample(n: int):
@@ -719,8 +719,7 @@ def not_equals(x):
 
 
 def contains(x):
-    """
-    Contains operator.
+    """Contains operator.
 
     >>> contains([1, 2, 3])(2)
     True
@@ -736,8 +735,7 @@ def contains(x):
 
 
 def add(x):
-    """
-    Addition operator.
+    """Addition operator.
 
     >>> add(1)(2)
     3
@@ -753,8 +751,7 @@ def add(x):
 
 
 def greater_than(x):
-    """
-    Greater than operator.
+    """Greater than operator.
 
     >>> greater_than(1)(2)
     True

@@ -5,9 +5,9 @@ import itertools
 from typing import Any, Callable, Iterable, TypeVar
 
 import toolz
-from toolz import curried
 
 from gamla import functional, functional_generic
+from gamla.optimized import sync
 
 _S = TypeVar("_S")
 _X = TypeVar("_X")
@@ -48,8 +48,8 @@ def _replace_index(the_tuple, index, value):
 #: {"incremented": (2, 3, 4), "sum": 6}
 apply_spec = functional_generic.compose_left(
     dict.items,
-    curried.map(functional.star(_transform_by_key(toolz.assoc))),
-    functional.star(functional_generic.compose),
+    sync.map(sync.star(_transform_by_key(toolz.assoc))),
+    sync.star(functional_generic.compose),
 )
 
 #: Combines transducers in a `tuple` into a transducer that produces a `tuple`.
@@ -66,8 +66,8 @@ apply_spec = functional_generic.compose_left(
 juxt = functional_generic.compose_left(
     functional.pack,
     enumerate,
-    curried.map(functional.star(_transform_by_key(_replace_index))),
-    functional.star(functional_generic.compose),
+    sync.map(sync.star(_transform_by_key(_replace_index))),
+    sync.star(functional_generic.compose),
 )
 
 
@@ -139,7 +139,7 @@ def groupby_many(keys: Callable[[Any], Iterable], reducer: Reducer, initial):
         mapcat(
             functional_generic.compose_left(
                 functional_generic.juxt(keys, functional.wrap_tuple),
-                functional.star(itertools.product),
+                sync.star(itertools.product),
             ),
         ),
         lambda step: lambda s, x: step(

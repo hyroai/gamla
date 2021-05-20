@@ -58,7 +58,7 @@ def _get_children(element):
             functional.is_instance(list): functional.identity,
             functional.is_instance(dict): functional_generic.compose_left(
                 dict.items,
-                functional.curried_map_sync(functional.star(KeyValue)),
+                functional.curried_map_sync(sync.star(KeyValue)),
             ),
             functional.is_instance(KeyValue): functional_generic.compose_left(
                 lambda x: x.value,

@@ -125,6 +125,7 @@ functional
    ignore_input
    inside
    interpose
+   intersect
    is_instance
    is_iterable
    just

@@ -133,7 +133,7 @@ def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
         juxt
         compose_left
     """
-    return compose_left(juxt(*incoming), functional.star(f))
+    return compose_left(juxt(*incoming), star(f))
 
 
 def after(f1):
@@ -652,9 +652,9 @@ def apply_spec(spec: Dict):
 stack = compose_left(
     enumerate,
     functional.curried_map_sync(
-        functional.star(lambda i, f: compose(f, lambda x: x[i])),
+        sync.star(lambda i, f: compose(f, lambda x: x[i])),
     ),
-    functional.star(juxt),
+    sync.star(juxt),
 )
 
 
@@ -677,7 +677,7 @@ average = compose_left(
     excepts_decorator.excepts(
         ZeroDivisionError,
         functional.just(0),
-        functional.star(operator.truediv),
+        sync.star(operator.truediv),
     ),
 )
 
@@ -856,7 +856,7 @@ def merge_with(f):
     return merge_with
 
 
-merge = merge_with(functional.last)
+merge = sync.compose_left(lambda *x: x if len(x) > 1 else x[0], sync.merge)
 concat = itertools.chain.from_iterable
 mapcat = compose_left(curried_map, after(concat))
 
@@ -926,7 +926,7 @@ def count_by(f: Callable) -> Dict[Any, int]:
     """
     return functional.groupby_many_reduce(
         compose_left(f, functional.wrap_tuple),
-        lambda x, y: x + 1 if x else 1,
+        lambda x, _: x + 1 if x else 1,
     )
 
 
@@ -936,3 +936,20 @@ packstack = compose_left(functional.pack, stack)
 allstack = compose_left(packstack, after(all))
 #: Runs `packstack` with given functions, then runs `any` on the output.
 anystack = compose_left(packstack, after(any))
+
+
+def _choose_by_async(f_sync, f_async):
+    def choose_by_async(f):
+        if inspect.iscoroutinefunction(f):
+            return f_async(f)
+        return f_sync(f)
+
+    return choose_by_async
+
+
+#: Turns a variadic function into an unary one that gets a tuple of args to the original function.
+#:
+#: >>> from gamla import functional_generic
+#: >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
+#: 5
+star = _choose_by_async(sync.star, async_functions.star)
