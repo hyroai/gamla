@@ -250,3 +250,13 @@ juxtduct = compose_left(juxt, after(star(itertools.product)))
 mapdict = compose_left(map, after(dict))
 mapduct = compose_left(map, after(star(itertools.product)))
 maptuple = compose_left(map, after(tuple))
+
+
+def binary_curry(f):
+    def binary_curry(x):
+        def binary_curry(y):
+            return f(x, y)
+
+        return binary_curry
+
+    return binary_curry

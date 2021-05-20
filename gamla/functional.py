@@ -464,15 +464,6 @@ def update_in(d: dict, keys: Iterable, func: Callable, default=None, factory=dic
     return rv
 
 
-def dataclass_transform_attribute(attribute: Text) -> Callable:
-    """A curried version of `dataclass_transform`."""
-
-    def dataclass_transform_attribute(f):
-        return dataclass_transform(attribute, f)
-
-    return dataclass_transform_attribute
-
-
 def dataclass_transform(
     attr_name: Text,
     attr_transformer: Callable[[Any], Any],
@@ -501,9 +492,14 @@ def dataclass_transform(
     return dataclass_transform
 
 
-def dataclass_replace(attr_name: Text, attr_value: Any):
+dataclass_transform_attribute = sync.binary_curry(dataclass_transform)
+
+
+def dataclass_replace(attr_name: Text, attr_value) -> Callable:
     return dataclass_transform(attr_name, lambda _: attr_value)
 
+
+dataclass_replace_attribute = sync.binary_curry(dataclass_replace)
 
 _R = TypeVar("_R")
 _E = TypeVar("_E")
