@@ -311,7 +311,7 @@ def len_greater(length: int):
     return len_greater
 
 
-def len_smaller(length: int, seq):
+def len_smaller(length: int) -> Callable:
     """Measures if the length of a sequence is smaller than a given length.
 
     >>> len_smaller(2)([0, 1, 2])
