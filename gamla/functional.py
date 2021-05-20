@@ -17,13 +17,13 @@ from typing import (
     List,
     Sequence,
     Text,
+    Tuple,
     TypeVar,
     Union,
 )
 
 import heapq_max
 import toolz
-from toolz import curried
 
 from gamla import currying
 from gamla.optimized import sync
@@ -195,8 +195,9 @@ def assert_that(f):
 
     def assert_that_f(inp):
         assert f(inp)
+        return inp
 
-    return curried.do(assert_that_f)
+    return assert_that_f
 
 
 @currying.curry
@@ -247,7 +248,7 @@ def top(iterable: Iterable, key=identity):
         # Use the index as a tie breaker.
         heapq_max.heappush_max(h, (key(value), i, value))
     while h:
-        yield toolz.nth(2, heapq_max.heappop_max(h))
+        yield nth(2)(heapq_max.heappop_max(h))
 
 
 @currying.curry
@@ -265,7 +266,7 @@ def bottom(iterable, key=identity):
         # Use the index as a tie breaker.
         heapq.heappush(h, (key(value), i, value))
     while h:
-        yield toolz.nth(2, heapq.heappop(h))
+        yield nth(2)(heapq.heappop(h))
 
 
 def inside(val):
@@ -594,11 +595,10 @@ def partition_before(
     )
 
 
-def get_all_n_grams(seq):
-    return sync.pipe(
-        range(1, len(seq) + 1),
-        sync.mapcat(curried.sliding_window(seq=seq)),
-    )
+def get_all_n_grams(seq: Sequence) -> Iterable[Tuple]:
+    for i in range(len(seq)):
+        for j in range(i + 1, len(seq) + 1):
+            yield tuple(seq[i:j])
 
 
 def is_instance(the_type):

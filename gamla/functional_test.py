@@ -708,3 +708,33 @@ def test_not_between():
 
 def test_intersect():
     assert tuple(functional.intersect([[1, 2, 3, 4], [4, 5], [4, 2]])) == (4,)
+
+
+def test_all_n_grams():
+    assert set(functional.get_all_n_grams("abc")) == {
+        ("a",),
+        ("a", "b"),
+        (
+            "a",
+            "b",
+            "c",
+        ),
+        ("b",),
+        ("b", "c"),
+        ("c",),
+    }
+
+
+def test_all_n_grams_non_textual():
+    assert set(functional.get_all_n_grams([1, 2, 3])) == {
+        (1,),
+        (1, 2),
+        (
+            1,
+            2,
+            3,
+        ),
+        (2,),
+        (2, 3),
+        (3,),
+    }
