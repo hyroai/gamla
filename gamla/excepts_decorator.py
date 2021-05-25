@@ -35,9 +35,7 @@ def try_and_excepts(
     handler: Callable,
     function: Callable,
 ):
-    """
-    Same as sync excepts only that the handler gets the original function params after the exception param.
-    """
+    """Same as sync excepts only that the handler gets the original function params after the exception param."""
 
     def try_and_excepts(*args, **kwargs):
         try:

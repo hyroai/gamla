@@ -715,13 +715,7 @@ def reduce_curried(
 
         return reduce_async
 
-    def reduce(elements):
-        state = initial_value
-        for element in elements:
-            state = reducer(state, element)
-        return state
-
-    return reduce
+    return sync.reduce(reducer, initial_value)
 
 
 def scan(

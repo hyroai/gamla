@@ -211,7 +211,6 @@ def pair_left(f):
     return pair_left
 
 
-# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def reduce(f, initial):
     def reduce(it):
         state = initial
