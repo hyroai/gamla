@@ -2,7 +2,6 @@ import pytest
 
 from gamla import async_functions, dict_utils, functional_generic, graph_async
 
-# All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
 
 

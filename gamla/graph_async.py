@@ -102,7 +102,7 @@ _Node = Any
 async def _async_graph_traverse_many_inner(
     seen: Set[_Node],
     get_neighbors: Callable[[_Node], Awaitable[Iterable[_Node]]],
-    mapper: Callable[[_Node], Any],
+    process_node: Callable[[_Node], None],
     roots: Iterable[_Node],
 ):
     assert set(roots).isdisjoint(seen)
@@ -112,7 +112,7 @@ async def _async_graph_traverse_many_inner(
         functional_generic.juxt(
             seen.update,
             functional_generic.compose_left(
-                functional_generic.curried_map(mapper),
+                functional_generic.curried_map(process_node),
                 tuple,
             ),
         ),
