@@ -23,7 +23,6 @@ async_functions
    compose
    compose_left
    map
-   star
    to_awaitable
 
 currying
@@ -86,7 +85,6 @@ excepts_decorator
 
 .. autosummary::
    excepts
-   try_and_excepts
 
 functional
 ----------
@@ -106,9 +104,7 @@ functional
    count
    curried_map_sync
    dataclass_replace
-   dataclass_replace_attribute
    dataclass_transform
-   dataclass_transform_attribute
    divide_by
    do_if
    drop
@@ -129,7 +125,6 @@ functional
    ignore_input
    inside
    interpose
-   intersect
    is_instance
    is_iterable
    just
@@ -163,6 +158,7 @@ functional
    sort_by
    sort_by_reversed
    sort_reversed
+   star
    suffix
    tail
    take
@@ -243,7 +239,6 @@ functional_generic
    scan
    side_effect
    stack
-   star
    ternary
    unless
    valfilter
@@ -333,7 +328,6 @@ sync
 .. autosummary::
    after
    anyjuxt
-   binary_curry
    check
    compose
    compose_left
