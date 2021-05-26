@@ -125,14 +125,14 @@ async def _async_graph_traverse_many_inner(
         frozenset,
         functional_generic.unless(
             functional.empty,
-            _async_graph_traverse_many_inner(seen, get_neighbors, mapper),
+            _async_graph_traverse_many_inner(seen, get_neighbors, process_node),
         ),
     )
 
 
 async def async_graph_traverse_many(
     get_neighbors: Callable[[_Node], Awaitable[Iterable[_Node]]],
-    mapper: Callable[[_Node], Any],
+    process_node: Callable[[_Node], None],
     roots: Iterable[_Node],
 ):
     """BFS over a graph, calling mapper on unique nodes during iteration.
@@ -150,4 +150,9 @@ async def async_graph_traverse_many(
     >>> )
     [1, 2, 3, 5, 4]"""
 
-    return await _async_graph_traverse_many_inner(set(), get_neighbors, mapper, roots)
+    return await _async_graph_traverse_many_inner(
+        set(),
+        get_neighbors,
+        process_node,
+        roots,
+    )
