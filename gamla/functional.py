@@ -1020,3 +1020,12 @@ def intersect(collections: Collection[Collection]) -> Iterable:
     for x in first_collection:
         if all(x in container for container in rest):
             yield x
+
+
+def loop(mapper: Callable) -> Callable[[int], Iterable]:
+    """Iterates a function n times and returns an iterable of the results.
+
+    >>> tuple(loop(just("hello"))(3))
+    ('hello', 'hello', 'hello')
+    """
+    return sync.compose_left(range, sync.map(mapper))

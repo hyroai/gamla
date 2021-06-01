@@ -738,3 +738,11 @@ def test_all_n_grams_non_textual():
         (2, 3),
         (3,),
     }
+
+
+def test_loop():
+    assert tuple(functional.loop(functional.just("hello"))(3)) == (
+        "hello",
+        "hello",
+        "hello",
+    )
