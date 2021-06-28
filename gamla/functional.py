@@ -565,6 +565,22 @@ def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence
     )
 
 
+def take_while(predicate: Callable[[Any], bool]):
+    """Take elements from an iterable as long as elements pass some predicate.
+
+    >>> list(functional.take_while(lambda x: x < 7)([1, 2, 9, 2]))
+    [1, 2]
+    """
+
+    def take_while(iterable: Iterable) -> Iterable:
+        for x in iterable:
+            if not predicate(x):
+                break
+            yield x
+
+    return take_while
+
+
 @currying.curry
 def partition_after(
     predicate: Callable[[Any], bool],

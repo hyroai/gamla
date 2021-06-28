@@ -278,6 +278,7 @@ graph_async
 .. autosummary::
    agraph_traverse
    agraph_traverse_many
+   async_graph_traverse_many
    atraverse_graph_by_radius
 
 higher_order
