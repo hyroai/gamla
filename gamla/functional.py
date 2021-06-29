@@ -1036,3 +1036,9 @@ def intersect(collections: Collection[Collection]) -> Iterable:
     for x in first_collection:
         if all(x in container for container in rest):
             yield x
+
+
+def function_to_uid(f: Callable) -> str:
+    """Returns a unique identifier for the given function.
+    """
+    return hashlib.sha1(f.__name__.encode("utf-8")).hexdigest()
