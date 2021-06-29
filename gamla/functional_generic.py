@@ -114,6 +114,8 @@ def compose(*funcs):
     frame = inspect.currentframe().f_back.f_back
     composed.__code__ = composed.__code__.replace(
         co_name=f"{frame.f_code.co_filename}:{frame.f_lineno}",
+        co_filename=frame.f_code.co_filename,
+        co_firstlineno=frame.f_lineno,
     )
     composed.__name__ = name
     return composed
