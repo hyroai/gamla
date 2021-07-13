@@ -1,6 +1,6 @@
 from typing import Any, AsyncGenerator, Awaitable, Callable, Iterable, Set, Text, Tuple
 
-from gamla import currying, functional, functional_generic
+from gamla import currying, functional, functional_generic, async_functions
 
 
 @currying.curry
@@ -107,7 +107,7 @@ async def _async_graph_traverse_many_inner(
 ):
     assert set(roots).isdisjoint(seen)
 
-    functional_generic.pipe(
+    await functional_generic.pipe(
         roots,
         functional_generic.juxt(
             seen.update,
@@ -116,6 +116,7 @@ async def _async_graph_traverse_many_inner(
                 tuple,
             ),
         ),
+        async_functions.to_awaitable,
     )
 
     await functional_generic.pipe(
