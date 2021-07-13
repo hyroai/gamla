@@ -710,6 +710,14 @@ def test_intersect():
     assert tuple(functional.intersect([[1, 2, 3, 4], [4, 5], [4, 2]])) == (4,)
 
 
+def test_has_intersection():
+    assert functional.has_intersection([(1, 2, 3), (3, 4, 5)]) is True
+
+
+def test_doesnt_have_intersection():
+    assert functional.has_intersection([(1, 2, 3), (4, 5, 6)]) is False
+
+
 def test_all_n_grams():
     assert set(functional.get_all_n_grams("abc")) == {
         ("a",),

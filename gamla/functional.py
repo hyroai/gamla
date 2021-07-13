@@ -1038,6 +1038,11 @@ def intersect(collections: Collection[Collection]) -> Iterable:
             yield x
 
 
+def has_intersection(collections: Collection[Collection]) -> bool:
+    """Checks if a collection of iterables has an intersecion"""
+    return nonempty(intersect(collections))
+
+
 def function_to_uid(f: Callable) -> str:
     """Returns a unique identifier for the given function."""
     return hashlib.sha1(f.__name__.encode("utf-8")).hexdigest()
