@@ -1,6 +1,6 @@
 from typing import Any, AsyncGenerator, Awaitable, Callable, Iterable, Set, Text, Tuple
 
-from gamla import currying, functional, functional_generic, async_functions
+from gamla import async_functions, currying, functional, functional_generic
 
 
 @currying.curry

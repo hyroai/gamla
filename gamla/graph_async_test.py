@@ -1,6 +1,6 @@
-import gamla
 import pytest
 
+import gamla
 from gamla import async_functions, dict_utils, functional_generic, graph_async
 
 pytestmark = pytest.mark.asyncio
