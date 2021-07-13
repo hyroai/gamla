@@ -711,11 +711,11 @@ def test_intersect():
 
 
 def test_has_intersection():
-    assert functional.has_intersection([(1, 2, 3), (3, 4, 5)]) is True
+    assert functional.have_intersection([(1, 2, 3), (3, 4, 5)]) is True
 
 
 def test_doesnt_have_intersection():
-    assert functional.has_intersection([(1, 2, 3), (4, 5, 6)]) is False
+    assert functional.have_intersection([(1, 2, 3), (4, 5, 6)]) is False
 
 
 def test_all_n_grams():

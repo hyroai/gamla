@@ -1038,9 +1038,7 @@ def intersect(collections: Collection[Collection]) -> Iterable:
             yield x
 
 
-def has_intersection(collections: Collection[Collection]) -> bool:
-    """Checks if a collection of iterables has an intersecion"""
-    return nonempty(intersect(collections))
+have_intersection = sync.compose_left(intersect, nonempty)
 
 
 def function_to_uid(f: Callable) -> str:
