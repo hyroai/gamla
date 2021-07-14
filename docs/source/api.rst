@@ -23,6 +23,7 @@ async_functions
    compose
    compose_left
    map
+   star
    to_awaitable
 
 currying
@@ -85,6 +86,7 @@ excepts_decorator
 
 .. autosummary::
    excepts
+   try_and_excepts
 
 functional
 ----------
@@ -104,7 +106,9 @@ functional
    count
    curried_map_sync
    dataclass_replace
+   dataclass_replace_attribute
    dataclass_transform
+   dataclass_transform_attribute
    divide_by
    do_if
    drop
@@ -116,6 +120,7 @@ functional
    equals
    flip
    frequencies
+   function_to_uid
    get_all_n_grams
    greater_equals
    greater_than
@@ -125,6 +130,7 @@ functional
    ignore_input
    inside
    interpose
+   intersect
    is_instance
    is_iterable
    just
@@ -158,10 +164,10 @@ functional
    sort_by
    sort_by_reversed
    sort_reversed
-   star
    suffix
    tail
    take
+   take_while
    to_json
    top
    translate_exception
@@ -239,6 +245,7 @@ functional_generic
    scan
    side_effect
    stack
+   star
    ternary
    unless
    valfilter
@@ -273,6 +280,7 @@ graph_async
 .. autosummary::
    agraph_traverse
    agraph_traverse_many
+   async_graph_traverse_many
    atraverse_graph_by_radius
 
 higher_order
@@ -328,6 +336,7 @@ sync
 .. autosummary::
    after
    anyjuxt
+   binary_curry
    check
    compose
    compose_left
