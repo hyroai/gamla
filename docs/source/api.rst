@@ -167,7 +167,6 @@ functional
    suffix
    tail
    take
-   take_while
    to_json
    top
    translate_exception
