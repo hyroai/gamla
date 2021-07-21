@@ -905,6 +905,12 @@ def drop(n: int):
 
     return drop
 
+def drop_last(n: int):
+    def drop_last(seq):
+        return toolz.take(len(seq)-n, seq)
+
+    return drop_last
+
 
 def flip(func: Callable):
     """Call the function call with the arguments flipped.
