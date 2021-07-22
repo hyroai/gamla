@@ -900,10 +900,29 @@ def nth(n: int):
 
 
 def drop(n: int):
+    """Drops the first n elements of a sequence.
+
+    >>> tuple(drop(2)([1,2,3,4,5]))
+    (3,4,5)
+    """
+
     def drop(seq):
         return toolz.drop(n, seq)
 
     return drop
+
+
+def drop_last(n: int):
+    """Drops the last n elements of a sequence.
+
+    >>> tuple(drop_last(1)([1,2,3,4,5]))
+    (1,2,3,4)
+    """
+
+    def drop_last(seq):
+        return itertools.islice(seq, len(seq) - n)
+
+    return drop_last
 
 
 def flip(func: Callable):
