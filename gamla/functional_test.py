@@ -603,6 +603,10 @@ def test_drop():
     assert tuple(functional.drop(2)(["a", "b", "c"])) == ("c",)
 
 
+def test_drop_last():
+    assert tuple(functional.drop_last(1)(["a", "b", "c"])) == ("a", "b")
+
+
 def test_count_by():
     assert functional_generic.count_by(functional.head)(["aa", "ab", "ac", "bc"]) == {
         "a": 3,
