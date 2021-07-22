@@ -112,6 +112,7 @@ functional
    divide_by
    do_if
    drop
+   drop_last
    drop_last_while
    empty
    ends_with
@@ -120,10 +121,12 @@ functional
    equals
    flip
    frequencies
+   function_to_uid
    get_all_n_grams
    greater_equals
    greater_than
    groupby_many_reduce
+   have_intersection
    head
    identity
    ignore_input
@@ -166,6 +169,7 @@ functional
    suffix
    tail
    take
+   take_while
    to_json
    top
    translate_exception
