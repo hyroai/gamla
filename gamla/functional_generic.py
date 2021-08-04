@@ -859,6 +859,12 @@ mapcat = compose_left(curried_map, after(concat))
 _K = TypeVar("_K")
 
 
+def _groupby_helper(state, current):
+    x = state or []
+    x.append(current)
+    return x
+
+
 def groupby(
     key: Callable[[_ReducedElement], _K],
 ) -> Callable[[Iterable[_ReducedElement]], Mapping[_K, Tuple[_ReducedElement, ...]]]:
@@ -874,16 +880,7 @@ def groupby(
     return compose_left(
         functional.groupby_many_reduce(
             compose_left(key, functional.wrap_tuple),
-            compose_left(
-                functional.pack,
-                stack(
-                    [
-                        unless(functional.identity, functional.just(())),
-                        functional.wrap_tuple,
-                    ],
-                ),
-                concat,
-            ),
+            _groupby_helper,
         ),
         sync.valmap(tuple),
     )
