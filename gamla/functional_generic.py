@@ -864,6 +864,7 @@ def _groupby_helper(state, current):
     x.append(current)
     return x
 
+
 def groupby(
     key: Callable[[_ReducedElement], _K],
 ) -> Callable[[Iterable[_ReducedElement]], Mapping[_K, Tuple[_ReducedElement, ...]]]:
