@@ -42,6 +42,11 @@ def test_dict_to_getter_with_default_values_does_not_exist():
     assert dict_utils.dict_to_getter_with_default(None, {1: 1})(2) is None
 
 
+def test_get_or_transform():
+    assert dict_utils.get_or_transform(functional.add(1), {1: 1})(1) == 1
+    assert dict_utils.get_or_transform(functional.add(1), {1: 1})(3) == 4
+
+
 def test_get_or_identity():
     assert dict_utils.get_or_identity({1: 1})(1) == 1
     assert dict_utils.get_or_identity({1: 1})(2) == 2
