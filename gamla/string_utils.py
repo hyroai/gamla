@@ -1,3 +1,4 @@
+import re
 from typing import Text
 
 
@@ -37,3 +38,17 @@ def capitalize(text: Text):
     'My name is John Smith'
     """
     return text[0].upper() + text[1:]
+
+
+def regex_match(pattern):
+    """A curried regex match. Gets a pattern and returns a function that expects a text to match the pattern with.
+
+    >>> regex_match(r"phone:(\d*)")("phone:1234567").group(1)  # noqa: W605
+    '1234567'
+
+    """
+
+    def regex_match_inner(text):
+        return re.match(pattern, text)
+
+    return regex_match_inner
