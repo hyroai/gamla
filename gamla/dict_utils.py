@@ -55,11 +55,17 @@ def itemgetter_with_default(default, attr):
     return itemgetter_with_default
 
 
-def get_or_identity(d):
-    def get_or_identity(x):
-        return d.get(x, x)
+@currying.curry
+def get_or_transform(f, d):
+    def get_or_transform(x):
+        if x in d:
+            return d[x]
+        return f(x)
 
-    return get_or_identity
+    return get_or_transform
+
+
+get_or_identity = get_or_transform(functional.identity)
 
 
 def get_in(keys: Iterable):
