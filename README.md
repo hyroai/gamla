@@ -1,10 +1,8 @@
 # README
 
-hello
-
 [![Build Status](https://travis-ci.com/hyroai/gamla.svg?branch=master)](https://travis-ci.com/hyroai/gamla)
 
-גamla is a performant functional programming library for python which supports mixing `async` and regular functions.
+**λ**amla is a performant functional programming library for python which supports mixing `async` and regular functions.
 
 Installation: `pip install gamla`
 
