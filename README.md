@@ -1,10 +1,14 @@
+# README
+
+hello
+
 [![Build Status](https://travis-ci.com/hyroai/gamla.svg?branch=master)](https://travis-ci.com/hyroai/gamla)
 
 גamla is a performant functional programming library for python which supports mixing `async` and regular functions.
 
 Installation: `pip install gamla`
 
-API reference: <https://gamla.readthedocs.io/>
+API reference: [https://gamla.readthedocs.io/](https://gamla.readthedocs.io/)
 
 ## Basic example
 
@@ -28,8 +32,6 @@ def get_names_eligible_for_vaccine(people):
         if person.is_eligible():
             result.append(person.name)
     return result
-
-
 ```
 
 into this:
@@ -45,18 +47,17 @@ class Person:
 
 is_eligible = compose_left(attrgetter("age"), greater_than(9))
 get_names_eligible_for_vaccine = compose_left(filter(is_eligible), map(attrgetter("name")), list)
-
 ```
 
 Is this a good thing? that's for you to decide.
 
 The upside:
 
-Functional programming is mainly about how to split your code into composable parts. Composability means that things are easy to move, replace or combine together like lego. It helps you identify recurring patterns (e.g. `filter`), factor them out and reuse them. If your generalizations are good, they free your mind to focus on the new logic. Concretely it saves a lot of code and helps a reader understand what a piece of code is doing. For example, if you are familir with what `filter` is, you don't have to squint and realize that an `if` and a `for` actually do a filtering pattern.
+Functional programming is mainly about how to split your code into composable parts. Composability means that things are easy to move, replace or combine together like lego. It helps you identify recurring patterns \(e.g. `filter`\), factor them out and reuse them. If your generalizations are good, they free your mind to focus on the new logic. Concretely it saves a lot of code and helps a reader understand what a piece of code is doing. For example, if you are familir with what `filter` is, you don't have to squint and realize that an `if` and a `for` actually do a filtering pattern.
 
 The downside:
 
-Programming in this style in python means some tools won't be so useful (e.g. your debugger, static analysis tools).
+Programming in this style in python means some tools won't be so useful \(e.g. your debugger, static analysis tools\).
 
 ## Debugging anonymous compositions
 
@@ -67,7 +68,6 @@ Classic breakpoints are less useful when working with compositions, as there isn
 `gamla.debug` can be used within pipelines and will provide a `pdb` breakpoint prompt where the value at this position can be referenced by `x`.
 
 ```python
-
 def increment(x):
     return x + 1
 
@@ -85,7 +85,6 @@ When you have a long pipeline and want to debug at each step of the way, you can
 In some cases tracking down an exception involves inspecting code that runs many times. Consider the following example:
 
 ```python
-
 def increment(x):
     return x + 1
 
@@ -113,7 +112,6 @@ def sometimes_has_a_bug(x):
     if x == 666:
         raise Exception
     return x
-
 ```
 
 ## Mixing asynchronous and synchronous code
@@ -151,5 +149,6 @@ Increment the version in master, and pypi will automatically update.
 ### While in gamla directory:
 
 1. Install md-to-rst converter: `pip install m2r`
-1. Convert README.md to README.rst: `m2r README.md`
-1. Move README.rst to docs/source folder instead of existing one: `mv README.rst docs/source`
+2. Convert README.md to README.rst: `m2r README.md`
+3. Move README.rst to docs/source folder instead of existing one: `mv README.rst docs/source`
+
