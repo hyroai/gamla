@@ -106,10 +106,10 @@ def traverse_graph_by_radius(
 #:  >>> graph.edges_to_graph([(1,2), (2, 3), (3, 1), (3, 2)])
 #:  {1: frozenset({2}), 2: frozenset({3}), 3: frozenset({1, 2})}
 edges_to_graph = functional_generic.compose(
-    functional_generic.valmap(
-        functional_generic.compose(
+    functional_generic.sync.valmap(
+        functional_generic.sync.compose(
             frozenset,
-            functional_generic.curried_map(functional.second),
+            functional_generic.sync.map(functional.second),
         ),
     ),
     sync.groupby(functional.head),
