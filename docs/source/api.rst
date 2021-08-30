@@ -74,6 +74,7 @@ dict_utils
    get_in_or_none_uncurried
    get_in_with_default
    get_or_identity
+   get_or_transform
    itemgetter
    itemgetter_or_none
    itemgetter_with_default
@@ -112,6 +113,7 @@ functional
    divide_by
    do_if
    drop
+   drop_last
    drop_last_while
    empty
    ends_with
@@ -120,10 +122,12 @@ functional
    equals
    flip
    frequencies
+   function_to_uid
    get_all_n_grams
    greater_equals
    greater_than
    groupby_many_reduce
+   have_intersection
    head
    identity
    ignore_input
@@ -324,6 +328,7 @@ string_utils
 
 .. autosummary::
    capitalize
+   regex_match
    replace_in_text
    split_text
 
