@@ -787,39 +787,6 @@ find_index = compose_left(
 )
 
 
-def countby_many(f):
-    """Count elements of a collection by a function which returns a tuple of keys
-    for single element.
-
-    Parameters:
-    f (Callable): Key function (given object in collection outputs tuple of keys).
-    it (Iterable): Collection.
-
-    Returns:
-    Dict[Text, Any]: Dictionary where key has been computed by the `f` key function
-    and value is the frequency of this key.
-
-    >>> names = ['alice', 'bob', 'charlie', 'dan', 'edith', 'frank']
-    >>> countby_many(lambda name: (name[0], name[-1]), names)
-    {'a': 1,
-     'e': 3,
-     'b': 2,
-     'c': 1,
-     'd': 1,
-     'n': 1,
-     'h': 1,
-     'f': 1,
-     'k': 1}
-    """
-    return compose_left(
-        curried_map(f),
-        functional.groupby_many_reduce(
-            functional.identity,
-            lambda x, y: x + 1 if x else 1,
-        ),
-    )
-
-
 def _inner_merge_with(dicts):
     if len(dicts) == 1 and not isinstance(dicts[0], Mapping):
         dicts = dicts[0]
@@ -926,6 +893,8 @@ def count_by_many(f: Callable[[Any], Iterable]) -> Dict[Any, int]:
         lambda x, _: x + 1 if x else 1,
     )
 
+
+countby_many = count_by_many
 
 #: Like `count_by_many` but with a function that returns a single key.
 count_by = compose_left(after(functional.wrap_tuple), count_by_many)
