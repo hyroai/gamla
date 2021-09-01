@@ -759,5 +759,6 @@ def test_take_while():
 def test_translate_exception():
     with pytest.raises(ValueError):
         functional_generic.pipe(
-            iter([]), functional.translate_exception(next, StopIteration, ValueError)
+            iter([]),
+            functional.translate_exception(next, StopIteration, ValueError),
         )
