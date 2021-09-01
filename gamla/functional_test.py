@@ -754,3 +754,10 @@ def test_all_n_grams_non_textual():
 
 def test_take_while():
     assert list(functional.take_while(lambda x: x < 7)([1, 2, 9, 2])) == [1, 2]
+
+
+def test_translate_exception():
+    with pytest.raises(ValueError):
+        functional_generic.pipe(
+            iter([]), functional.translate_exception(next, StopIteration, ValueError)
+        )

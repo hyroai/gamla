@@ -25,7 +25,7 @@ from typing import (
 import heapq_max
 import toolz
 
-from gamla import currying
+from gamla import currying, excepts_decorator
 from gamla.optimized import sync
 
 
@@ -161,7 +161,7 @@ def translate_exception(func: Callable, exc1: Exception, exc2: Exception):
     >>> functional_generic.pipe(iter([]), translate_exception(next, StopIteration, ValueError))
     ValueError
     Note: `func` is assumed to be unary."""
-    return toolz.excepts(exc1, func, make_raise(exc2))
+    return excepts_decorator.excepts(exc1, make_raise(exc2), func)
 
 
 def to_json(obj):
