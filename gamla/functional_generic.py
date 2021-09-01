@@ -909,19 +909,26 @@ def side_effect(f: Callable):
     return do
 
 
-def count_by(f: Callable) -> Dict[Any, int]:
+def count_by_many(f: Callable[[Any], Iterable]) -> Dict[Any, int]:
     """
     Count elements of a collection by a function `f`.
     Return a mapping `{y: len({x s.t. key(x) = y})}.`
 
-    >>> count_by(functional.head)(["aa", "ab", "ac", "bc"])
-    {'a': 3, 'b': 1}
+    >>> count_by_many(
+        gamla.juxt(
+            functional.head,
+             gamla.last
+        ))(["aa", "ab", "ac", "bc"])
+    {'a': 3, 'b': 2, 'c': 2}
     """
     return functional.groupby_many_reduce(
-        compose_left(f, functional.wrap_tuple),
+        f,
         lambda x, _: x + 1 if x else 1,
     )
 
+
+#: Like `count_by_many` but with a function that returns a single key.
+count_by = compose_left(after(functional.wrap_tuple), count_by_many)
 
 #: Like `stack` but doesn't require additional brackets.
 packstack = compose_left(functional.pack, stack)
