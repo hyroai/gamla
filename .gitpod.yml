@@ -1,5 +1,2 @@
 tasks:
   - init: pip install .
-
-  - name: hello
-    command: echo 'hello'
