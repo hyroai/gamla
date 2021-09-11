@@ -51,7 +51,7 @@ def _freeze_nonterminal(v):
 #:
 #: >>> freeze_deep({"1": {"2": "345", "some-string": ["hello"]}})
 #: data.frozendict(
-#:     {"1": data.frozendict({"2": "345", "some-string": ("hello",)})},
+#:  {"1": data.frozendict({"2": "345", "some-string": ("hello",)})},
 #: )
 freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identity)
 

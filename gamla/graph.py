@@ -103,8 +103,8 @@ def traverse_graph_by_radius(
 
 #: Gets a sequence of edges and returns a graph made of these edges.
 #:
-#:  >>> graph.edges_to_graph([(1,2), (2, 3), (3, 1), (3, 2)])
-#:  {1: frozenset({2}), 2: frozenset({3}), 3: frozenset({1, 2})}
+#: >>> graph.edges_to_graph([(1,2), (2, 3), (3, 1), (3, 2)])
+#: {1: frozenset({2}), 2: frozenset({3}), 3: frozenset({1, 2})}
 edges_to_graph = functional_generic.compose(
     functional_generic.sync.valmap(
         functional_generic.sync.compose(
@@ -116,8 +116,8 @@ edges_to_graph = functional_generic.compose(
 )
 #: Gets a graph and returns an iterator of all edges in it.
 #:
-#:  >>> list(graph_to_edges({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}))
-#:  [('1', '2'), ('1', '3'), ('2', '3'), ('3', '4')]
+#: >>> list(graph_to_edges({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}))
+#: [('1', '2'), ('1', '3'), ('2', '3'), ('3', '4')]
 graph_to_edges = functional_generic.compose_left(
     sync.keymap(functional.wrap_tuple),
     dict.items,
@@ -126,8 +126,8 @@ graph_to_edges = functional_generic.compose_left(
 
 #: Gets a graph and returns the graph with its edges reversed
 #:
-#:  >>> reverse_graph({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []})
-#:  {'2': frozenset({'1'}), '3': frozenset({'1', '2'}), '4': frozenset({'3'})}
+#: >>> reverse_graph({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []})
+#: {'2': frozenset({'1'}), '3': frozenset({'1', '2'}), '4': frozenset({'3'})}
 reverse_graph = functional_generic.compose_left(
     graph_to_edges,
     functional_generic.curried_map(functional_generic.compose_left(reversed, tuple)),
@@ -136,8 +136,8 @@ reverse_graph = functional_generic.compose_left(
 
 #: Gets a sequence of nodes (cliques) and returns the bidirectional graph they represent
 #:
-#:  >>> cliques_to_graph([{1, 2}, {3, 4}])
-#:  {1: frozenset({2}), 2: frozenset({1}), 3: frozenset({4}), 4: frozenset({3})}
+#: >>> cliques_to_graph([{1, 2}, {3, 4}])
+#: {1: frozenset({2}), 2: frozenset({1}), 3: frozenset({4}), 4: frozenset({3})}
 cliques_to_graph = functional_generic.compose_left(
     sync.mapcat(lambda clique: itertools.permutations(clique, r=2)),
     edges_to_graph,
@@ -243,11 +243,12 @@ _non_sources = sync.compose_left(
 )
 
 
-#: Gets a directional graph and returns its sources.
-#:
-#:  >>> find_sources({'1': ['2', '3'], '2': ['3'], '3': [], '4': []})
-#:  frozenset({'1', '4'})
 def find_sources(graph: Dict) -> FrozenSet:
+    """Gets a directional graph and returns its sources.
+
+    >>> find_sources({'1': ['2', '3'], '2': ['3'], '3': [], '4': []})
+    frozenset({'1', '4'})
+    """
     return sync.pipe(
         graph,
         sync.remove(functional.contains(_non_sources(graph))),

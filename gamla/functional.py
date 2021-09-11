@@ -35,8 +35,8 @@ def identity(x):
 
 #: Count the number of items in a sequence.
 #: Like builtin function 'len' but works on iterators/generators as well
-#:    >>> count(1 for in range(4))
-#:    '4'
+#: >>> count(1 for in range(4))
+#: '4'
 count = toolz.count
 
 
@@ -645,8 +645,8 @@ def eq_by(f, value_1, value_2):
 
 
 #: Check if two strings are equal, ignoring case.
-#:    >>> eq_str_ignore_case("HeLlO wOrLd", "hello world")
-#:    True
+#: >>> eq_str_ignore_case("HeLlO wOrLd", "hello world")
+#: True
 eq_str_ignore_case = eq_by(str.lower)
 
 
@@ -940,35 +940,35 @@ def flip(func: Callable):
 
 
 #: Return a dict with number of occurrences of each value in a sequence.
-#:    >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
-#:    {'cat': 3, 'ox': 1, 'pig': 2}
+#: >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
+#: {'cat': 3, 'ox': 1, 'pig': 2}
 frequencies = toolz.frequencies
 
 #: The first element in a sequence.
 #:
-#:    >>> head('ABC')
-#:    'A'
+#: >>> head('ABC')
+#: 'A'
 head = toolz.first
 
-#:  The second element in a sequence.
+#: The second element in a sequence.
 #:
-#:    >>> second('ABC')
-#:    'B'
+#: >>> second('ABC')
+#: 'B'
 second = toolz.second
 
 #: The last element in a sequence.
 #:
-#:    >>> last('ABC')
-#:    'C'
+#: >>> last('ABC')
+#: 'C'
 last = toolz.last
 
 #: Determines whether the element is iterable.
 #:
-#:    >>> isiterable([1, 2, 3])
-#:    True
+#: >>> isiterable([1, 2, 3])
+#: True
 #:
-#:    >>> isiterable(5)
-#:    False
+#: >>> isiterable(5)
+#: False
 is_iterable = toolz.isiterable
 
 

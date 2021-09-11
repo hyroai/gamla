@@ -35,16 +35,14 @@ def _replace_index(the_tuple, index, value):
 
 #: Combines transducers in a `dict` into a transducer that produces a `dict`.
 #: >>> transducer.transduce(
-#:     transducer.apply_spec(  # This will combine the inner stuff into one new transducer.
-#:         {
-#:             "incremented": _increment(_append_to_tuple),  # This is a transducer.
-#:             "sum": lambda s, x: x + s,  # This is another transducer.
-#:         },
-#:     ),
-#:     lambda s, _: s,
-#:     {"incremented": (), "sum": 0},
-#:     [1, 2, 3],
-#: )
+#: ...     transducer.apply_spec({  # This will combine the inner stuff into one new transducer.
+#: ...         "incremented": _increment(_append_to_tuple),  # This is a transducer.
+#: ...         "sum": lambda s, x: x + s,  # This is another transducer.
+#: ...     }),
+#: ...     lambda s, _: s,
+#: ...     {"incremented": (), "sum": 0},
+#: ...     [1, 2, 3],
+#: ... )
 #: {"incremented": (2, 3, 4), "sum": 6}
 apply_spec = functional_generic.compose_left(
     dict.items,
@@ -53,15 +51,15 @@ apply_spec = functional_generic.compose_left(
 )
 
 #: Combines transducers in a `tuple` into a transducer that produces a `tuple`.
-#: transducer.transduce(
-#:     transducer.juxt(  # This will combine the inner stuff into one new transducer.
-#:         _increment(_append_to_tuple),  # This is a transducer.
-#:         lambda s, x: x + s,  # This is another transducer.
-#:     ),
-#:     lambda s, _: s,
-#:     [(), 0],
-#:     [1, 2, 3],
-#: )
+#: >>> transducer.transduce(
+#: ...     transducer.juxt(  # This will combine the inner stuff into one new transducer.
+#: ...         _increment(_append_to_tuple),  # This is a transducer.
+#: ...         lambda s, x: x + s,  # This is another transducer.
+#: ...     ),
+#: ...    lambda s, _: s,
+#: ...    [(), 0],
+#: ...    [1, 2, 3],
+#: ... )
 #: ((2, 3, 4), 6)
 juxt = functional_generic.compose_left(
     functional.pack,

@@ -44,8 +44,7 @@ def compose_left(*funcs):
 
 
 def curried_map(f):
-    """
-    Constructs a function that maps elements of a given iterable using the given function.
+    """Constructs a function that maps elements of a given iterable using the given function.
 
     Returns an async function iff `f` is async, else returns a sync function.
 
@@ -59,8 +58,7 @@ def curried_map(f):
 
 
 def curried_to_binary(f):
-    """
-    Constructs a function from a given higher order function and returns its first order counterpart.
+    """Constructs a function from a given higher order function and returns its first order counterpart.
     The given higher order function, `f` is must be a unary function
     Returns an async function iff `f` is async, else returns a sync function.
 
@@ -139,8 +137,7 @@ def compose_many_to_one(incoming: Iterable[Callable], f: Callable):
 
 
 def after(f1):
-    """
-    Second-order composition of `f1` over `f2`.
+    """Second-order composition of `f1` over `f2`.
 
     A 'delayed' pipeline, i.e return a function that, given f2, will wait for f2's arguments, and when given, will return f1(f2(args)).
     >>> allmap = gamla.compose_left(gamla.map, gamla.after(all))
@@ -213,32 +210,32 @@ def juxt(*funcs: Callable) -> Callable[..., Tuple]:
     return juxt
 
 
-#:  Pass a value through a list of functions, return `True` iff all functions returned `True`-ish values.
+#: Pass a value through a list of functions, return `True` iff all functions returned `True`-ish values.
 #:
-#:    >>> f = alljuxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
-#:    >>> f(100)
-#:    True
-#:    >>> f(10)
-#:    False
+#: >>> f = alljuxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
+#: >>> f(100)
+#: True
+#: >>> f(10)
+#: False
 alljuxt = compose(after(all), lazyjuxt)
 
-#:  Pass a value through a list of functions, return `True` if at least one function returned a `True`-ish value.
+#: Pass a value through a list of functions, return `True` if at least one function returned a `True`-ish value.
 #   Note: evaluation is lazy, i.e. returns on first `True`.
 #:
-#:    >>> f = anyjuxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
-#:    >>> f(100)
-#:    True
-#:    >>> f(10)
-#:    True
-#:    >>> f(0)
-#:    False
+#: >>> f = anyjuxt(gamla.identity, gamla.greater_than(1), gamla.greater_than(10))
+#: >>> f(100)
+#: True
+#: >>> f(10)
+#: True
+#: >>> f(0)
+#: False
 anyjuxt = compose(after(any), lazyjuxt)
 
-#:  Create a function that calls the supplied functions, and chains the results.
+#: Create a function that calls the supplied functions, and chains the results.
 #: Assumes the supplied functions return Iterables.
-#:    >>> f = juxtcat(range,range)
-#:    >>> tuple(f(5))
-#:    (0 ,1 ,2 ,3 ,4 ,0 ,1 ,2 ,3 ,4)
+#: >>> f = juxtcat(range,range)
+#: >>> tuple(f(5))
+#: (0 ,1 ,2 ,3 ,4 ,0 ,1 ,2 ,3 ,4)
 juxtcat = compose(after(itertools.chain.from_iterable), lazyjuxt)
 
 
@@ -353,41 +350,41 @@ def pipe(val, *funcs):
     return val
 
 
-#:  Map an iterable using a function, return `True` iff all mapped values are `True`-ish.
-#:    >>> f = allmap(lambda x: x % 2 == 0)
-#:    >>> f([1, 2, 3, 4, 5])
-#:    False
-#:    >>> f([2, 4, 6, 8, 10])
-#:    True
+#: Map an iterable using a function, return `True` iff all mapped values are `True`-ish.
+#: >>> f = allmap(lambda x: x % 2 == 0)
+#: >>> f([1, 2, 3, 4, 5])
+#: False
+#: >>> f([2, 4, 6, 8, 10])
+#: True
 allmap = compose(after(all), curried_map)
 
-#:  Map an iterable using a function, return `True` if at least one mapped value is `True`-ish.
-#:  Note: evaluation is lazy, i.e. returns on first `True`.
-#:    >>> f = anymap(lambda x: x % 2 == 0)
-#:    >>> f([1, 2, 3, 4, 5])
-#:    True
-#:    >>> f([1, 3, 5, 7, 9])
-#:    False
+#: Map an iterable using a function, return `True` if at least one mapped value is `True`-ish.
+#: Note: evaluation is lazy, i.e. returns on first `True`.
+#: >>> f = anymap(lambda x: x % 2 == 0)
+#: >>> f([1, 2, 3, 4, 5])
+#: True
+#: >>> f([1, 3, 5, 7, 9])
+#: False
 anymap = compose(after(any), curried_map)
 
 #: Constructs a function that applies the given function to items of a given dictionary.
 #: Returns an async function iff the filter function is async, else returns a sync function.
 #:
-#:    >>> f = itemmap(gamla.star(lambda key, val: (key, val + key)))
-#:    >>> f({1: 2, 2: 3})
-#:    {1: 3, 2: 5}
+#: >>> f = itemmap(gamla.star(lambda key, val: (key, val + key)))
+#: >>> f({1: 2, 2: 3})
+#: {1: 3, 2: 5}
 itemmap = compose(after(dict), before(dict.items), curried_map)
 
-#:  Creates a function that maps supplied mapper over the keys of a dict.
+#: Creates a function that maps supplied mapper over the keys of a dict.
 #:
-#:    >>> f = keymap(lambda k: k + 1)
-#:    >>> f({1:"a",2:"b",3:"c",4:"d"})
-#:    {
-#:      2: "a",
-#:      3: "b",
-#:      4: "c",
-#:      5: "d"
-#:    }
+#: >>> f = keymap(lambda k: k + 1)
+#: >>> f({1:"a",2:"b",3:"c",4:"d"})
+#: {
+#:   2: "a",
+#:   3: "b",
+#:   4: "c",
+#:   5: "d"
+#: }
 keymap = compose(
     itemmap,
     lambda f: juxt(f, functional.second),
@@ -396,13 +393,13 @@ keymap = compose(
 
 #: Creates a function then maps the supplied mapper over the values of a dict.
 #:
-#:  >>> f = valmap(gamla.add(1))
-#:  >>> f({ "a": 1, "b": 2, "c": 3 })
-#:  {
-#:    "a": 2
-#:    "b": 3
-#:    "c": 4
-#:  }
+#: >>> f = valmap(gamla.add(1))
+#: >>> f({ "a": 1, "b": 2, "c": 3 })
+#: {
+#: "a": 2
+#: "b": 3
+#: "c": 4
+#: }
 valmap = compose(
     itemmap,
     lambda f: juxt(functional.head, f),
@@ -433,9 +430,9 @@ def pair_right(f):
 #: Constructs a function that filters elements of a given iterable for which function returns true.
 #: Returns an async function iff the filter function is async, else returns a sync function.
 #:
-#:    >>> f = curried_filter(gamla.greater_than(10))
-#:    >>> f([1, 2, 3, 11, 12, 13])
-#:    [11, 12, 13]
+#: >>> f = curried_filter(gamla.greater_than(10))
+#: >>> f([1, 2, 3, 11, 12, 13])
+#: [11, 12, 13]
 curried_filter = compose(
     after(
         compose(
@@ -450,37 +447,37 @@ curried_filter = compose(
 #: Constructs a function that filters items of a given dictionary for which function returns true.
 #: Returns an async function iff the filter function is async, else returns a sync function.
 #:
-#:    >>> f = itemfilter(
-#:        alljuxt(
-#:            compose_left(gamla.head, gamla.contains("gamla")),
-#:            compose_left(gamla.second, gamla.greater_than(10)),
-#:        )
-#:    )
-#:    >>> f({"gamla": 11, "gaml": 9, "f":12})
-#:    {'gamla': 11}
+#: >>> f = itemfilter(
+#: ...     alljuxt(
+#: ...         compose_left(gamla.head, gamla.contains("gamla")),
+#: ...         compose_left(gamla.second, gamla.greater_than(10)),
+#: ...     )
+#: ... )
+#: >>> f({"gamla": 11, "gaml": 9, "f":12})
+#: {'gamla': 11}
 itemfilter = compose(after(dict), before(dict.items), curried_filter)
 
-#:  Create a function that filters a dict using a predicate over keys.
+#: Create a function that filters a dict using a predicate over keys.
 #:
-#:    >>> f = keyfilter(lambda k: k > 2)
-#:    >>> f({1:"a",2:"b",3:"c",4:"d"})
-#:    {
-#:      3: "c",
-#:      4: "d"
-#:    }
+#: >>> f = keyfilter(lambda k: k > 2)
+#: >>> f({1:"a",2:"b",3:"c",4:"d"})
+#: {
+#:   3: "c",
+#:   4: "d"
+#: }
 keyfilter = compose(
     itemfilter,
     before(functional.head),
 )
 
-#:  Create a function that filters a dict using a predicate over values.
+#: Create a function that filters a dict using a predicate over values.
 #:
-#:    >>> f = valefilter(lambda k: k > 2)
-#:    >>> f({"a": 1, "b": 2, "c": 3, "d": 4})
-#:    {
-#:      "c": 3,
-#:      "d": 4
-#:    }
+#: >>> f = valefilter(lambda k: k > 2)
+#: >>> f({"a": 1, "b": 2, "c": 3, "d": 4})
+#: {
+#:   "c": 3,
+#:   "d": 4
+#: }
 valfilter = compose(
     itemfilter,
     before(functional.second),
@@ -488,19 +485,19 @@ valfilter = compose(
 
 #: Complement of a boolean function.
 #:
-#:    >>> f = complement(gamla.greater_than(5))
-#:    >>> f(10)
-#:    False
-#:    >>> f(1)
-#:    True
+#: >>> f = complement(gamla.greater_than(5))
+#: >>> f(10)
+#: False
+#: >>> f(1)
+#: True
 complement = after(operator.not_)
 
 #: Constructs a function that removes elements of a given iterable for which function returns true.
 #: Returns an async function iff the filter function is async, else returns a sync function.
 #:
-#:    >>> f = remove(gamla.greater_than(10))
-#:    >>> tuple(f([1, 2, 3, 11, 12, 13]))
-#:    (1, 2, 3)
+#: >>> f = remove(gamla.greater_than(10))
+#: >>> tuple(f([1, 2, 3, 11, 12, 13]))
+#: (1, 2, 3)
 remove = compose(curried_filter, complement)
 
 
@@ -555,14 +552,14 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
     return _case(predicates, mappers)
 
 
-#:  Applies functions to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
-#:    >>> f = case_dict({gamla.less_than(10): gamla.identity, gamla.greater_than(10): gamla.add(100)})
-#:    >>> f(5)
-#:    5
-#:    >>> f(15)
-#:    115
-#:    >>> f(10)
-#:    `NoConditionMatched`
+#: Applies functions to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
+#: >>> f = case_dict({gamla.less_than(10): gamla.identity, gamla.greater_than(10): gamla.add(100)})
+#: >>> f(5)
+#: 5
+#: >>> f(15)
+#: 115
+#: >>> f(10)
+#: `NoConditionMatched`
 case_dict = compose_left(dict.items, tuple, case)
 
 
@@ -671,9 +668,9 @@ def bifurcate(*funcs):
     return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
 
 
-#:  Average of an iterable. If the sequence is empty, returns 0.
-#:    >>> average([1,2,3])
-#:    2.0
+#: Average of an iterable. If the sequence is empty, returns 0.
+#: >>> average([1,2,3])
+#: 2.0
 average = compose_left(
     bifurcate(sum, functional.count),
     excepts_decorator.excepts(
@@ -750,11 +747,11 @@ def scan(
 #: that returns True when used with the the given function. If no element
 #: in the iterable returns True, None is returned.
 #:
-#:    >>> f = find(gamla.greater_than(10))
-#:    >>> f([1, 2, 3, 11, 12, 13])
-#:    11
-#:    >>> f([1, 2, 3])
-#:    None
+#: >>> f = find(gamla.greater_than(10))
+#: >>> f([1, 2, 3, 11, 12, 13])
+#: 11
+#: >>> f([1, 2, 3])
+#: None
 find = compose(
     after(
         excepts_decorator.excepts(
@@ -771,14 +768,14 @@ find = compose(
 #: that returns True when used with the the given function. If no element
 #  in the iterable returns True, -1 is returned.
 #:
-#:    >>> f = find(gamla.greater_than(10))
-#:    >>> f([1, 2, 3, 11, 12, 13])
-#:    11
-#:    >>> f([1, 2, 3])
-#:    -1
+#: >>> f = find(gamla.greater_than(10))
+#: >>> f([1, 2, 3, 11, 12, 13])
+#: 11
+#: >>> f([1, 2, 3])
+#: -1
 #:
 #: See Also:
-#:   - find
+#:  - find
 find_index = compose_left(
     before(functional.second),
     find,
@@ -877,15 +874,14 @@ def side_effect(f: Callable):
 
 
 def count_by_many(f: Callable[[Any], Iterable]) -> Dict[Any, int]:
-    """
-    Count elements of a collection by a function `f`.
-    Return a mapping `{y: len({x s.t. key(x) = y})}.`
+    """Counts elements of a collection by a key function `f`.
 
     >>> count_by_many(
-        gamla.juxt(
-            functional.head,
-             gamla.last
-        ))(["aa", "ab", "ac", "bc"])
+    ...     gamla.juxt(
+    ...         functional.head,
+    ...         gamla.last,
+    ...     )
+    ... )(["aa", "ab", "ac", "bc"])
     {'a': 3, 'b': 2, 'c': 2}
     """
     return functional.groupby_many_reduce(
