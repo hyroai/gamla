@@ -16,7 +16,8 @@ async def test_reduce_graph_async():
                 ),
                 async_functions.to_awaitable,
             ),
-            [1],
+            set(),
+            1,
         )
-        == [5]
+        == 5
     )

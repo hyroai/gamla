@@ -100,7 +100,7 @@ class _SpecialValue:
 
 
 @currying.curry
-async def _reduce_graph_async(reducer, get_neighbors, visited, current):
+async def reduce_graph_async(reducer, get_neighbors, visited, current):
     if current in visited:
         return _SpecialValue()
     # Since we may reach a node from two different branches, at the same time,
@@ -111,19 +111,9 @@ async def _reduce_graph_async(reducer, get_neighbors, visited, current):
         current,
         get_neighbors,
         functional_generic.curried_map(
-            _reduce_graph_async(reducer, get_neighbors, visited),
+            reduce_graph_async(reducer, get_neighbors, visited),
         ),
         functional_generic.remove(functional.is_instance(_SpecialValue)),
         tuple,
         lambda children: reducer(children, current),
-    )
-
-
-async def reduce_graph_async(reducer, get_neighbors, roots):
-    visited = set()
-    return await functional_generic.pipe(
-        roots,
-        functional_generic.curried_map(
-            _reduce_graph_async(reducer, get_neighbors, visited),
-        ),
     )
