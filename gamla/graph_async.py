@@ -115,5 +115,6 @@ async def reduce_graph_async(reducer, get_neighbors, visited, current):
         ),
         functional_generic.remove(functional.is_instance(_SpecialValue)),
         tuple,
-        lambda children: reducer(children, current),
+        functional_generic.pair_right(functional.just(current)),
+        functional_generic.star(reducer),
     )
