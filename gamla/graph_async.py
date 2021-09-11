@@ -101,6 +101,20 @@ class _SpecialValue:
 
 @currying.curry
 async def reduce_graph_async(reducer, get_neighbors, visited, current):
+    """Reduces a graph from some starting point using async functions.
+
+    >>> await reduce_graph_async(
+            lambda children, current: sum(children) + current,
+            functional_generic.compose_left(
+                dict_utils.dict_to_getter_with_default(
+                    (),
+                    {1: (1, 2, 3, 5), 2: (4,), 3: (1, 2)}),
+                async_functions.to_awaitable,
+            ),
+            set(),
+            1,
+        )
+    15"""
     if current in visited:
         return _SpecialValue()
     # Since we may reach a node from two different branches, at the same time,

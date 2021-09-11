@@ -15,7 +15,7 @@ _get_neighbors = dict_utils.dict_to_getter_with_default(
 )
 
 
-async def test_reduce_graph_async():
+async def test_reduce_graph_async1():
     assert (
         await graph_async.reduce_graph_async(
             _reduce_max,
@@ -27,6 +27,24 @@ async def test_reduce_graph_async():
             1,
         )
         == 5
+    )
+
+
+async def test_reduce_graph_async2():
+    assert (
+        await graph_async.reduce_graph_async(
+            lambda children, current: sum(children) + current,
+            functional_generic.compose_left(
+                dict_utils.dict_to_getter_with_default(
+                    (),
+                    {1: (1, 2, 3, 5), 2: (4,), 3: (1, 2)},
+                ),
+                async_functions.to_awaitable,
+            ),
+            set(),
+            1,
+        )
+        == 15
     )
 
 
