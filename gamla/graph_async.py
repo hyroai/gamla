@@ -1,4 +1,4 @@
-from typing import Any, AsyncGenerator, Callable, Text, Tuple
+from typing import Any, AsyncGenerator, Callable, Hashable, Set, Text, Tuple
 
 from gamla import currying, functional, functional_generic
 
@@ -95,28 +95,33 @@ async def atraverse_graph_by_radius(
         yield functional.head(s)
 
 
-class _SpecialValue:
+class _IgnoreChild:
     pass
 
 
 @currying.curry
-async def reduce_graph_async(reducer, get_neighbors, visited, current):
+async def reduce_graph_async(
+    reducer: Callable[[Tuple[Any, ...], Hashable], Any],
+    get_neighbors: Callable,
+    visited: Set,
+    current: Hashable,
+):
     """Reduces a graph from some starting point using async functions.
 
     >>> await reduce_graph_async(
-            lambda children, current: sum(children) + current,
-            functional_generic.compose_left(
-                dict_utils.dict_to_getter_with_default(
-                    (),
-                    {1: (1, 2, 3, 5), 2: (4,), 3: (1, 2)}),
-                async_functions.to_awaitable,
-            ),
-            set(),
-            1,
-        )
+    ...     lambda children, current: sum(children) + current,
+    ...     functional_generic.compose_left(
+    ...         dict_utils.dict_to_getter_with_default(
+    ...             (),
+    ...             {1: (1, 2, 3, 5), 2: (4,), 3: (1, 2)}),
+    ...         async_functions.to_awaitable,
+    ...     ),
+    ...     set(),
+    ...     1,
+    ... )
     15"""
     if current in visited:
-        return _SpecialValue()
+        return _IgnoreChild()
     # Since we may reach a node from two different branches, at the same time,
     # we have to broadcast to the other branch that we've reached this node, this
     # can't be done in an immutable fashion.
@@ -127,7 +132,7 @@ async def reduce_graph_async(reducer, get_neighbors, visited, current):
         functional_generic.curried_map(
             reduce_graph_async(reducer, get_neighbors, visited),
         ),
-        functional_generic.remove(functional.is_instance(_SpecialValue)),
+        functional_generic.remove(functional.is_instance(_IgnoreChild)),
         tuple,
         functional_generic.pair_right(functional.just(current)),
         functional_generic.star(reducer),
