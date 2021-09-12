@@ -1,8 +1,7 @@
-import csv
 import dataclasses
 import itertools
 import json
-from typing import Any, Callable, Collection, Dict, List, Text, Tuple
+from typing import Any, Callable, Collection, Dict, Text, Tuple
 
 import dataclasses_json
 
@@ -54,19 +53,6 @@ def _freeze_nonterminal(v):
 #:  {"1": data.frozendict({"2": "345", "some-string": ("hello",)})},
 #: )
 freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identity)
-
-
-@currying.curry
-def csv_to_list_of_dicts(csv_file_path, fieldnames=None) -> List:
-    """Return a list of dicts given a CSV file path.
-
-    >>> csv_to_list_of_dicts("data_test_example_with_headers.csv")
-    [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
-    >>> csv_to_list_of_dicts("data_test_example_without_headers.csv", ["name", "age"])
-    [{'name': 'David', 'age': '23'}, {'name': 'Itay', 'age': '26'}]
-    """
-    with open(csv_file_path, encoding="utf-8") as csvf:
-        return list(csv.DictReader(csvf, fieldnames))
 
 
 @currying.curry

@@ -1,4 +1,3 @@
-import os
 import pickle
 
 from gamla import data, functional_generic
@@ -28,28 +27,6 @@ _LIST_OF_DICTS_FROM_CSV_EXAMPLE = [
     {"name": "David", "age": "23"},
     {"name": "Itay", "age": "26"},
 ]
-
-
-def test_csv_to_list_of_dicts_with_headers():
-    csv_file_with_headers_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "data_test_example_with_headers.csv",
-    )
-    assert (
-        data.csv_to_list_of_dicts(csv_file_with_headers_path)
-        == _LIST_OF_DICTS_FROM_CSV_EXAMPLE
-    )
-
-
-def test_csv_to_list_of_dicts_without_headers():
-    csv_file_without_headers_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "data_test_example_without_headers.csv",
-    )
-    assert (
-        data.csv_to_list_of_dicts(csv_file_without_headers_path, ["name", "age"])
-        == _LIST_OF_DICTS_FROM_CSV_EXAMPLE
-    )
 
 
 def test_tuple_of_tuples_to_csv():
