@@ -3,13 +3,13 @@ import datetime
 import functools
 import logging
 import time
-from typing import Callable, Dict, Text
+from typing import Callable, Dict, Text, Tuple, Union
 
 import async_timeout
 import httpx
 import requests
 import requests.adapters
-from requests.packages.urllib3.util import retry
+from requests.packages.urllib3.util import retry as retry_lib
 
 from gamla import currying, functional
 from gamla.optimized import sync
@@ -83,7 +83,7 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     """
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(
-        max_retries=retry.Retry(
+        max_retries=retry_lib.Retry(
             total=retries,
             backoff_factor=0.1,
             status_forcelist=(500, 502, 504),
@@ -249,3 +249,24 @@ post_json_with_extra_headers_async = post_json_with_extra_headers_and_params_asy
 #:
 #: >>> response = post_json_async(30, "https://www.someurl.com/post_data", { "name": "Danny" })
 post_json_async = post_json_with_extra_headers_and_params_async({}, {})
+
+
+@currying.curry
+def retry(
+    exception: Union[Exception, Tuple[Exception, ...]],
+    times: int,
+    wait_seconds: float,
+    f: Callable,
+):
+    """Wraps a coroutine to retry on given exceptions."""
+
+    async def retry_inner(*args, **kwargs):
+        try:
+            return await f(*args, **kwargs)
+        except exception:
+            await asyncio.sleep(wait_seconds)
+            if not times:
+                raise exception
+            return await retry(exception, times - 1, wait_seconds, f)(*args, **kwargs)
+
+    return retry_inner

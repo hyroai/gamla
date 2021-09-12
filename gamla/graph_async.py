@@ -1,6 +1,6 @@
-from typing import Any, AsyncGenerator, Awaitable, Callable, Iterable, Set, Text, Tuple
+from typing import Any, AsyncGenerator, Callable, Hashable, Set, Text, Tuple
 
-from gamla import async_functions, currying, functional, functional_generic
+from gamla import currying, functional, functional_generic
 
 
 @currying.curry
@@ -95,65 +95,45 @@ async def atraverse_graph_by_radius(
         yield functional.head(s)
 
 
-_Node = Any
+class _IgnoreChild:
+    pass
 
 
 @currying.curry
-async def _async_graph_traverse_many_inner(
-    seen: Set[_Node],
-    get_neighbors: Callable[[_Node], Awaitable[Iterable[_Node]]],
-    process_node: Callable[[_Node], None],
-    roots: Iterable[_Node],
+async def reduce_graph_async(
+    reducer: Callable[[Tuple[Any, ...], Hashable], Any],
+    get_neighbors: Callable,
+    visited: Set,
+    current: Hashable,
 ):
-    assert set(roots).isdisjoint(seen)
+    """Reduces a graph from some starting point using async functions.
 
-    await functional_generic.pipe(
-        roots,
-        functional_generic.juxt(
-            seen.update,
-            functional_generic.compose_left(
-                functional_generic.curried_map(process_node),
-                tuple,
-            ),
-        ),
-        async_functions.to_awaitable,
-    )
-
-    await functional_generic.pipe(
-        roots,
-        functional_generic.mapcat(get_neighbors),
-        functional_generic.remove(functional.contains(seen)),
-        frozenset,
-        functional_generic.unless(
-            functional.empty,
-            _async_graph_traverse_many_inner(seen, get_neighbors, process_node),
-        ),
-    )
-
-
-async def async_graph_traverse_many(
-    get_neighbors: Callable[[_Node], Awaitable[Iterable[_Node]]],
-    process_node: Callable[[_Node], None],
-    roots: Iterable[_Node],
-):
-    """BFS over a graph, calling mapper on unique nodes during iteration.
-    Use when get_neighbors is async.
-
-    >>> graph = {1: (1, 2, 3, 5), 2: (4,), 3: (1, 2)}
-    >>> result = []
-    >>> await graph_async.async_graph_traverse_many(
-    >>>  functional_generic.compose_left(
-    >>>     dict_utils.dict_to_getter_with_default((), graph),
-    >>>     async_functions.to_awaitable,
-    >>>  ),
-    >>>  res.append,
-    >>>  [1],
-    >>> )
-    [1, 2, 3, 5, 4]"""
-
-    return await _async_graph_traverse_many_inner(
-        set(),
+    >>> await reduce_graph_async(
+    ...     lambda children, current: sum(children) + current,
+    ...     functional_generic.compose_left(
+    ...         dict_utils.dict_to_getter_with_default(
+    ...             (),
+    ...             {1: (1, 2, 3, 5), 2: (4,), 3: (1, 2)}),
+    ...         async_functions.to_awaitable,
+    ...     ),
+    ...     set(),
+    ...     1,
+    ... )
+    15"""
+    if current in visited:
+        return _IgnoreChild()
+    # Since we may reach a node from two different branches, at the same time,
+    # we have to broadcast to the other branch that we've reached this node, this
+    # can't be done in an immutable fashion.
+    visited.add(current)
+    return await functional_generic.pipe(
+        current,
         get_neighbors,
-        process_node,
-        roots,
+        functional_generic.curried_map(
+            reduce_graph_async(reducer, get_neighbors, visited),
+        ),
+        functional_generic.remove(functional.is_instance(_IgnoreChild)),
+        tuple,
+        functional_generic.pair_right(functional.just(current)),
+        functional_generic.star(reducer),
     )
