@@ -88,3 +88,36 @@ async def test_with_and_without_deduper():
     unique = frozenset(inputs)
     assert len(called) == len(unique)
     assert frozenset(called) == unique
+
+
+async def test_retry():
+    class SomeException(Exception):
+        pass
+
+    succeeds_in_n_retries = 3
+
+    async def f(x, y):
+        nonlocal succeeds_in_n_retries
+        if succeeds_in_n_retries == 0:
+            return x + y
+        succeeds_in_n_retries -= 1
+        raise SomeException
+
+    assert await io_utils.retry(SomeException, 3, 0, f)(3, 2) == 5
+
+
+async def test_retry_raises():
+    class SomeException(Exception):
+        pass
+
+    succeeds_in_n_retries = 3
+
+    async def f(x, y):
+        nonlocal succeeds_in_n_retries
+        if succeeds_in_n_retries == 0:
+            return x + y
+        succeeds_in_n_retries -= 1
+        raise SomeException
+
+    with pytest.raises(SomeException):
+        await io_utils.retry(SomeException, 2, 0, f)(3, 2)
