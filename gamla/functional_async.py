@@ -9,9 +9,9 @@ def run_sync(f):
     """Runs a coroutine in a synchronous context, blocking until result arrives.
 
     >>> async def afoo(x):
-    >>>     await asyncio.sleep(1)
-    >>>     return x
-    >>> run_sync(afoo(1))
+    ...     await asyncio.sleep(1)
+    ...     return x
+    ... run_sync(afoo(1))
     1 (after 1 second of waiting)
     """
     loop = asyncio.new_event_loop()
@@ -25,10 +25,10 @@ async def amap_ascompleted(
     """Returns an AsyncGenerator of the results after applying async `f` to each element of Iterable `it`
 
     >>> async def amulti(x)
-    >>>    return x*2
-    >>> async def to_list(ag):
-    >>>     return [i async for i in ag]
-    >>> run_sync(to_list(amap_ascompleted(amulti, range(4))))
+    ...    return x*2
+    ... async def to_list(ag):
+    ...     return [i async for i in ag]
+    ... run_sync(to_list(amap_ascompleted(amulti, range(4))))
     [6, 0, 2, 4] (In a random order)
     """
     for future in asyncio.as_completed(map(f, it)):
@@ -44,13 +44,13 @@ async def aexcepts(
 
 
     >>> async def araise(x):
-    >>>     raise ValueError
-    >>> run_sync(aexcepts(ValueError, araise, lambda e: e, 5))
+    ...     raise ValueError
+    ... run_sync(aexcepts(ValueError, araise, lambda e: e, 5))
     ValueError()
 
     >>> async def a_just(x):
-    >>>     return x
-    >>> run_sync(aexcepts(ValueError, a_just, lambda e: e, 5))
+    ...     return x
+    ... run_sync(aexcepts(ValueError, a_just, lambda e: e, 5))
     5
     """
     try:
@@ -64,11 +64,11 @@ async def mapa(f: Callable, it: AsyncGenerator) -> AsyncGenerator:
     """Returns an AsyncGenerator of the results after applying `f` to each async element of `it`
 
     >>> async def arange(count):
-    >>>     for i in range(count):
-    >>>         yield(i)
-    >>> async def to_list(ag):
-    >>>     return [i async for i in ag]
-    >>> run_sync(to_list(mapa(lambda x: x*2, arange(4))))
+    ...     for i in range(count):
+    ...         yield(i)
+    ... async def to_list(ag):
+    ...     return [i async for i in ag]
+    ... run_sync(to_list(mapa(lambda x: x*2, arange(4))))
     [0, 2, 4, 6]
     """
     async for element in it:
@@ -79,11 +79,11 @@ async def aconcat(async_generator: AsyncGenerator) -> AsyncGenerator:
     """Concat iterables of an async_generator.
 
     >>> async def many_range(count):
-    >>>     for i in range(count):
-    >>>         yield range(i, i+1)
-    >>> async def to_list(ag):
-    >>>     return [i async for i in ag]
-    >>> run_sync(to_list(aconcat(many_range(4))))
+    ...     for i in range(count):
+    ...         yield range(i, i+1)
+    ... async def to_list(ag):
+    ...     return [i async for i in ag]
+    ... run_sync(to_list(aconcat(many_range(4))))
     [0, 1, 2, 3]
     """
     async for g in async_generator:
@@ -97,8 +97,8 @@ def afirst(*funcs: Callable, exception_type: Type[Exception]):
     If all given function raise e`xception_type`, `exception_type` will be raised.
 
     >>> async def araise(x):
-    >>>     raise ValueError
-    >>> run_sync(afirst(araise, lambda x: x*x, exception_type=ValueError)(3))
+    ...     raise ValueError
+    ... run_sync(afirst(araise, lambda x: x*x, exception_type=ValueError)(3))
     9
     """
 

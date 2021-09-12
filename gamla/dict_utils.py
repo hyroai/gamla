@@ -6,8 +6,7 @@ from gamla import currying, functional, functional_generic
 
 
 def itemgetter(attr):
-    """
-    Retrieves a dictionary entry by its key `attr`.
+    """Retrieves a dictionary entry by its key `attr`.
 
     >>> itemgetter("a")({"a": 1})
     1
@@ -20,8 +19,7 @@ def itemgetter(attr):
 
 
 def itemgetter_or_none(attr):
-    """
-    Retrieves a dictionary entry by its key `attr`. Returns `None` if the key is not there.
+    """Retrieves a dictionary entry by its key `attr`. Returns `None` if the key is not there.
 
     >>> itemgetter_or_none("a")({"a": 1})
     1
@@ -37,8 +35,7 @@ def itemgetter_or_none(attr):
 
 
 def itemgetter_with_default(default, attr):
-    """
-    Retrieves a dictionary entry by its key `attr`. Returns `default` if the key is not there.
+    """Retrieves a dictionary entry by its key `attr`. Returns `default` if the key is not there.
 
     >>> itemgetter_with_default(0, "a")({"a": 1})
     1
@@ -69,8 +66,7 @@ get_or_identity = get_or_transform(functional.identity)
 
 
 def get_in(keys: Iterable):
-    """
-    Creates a function that returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
+    """Creates a function that returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
 
     >>> get_in(["a", "b", 1])({"a": {"b": [0, 1, 2]}})
     1
@@ -83,8 +79,7 @@ def get_in(keys: Iterable):
 
 
 def get_in_with_default(keys: Iterable, default):
-    """
-    `get_in` function, returning `default` if a key is not there.
+    """`get_in` function, returning `default` if a key is not there.
 
     >>> get_in_with_default(["a", "b", 1], 0)({"a": {"b": [0, 1, 2]}})
     1
@@ -103,8 +98,7 @@ def get_in_with_default(keys: Iterable, default):
 
 
 def get_in_or_none(keys: Iterable):
-    """
-    `get_in` function, returning `None` if a key is not there.
+    """`get_in` function, returning `None` if a key is not there.
 
     >>> get_in_or_none(["a", "b", 1])({"a": {"b": [0, 1, 2]}})
     1
@@ -115,8 +109,7 @@ def get_in_or_none(keys: Iterable):
 
 
 def get_in_or_none_uncurried(keys: Iterable, coll):
-    """
-    Returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys and `None` if a key is not there.
+    """Returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys and `None` if a key is not there.
 
     >>> get_in_or_none_uncurried(["a", "b", 1],{"a": {"b": [0, 1, 2]}})
     1
