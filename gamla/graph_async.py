@@ -1,4 +1,4 @@
-from typing import Any, AsyncGenerator, Callable, Hashable, Set, Text, Tuple
+from typing import Any, AsyncGenerator, Callable, Hashable, Text, Tuple
 
 from gamla import currying, functional, functional_generic
 
@@ -103,11 +103,13 @@ class _IgnoreChild:
 async def reduce_graph_async(
     reducer: Callable[[Tuple[Any, ...], Hashable], Any],
     get_neighbors: Callable,
-    visited: Set,
+    remember: Callable[[Hashable], None],
+    is_seen: Callable[[Hashable], bool],
     current: Hashable,
 ):
     """Reduces a graph from some starting point using async functions.
 
+    >>> set_instance = set()
     >>> await reduce_graph_async(
     ...     lambda children, current: sum(children) + current,
     ...     functional_generic.compose_left(
@@ -116,21 +118,22 @@ async def reduce_graph_async(
     ...             {1: (1, 2, 3, 5), 2: (4,), 3: (1, 2)}),
     ...         async_functions.to_awaitable,
     ...     ),
-    ...     set(),
+    ...     set_instance.add,
+    ...     contains(set_instance)
     ...     1,
     ... )
     15"""
-    if current in visited:
+    if is_seen(current):
         return _IgnoreChild()
     # Since we may reach a node from two different branches, at the same time,
     # we have to broadcast to the other branch that we've reached this node, this
     # can't be done in an immutable fashion.
-    visited.add(current)
+    remember(current)
     return await functional_generic.pipe(
         current,
         get_neighbors,
         functional_generic.curried_map(
-            reduce_graph_async(reducer, get_neighbors, visited),
+            reduce_graph_async(reducer, get_neighbors, remember, is_seen),
         ),
         functional_generic.remove(functional.is_instance(_IgnoreChild)),
         tuple,

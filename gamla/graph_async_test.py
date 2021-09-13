@@ -1,6 +1,12 @@
 import pytest
 
-from gamla import async_functions, dict_utils, functional_generic, graph_async
+from gamla import (
+    async_functions,
+    dict_utils,
+    functional,
+    functional_generic,
+    graph_async,
+)
 
 pytestmark = pytest.mark.asyncio
 
@@ -16,6 +22,7 @@ _get_neighbors = dict_utils.dict_to_getter_with_default(
 
 
 async def test_reduce_graph_async1():
+    set_instance = set()
     assert (
         await graph_async.reduce_graph_async(
             _reduce_max,
@@ -23,7 +30,8 @@ async def test_reduce_graph_async1():
                 _get_neighbors,
                 async_functions.to_awaitable,
             ),
-            set(),
+            set_instance.add,
+            functional.contains(set_instance),
             1,
         )
         == 5
@@ -31,6 +39,7 @@ async def test_reduce_graph_async1():
 
 
 async def test_reduce_graph_async2():
+    set_instance = set()
     assert (
         await graph_async.reduce_graph_async(
             lambda children, current: sum(children) + current,
@@ -41,7 +50,8 @@ async def test_reduce_graph_async2():
                 ),
                 async_functions.to_awaitable,
             ),
-            set(),
+            set_instance.add,
+            functional.contains(set_instance),
             1,
         )
         == 15
@@ -49,6 +59,7 @@ async def test_reduce_graph_async2():
 
 
 async def test_reduce_graph_async_reducer():
+    set_instance = set()
     assert (
         await graph_async.reduce_graph_async(
             functional_generic.compose_left(
@@ -59,7 +70,8 @@ async def test_reduce_graph_async_reducer():
                 _get_neighbors,
                 async_functions.to_awaitable,
             ),
-            set(),
+            set_instance.add,
+            functional.contains(set_instance),
             1,
         )
         == 5
