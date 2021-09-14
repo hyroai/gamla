@@ -110,18 +110,10 @@ def explode(*positions: Collection[int]):
     "explodes" the iterable, so that each element appears in a single row, and duplicates the non iterable.
 
     >>> functional_generic.pipe(
-        [
-            "x",
-            [
-                "y1",
-                "y2",
-                "y3",
-            ],
-            "z",
-        ],
-        data.explode(1),
-        tuple,
-    )
+    ...     ["x", ["y1", "y2", "y3"], "z"],
+    ...     data.explode(1),
+    ...     tuple,
+    ... )
     (
         ("x", "y1", "z"),
         ("x", "y2", "z"),
