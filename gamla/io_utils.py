@@ -211,6 +211,16 @@ async def get_async(timeout: float, url: Text):
 
 
 @currying.curry
+async def head_async_with_headers(headers: Dict[str, str], timeout: float, url: Text):
+    """Performs an async HEAD request to url with the specified timeout (seconds) and headers.
+
+    >>> response = await head_async_with_headers(30, "https://www.someurl.com", {})
+    """
+    async with httpx.AsyncClient() as client:
+        return await client.head(url, timeout=timeout, headers=headers)
+
+
+@currying.curry
 async def post_json_with_extra_headers_and_params_async(
     params: Dict[Text, Text],
     extra_headers: Dict[Text, Text],
