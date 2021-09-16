@@ -305,6 +305,7 @@ io_utils
 .. autosummary::
    batch_calls
    get_async
+   head_async_with_headers
    post_json_async
    post_json_with_extra_headers_and_params_async
    post_json_with_extra_headers_async
