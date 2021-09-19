@@ -74,7 +74,7 @@ def curried_to_binary(f):
     return internal
 
 
-def _any_is_async(funcs):
+def any_is_async(funcs):
     return any(map(asyncio.iscoroutinefunction, funcs))
 
 
@@ -103,7 +103,7 @@ def compose(*funcs):
         compose_left
         pipe
     """
-    if _any_is_async(funcs):
+    if any_is_async(funcs):
         composed = async_functions.compose(*funcs)
     else:
         composed = sync.compose(*funcs)
@@ -173,7 +173,7 @@ def lazyjuxt(
     >>> tuple(lazyjuxt(inc, double)(10))
     (11, 20)
     """
-    if _any_is_async(funcs):
+    if any_is_async(funcs):
         funcs = tuple(map(after(async_functions.to_awaitable), funcs))
 
         async def lazyjuxt_async(*args, **kwargs):
@@ -196,7 +196,7 @@ def juxt(*funcs: Callable) -> Callable[..., Tuple]:
     >>> juxt(inc, double)(10)
     (11, 20)
     """
-    if _any_is_async(funcs):
+    if any_is_async(funcs):
         funcs = tuple(map(after(async_functions.to_awaitable), funcs))
 
         async def juxt_async(*args, **kwargs):
@@ -251,7 +251,7 @@ def ternary(condition, f_true, f_false):
     >>> f(3)
     '-3'
     """
-    if _any_is_async([condition, f_true, f_false]):
+    if any_is_async([condition, f_true, f_false]):
 
         async def ternary_inner_async(*args, **kwargs):
             return (
@@ -305,7 +305,7 @@ def first(*funcs, exception_type: Type[Exception]):
     >>> f([])
     StopIteration raised
     """
-    if _any_is_async([*funcs]):
+    if any_is_async([*funcs]):
 
         async def inner_async(*args, **kwargs):
             for func in funcs:
@@ -343,7 +343,7 @@ def pipe(val, *funcs):
     """
     if not funcs:
         raise PipeNotGivenAnyFunctions
-    if _any_is_async(funcs):
+    if any_is_async(funcs):
         return async_functions.compose(*reversed(funcs))(val)
     for f in funcs:
         val = f(val)
@@ -513,7 +513,7 @@ def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
     """
     predicates = tuple(predicates)
     mappers = tuple(mappers)
-    if _any_is_async(mappers + predicates):
+    if any_is_async(mappers + predicates):
         predicates = tuple(map(after(async_functions.to_awaitable), predicates))
         mappers = tuple(map(after(async_functions.to_awaitable), mappers))
 
@@ -596,7 +596,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
             )
         return terminal_mapper(value)
 
-    if _any_is_async([nonterminal_mapper, terminal_mapper]):
+    if any_is_async([nonterminal_mapper, terminal_mapper]):
         return compose_left(map_dict_inner, _await_dict)
 
     return map_dict_inner
@@ -608,7 +608,7 @@ def _iterdict(d):
     return results
 
 
-_has_coroutines = compose_left(_iterdict, _any_is_async)
+_has_coroutines = compose_left(_iterdict, any_is_async)
 
 
 def apply_spec(spec: Dict):

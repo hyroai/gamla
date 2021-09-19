@@ -50,3 +50,10 @@ def star(f):
         return await f(*x)
 
     return star
+
+
+def thunk(f, *args, **kwargs):
+    async def thunk(*inner_args, **inner_kwargs):
+        return await f(*args, **kwargs)(*inner_args, **inner_kwargs)
+
+    return thunk
