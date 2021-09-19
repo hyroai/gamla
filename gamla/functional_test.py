@@ -450,7 +450,7 @@ def test_compositions_have_name():
 
 def test_async_compositions_have_name():
     async def async_identity(x):
-        asyncio.sleep(1)
+        await asyncio.sleep(0)
         return x
 
     assert (

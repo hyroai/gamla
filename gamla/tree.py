@@ -2,7 +2,7 @@ import dataclasses
 from typing import Any, Callable
 
 from gamla import currying, dict_utils, functional, functional_generic
-from gamla.optimized import sync
+from gamla.optimized import async_functions, sync
 
 
 @currying.curry
@@ -35,6 +35,27 @@ def tree_reduce_async(get_children: Callable, reduce_fn: Callable):
         )
 
     return tree_reduce_async_inner
+
+
+def map_reduce_tree(children: Callable, reducer: Callable, mapper: Callable):
+    """Like `tree_reduce`, but allows for an async map stage first, so it can be parallelized."""
+    return functional_generic.compose_left(
+        functional_generic.juxt(
+            functional_generic.compose_left(
+                children,
+                functional_generic.curried_map(
+                    (
+                        async_functions.thunk
+                        if functional_generic.any_is_async([children, reducer, mapper])
+                        else sync.thunk
+                    )(map_reduce_tree, children, reducer, mapper),
+                ),
+                tuple,
+            ),
+            mapper,
+        ),
+        functional_generic.star(reducer),
+    )
 
 
 @dataclasses.dataclass(frozen=True)

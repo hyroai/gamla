@@ -259,3 +259,10 @@ def binary_curry(f):
         return binary_curry
 
     return binary_curry
+
+
+def thunk(f, *args, **kwargs):
+    def thunk(*inner_args, **inner_kwargs):
+        return f(*args, **kwargs)(*inner_args, **inner_kwargs)
+
+    return thunk

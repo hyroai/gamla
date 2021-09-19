@@ -6,7 +6,6 @@ import pytest
 import gamla
 from gamla import io_utils
 
-# All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
 
 
