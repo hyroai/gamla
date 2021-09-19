@@ -32,10 +32,10 @@ def test_map_reduce_tree_async():
     assert (
         tree.map_reduce_tree(
             functional.second,
-            lambda x, y: (x, y),
+            lambda x, y: sum(x) + y,
             lambda x: functional.head(x) + 1,
         )((1, ((2, ()), (3, ()))))
-        == (2, ((3, ()), (4, ())))
+        == 9
     )
 
 
@@ -48,14 +48,12 @@ async def test_map_reduce_tree():
 
     start_time = time.time()
     assert (
-        await tree.map_reduce_tree(functional.second, lambda x, y: (x, y), increment)(
+        await tree.map_reduce_tree(
+            functional.second,
+            lambda x, y: sum(x) + y,
+            increment,
+        )(
             (1, ((2, ()), (3, ()))),
         )
-    ) == (
-        2,
-        (
-            (3, ()),
-            (4, ()),
-        ),
-    )
+    ) == 9
     assert time.time() - start_time < wait_time * 1.1

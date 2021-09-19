@@ -41,7 +41,6 @@ def map_reduce_tree(children: Callable, reducer: Callable, mapper: Callable):
     """Like `tree_reduce`, but allows for an async map stage first, so it can be parallelized."""
     return functional_generic.compose_left(
         functional_generic.juxt(
-            mapper,
             functional_generic.compose_left(
                 children,
                 functional_generic.curried_map(
@@ -53,6 +52,7 @@ def map_reduce_tree(children: Callable, reducer: Callable, mapper: Callable):
                 ),
                 tuple,
             ),
+            mapper,
         ),
         functional_generic.star(reducer),
     )
