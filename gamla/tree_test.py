@@ -43,7 +43,7 @@ async def test_map_reduce_tree():
     wait_time = 0.1
 
     async def increment(x):
-        asyncio.sleep(wait_time)
+        await asyncio.sleep(wait_time)
         return functional.head(x) + 1
 
     start_time = time.time()
