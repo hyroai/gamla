@@ -177,7 +177,7 @@ def throttle(limit, f):
     @functools.wraps(f)
     async def wrapped(*args, **kwargs):
         nonlocal semaphore
-        # Initialize semaphore lazily to allow applying `throttle` when an event loop does not yet exist.
+        # This must be in the inner function so that we avoid creating an event loop before the user has, causing the code to run with two different event loops.
         if not semaphore:
             semaphore = asyncio.Semaphore(limit)
         async with semaphore:
