@@ -172,10 +172,14 @@ def throttle(limit, f):
 
     >>> throttled_get_async = throttle(3, get_async)
     """
-    semaphore = asyncio.Semaphore(limit)
+    semaphore = None
 
     @functools.wraps(f)
     async def wrapped(*args, **kwargs):
+        nonlocal semaphore
+        # Initialize semaphore lazily to allow applying `throttle` when an event loop does not yet exist.
+        if not semaphore:
+            semaphore = asyncio.Semaphore(limit)
         async with semaphore:
             return await f(*args, **kwargs)
 

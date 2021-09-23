@@ -4,7 +4,7 @@ import random
 import pytest
 
 import gamla
-from gamla import io_utils
+from gamla import functional_generic, io_utils
 
 pytestmark = pytest.mark.asyncio
 
@@ -120,3 +120,23 @@ async def test_retry_raises():
 
     with pytest.raises(SomeException):
         await io_utils.retry(SomeException, 2, 0, f)(3, 2)
+
+
+async def test_throtle():
+    factor = 0
+
+    @io_utils.throttle(1)
+    async def multiply_with_delay(x):
+        nonlocal factor
+        factor = factor + 1
+        await asyncio.sleep(0.01)
+        return x * factor
+
+    assert (
+        await gamla.pipe(
+            (1, 2, 3),
+            functional_generic.curried_map(multiply_with_delay),
+            tuple,
+        )
+        == (1, 4, 9)
+    )
