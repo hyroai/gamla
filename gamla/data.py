@@ -88,15 +88,15 @@ class Enum(frozenset):
 
 
 def _do_on_positions(f, predicate: Callable[[int], bool]):
-    return functional_generic.compose_left(
+    return sync.compose_left(
         enumerate,
-        functional_generic.curried_map(
+        sync.map(
             sync.ternary(
-                functional_generic.compose_left(
+                sync.compose_left(
                     functional.head,
                     predicate,
                 ),
-                functional_generic.compose_left(functional.second, f),
+                sync.compose_left(functional.second, f),
                 functional.second,
             ),
         ),
@@ -120,7 +120,7 @@ def explode(*positions: Collection[int]):
         ("x", "y3", "z"),
     )
     """
-    return functional_generic.compose_left(
+    return sync.compose_left(
         _do_on_positions(
             functional.wrap_tuple,
             functional_generic.complement(functional.contains(positions)),
