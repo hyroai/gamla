@@ -471,8 +471,8 @@ def test_compositions_correct_typing():
         return len(x)
 
     assert functional_generic.compose_left(f, g).__annotations__ == {
-        "return": int,
         "x": str,
+        "return": int,
     }
 
 
