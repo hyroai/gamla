@@ -463,6 +463,19 @@ def test_async_compositions_have_name():
     )
 
 
+def test_compositions_correct_typing():
+    def f(x: str) -> str:
+        return "hello " + x
+
+    def g(x: str) -> int:
+        return len(x)
+
+    assert functional_generic.compose_left(f, g).__annotations__ == {
+        "x": str,
+        "return": int,
+    }
+
+
 def test_attrgetter():
     assert functional.attrgetter("lower")("ASD")() == "asd"
 
