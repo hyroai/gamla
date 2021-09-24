@@ -85,6 +85,15 @@ def _get_name_for_function_group(funcs):
     return "_OF_".join(map(lambda x: x.__name__, funcs))
 
 
+def _match_return_typing(x: Callable, y: Callable):
+    if not hasattr(y, "__annotations__"):
+        return
+    if "return" in y.__annotations__:
+        x.__annotations__["return"] = y.__annotations__["return"]
+    elif "return" in x.__annotations__:
+        del x.__annotations__["return"]
+
+
 def compose(*funcs):
     """Compose sync and async functions to operate in series.
 
@@ -108,14 +117,14 @@ def compose(*funcs):
     else:
         composed = sync.compose(*funcs)
     composed = functools.wraps(functional.last(funcs))(composed)
-    name = _get_name_for_function_group(funcs)
     frame = inspect.currentframe().f_back.f_back
     composed.__code__ = composed.__code__.replace(
         co_name=f"{frame.f_code.co_filename}:{frame.f_lineno}",
         co_filename=frame.f_code.co_filename,
         co_firstlineno=frame.f_lineno,
     )
-    composed.__name__ = name
+    composed.__name__ = _get_name_for_function_group(funcs)
+    _match_return_typing(composed, functional.head(funcs))
     return composed
 
 
