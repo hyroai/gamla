@@ -238,7 +238,7 @@ def has_cycle(graph):
 
 _non_sources = sync.compose_left(
     dict.values,
-    functional_generic.concat,
+    functional.concat,
     frozenset,
 )
 

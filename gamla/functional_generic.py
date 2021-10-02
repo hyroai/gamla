@@ -509,41 +509,7 @@ complement = after(operator.not_)
 #: (1, 2, 3)
 remove = compose(curried_filter, complement)
 
-
-class NoConditionMatched(Exception):
-    pass
-
-
-def _case(predicates: Tuple[Callable, ...], mappers: Tuple[Callable, ...]):
-    """Case with functions.
-
-    Handles async iff one of the predicates or one of the mappers is async.
-    Raises `NoConditionMatched` if no condition matched.
-    """
-    predicates = tuple(predicates)
-    mappers = tuple(mappers)
-    if any_is_async(mappers + predicates):
-        predicates = tuple(map(after(async_functions.to_awaitable), predicates))
-        mappers = tuple(map(after(async_functions.to_awaitable), mappers))
-
-        async def case_async(*args, **kwargs):
-            for is_matched, mapper in zip(
-                await asyncio.gather(*map(lambda f: f(*args, **kwargs), predicates)),
-                mappers,
-            ):
-                if is_matched:
-                    return await mapper(*args, *kwargs)
-            raise NoConditionMatched
-
-        return case_async
-
-    def case(*args, **kwargs):
-        for predicate, transformation in zip(predicates, mappers):
-            if predicate(*args, **kwargs):
-                return transformation(*args, **kwargs)
-        raise NoConditionMatched
-
-    return case
+_make_async = sync.after(async_functions.to_awaitable)
 
 
 def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
@@ -556,9 +522,23 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
     >>> f(10)
     `NoConditionMatched`
     """
-    predicates = tuple(map(functional.head, predicates_and_mappers))
-    mappers = tuple(map(functional.second, predicates_and_mappers))
-    return _case(predicates, mappers)
+    if any_is_async(functional.concat(predicates_and_mappers)):
+        predicates, mappers = zip(*predicates_and_mappers)
+        predicates = tuple(map(_make_async, predicates))
+        mappers = tuple(map(_make_async, mappers))
+
+        async def case_async(*args, **kwargs):
+            for is_matched, mapper in zip(
+                await asyncio.gather(*map(lambda f: f(*args, **kwargs), predicates)),
+                mappers,
+            ):
+                if is_matched:
+                    return await mapper(*args, *kwargs)
+            raise sync.NoConditionMatched
+
+        return case_async
+
+    return sync.case(predicates_and_mappers)
 
 
 #: Applies functions to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
@@ -569,7 +549,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
 #: 115
 #: >>> f(10)
 #: `NoConditionMatched`
-case_dict = compose_left(dict.items, tuple, case)
+case_dict = sync.compose_left(dict.items, tuple, case)
 
 
 async def _await_dict(value):
@@ -826,8 +806,7 @@ def merge_with(f):
 
 
 merge = sync.compose_left(lambda *x: x if len(x) > 1 else x[0], sync.merge)
-concat = itertools.chain.from_iterable
-mapcat = compose_left(curried_map, after(concat))
+mapcat = compose_left(curried_map, after(functional.concat))
 
 _K = TypeVar("_K")
 

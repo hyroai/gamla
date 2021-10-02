@@ -3,7 +3,6 @@ import random
 
 import pytest
 
-import gamla
 from gamla import functional_generic, io_utils
 
 pytestmark = pytest.mark.asyncio
@@ -20,7 +19,11 @@ async def test_batch_decorator():
         return inputs
 
     inputs = tuple(range(100))
-    results = await gamla.pipe(inputs, gamla.map(slow_identity), tuple)
+    results = await functional_generic.pipe(
+        inputs,
+        functional_generic.curried_map(slow_identity),
+        tuple,
+    )
     assert results == inputs
     assert times_f_called < 5
 
@@ -37,10 +40,20 @@ async def test_batch_decorator_errors():
             raise ValueError
         return inputs
 
-    assert (await gamla.pipe((1,), gamla.map(slow_identity_with_errors), tuple)) == (1,)
+    assert (
+        await functional_generic.pipe(
+            (1,),
+            functional_generic.curried_map(slow_identity_with_errors),
+            tuple,
+        )
+    ) == (1,)
 
     with pytest.raises(ValueError):
-        await gamla.pipe((1, 2, 3), gamla.map(slow_identity_with_errors), tuple)
+        await functional_generic.pipe(
+            (1, 2, 3),
+            functional_generic.curried_map(slow_identity_with_errors),
+            tuple,
+        )
 
     assert times_f_called == 2
 
@@ -56,7 +69,11 @@ async def test_batch_decorator_max_size():
         return inputs
 
     inputs = tuple(range(100))
-    results = await gamla.pipe(inputs, gamla.map(slow_identity), tuple)
+    results = await functional_generic.pipe(
+        inputs,
+        functional_generic.curried_map(slow_identity),
+        tuple,
+    )
     assert results == inputs
     assert times_f_called == 10
 
@@ -71,7 +88,9 @@ async def test_with_and_without_deduper():
         return x
 
     # Without.
-    assert inputs == tuple(await gamla.map(identity_with_spying_and_delay)(inputs))
+    assert inputs == tuple(
+        await functional_generic.curried_map(identity_with_spying_and_delay)(inputs),
+    )
 
     assert len(called) == len(inputs)
 
@@ -79,7 +98,9 @@ async def test_with_and_without_deduper():
 
     # With.
     assert inputs == tuple(
-        await gamla.map(io_utils.queue_identical_calls(identity_with_spying_and_delay))(
+        await functional_generic.curried_map(
+            io_utils.queue_identical_calls(identity_with_spying_and_delay),
+        )(
             inputs,
         ),
     )
@@ -133,7 +154,7 @@ async def test_throtle():
         return x * factor
 
     assert (
-        await gamla.pipe(
+        await functional_generic.pipe(
             (1, 2, 3),
             functional_generic.curried_map(multiply_with_delay),
             tuple,

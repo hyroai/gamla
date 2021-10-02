@@ -2,7 +2,7 @@ import typing
 from collections import abc
 from typing import Any, Callable, Optional, Tuple, Union
 
-from gamla import functional, functional_generic, sync
+from gamla import functional, sync
 
 
 def _handle_union_on_left(type1, type2):
@@ -23,7 +23,7 @@ def _handle_union_on_right(type1, type2):
 
 _origin_equals = sync.compose_left(functional.equals, sync.before(typing.get_origin))
 
-_handle_union = functional_generic.case_dict(
+_handle_union = sync.case_dict(
     {
         sync.compose_left(functional.head, _origin_equals(Union)): sync.star(
             _handle_union_on_left,
@@ -67,7 +67,7 @@ def _handle_callable(args1, output1, args2, output2):
 _is_subtype: Callable[[Tuple[Any, Any]], bool] = sync.compose_left(
     sync.map(sync.when(_origin_equals(Optional), _rewrite_optional)),
     tuple,
-    functional_generic.case_dict(
+    sync.case_dict(
         {
             sync.allmap(_origin_equals(abc.Callable)): sync.compose_left(
                 sync.mapcat(typing.get_args),

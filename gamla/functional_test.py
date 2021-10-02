@@ -214,7 +214,7 @@ def test_case_multiple_predicates():
 
 
 def test_case_no_predicate():
-    with pytest.raises(functional_generic.NoConditionMatched):
+    with pytest.raises(sync.NoConditionMatched):
         functional_generic.case_dict(
             {
                 operator.not_: functional.identity,

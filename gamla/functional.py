@@ -28,6 +28,8 @@ import toolz
 from gamla import currying, excepts_decorator
 from gamla.optimized import sync
 
+concat = itertools.chain.from_iterable
+
 
 def identity(x):
     return x

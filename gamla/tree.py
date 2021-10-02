@@ -152,7 +152,7 @@ def get_leaves_by_ancestor_predicate(predicate: Callable):
 def _filter_leaves_reducer(predicate, node, children):
     if _is_terminal(node) and predicate(node):
         return (node,)
-    return functional_generic.concat(children)
+    return functional.concat(children)
 
 
 def filter_leaves(predicate: Callable):

@@ -1,5 +1,6 @@
 """Synchronous versions of common functions for optimized use cases."""
 import itertools
+from typing import Callable, Tuple
 
 
 def packstack(*functions):
@@ -319,3 +320,20 @@ def when(f, g):
         return x
 
     return when
+
+
+class NoConditionMatched(Exception):
+    pass
+
+
+def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
+    def case(*args, **kwargs):
+        for predicate, transformation in predicates_and_mappers:
+            if predicate(*args, **kwargs):
+                return transformation(*args, **kwargs)
+        raise NoConditionMatched
+
+    return case
+
+
+case_dict = compose_left(dict.items, tuple, case)
