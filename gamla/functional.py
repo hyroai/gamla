@@ -7,6 +7,7 @@ import itertools
 import json
 import random
 from concurrent import futures
+from operator import truediv
 from typing import (
     AbstractSet,
     Any,
@@ -25,21 +26,8 @@ from typing import (
 import heapq_max
 import toolz
 
-from gamla import currying, excepts_decorator
+from gamla import currying, excepts_decorator, operator
 from gamla.optimized import sync
-
-concat = itertools.chain.from_iterable
-
-
-def identity(x):
-    return x
-
-
-#: Count the number of items in a sequence.
-#: Like builtin function 'len' but works on iterators/generators as well
-#: >>> count(1 for in range(4))
-#: '4'
-count = toolz.count
 
 
 def sort_by(key: Callable):
@@ -69,24 +57,12 @@ def sort_by_reversed(key: Callable):
 #: Return a new list containing all items from the iterable in ascending order
 #: >>> sort([5,2,4,1])
 #: '[1,2,4,5]'
-sort = sort_by(identity)
+sort = sort_by(operator.identity)
 
 #: Return a new list containing all items from the iterable in descending order
 #: >>> sort([5,2,4,1])
 #: '[5,4,2,1]'
-sort_reversed = sort_by_reversed(identity)
-
-
-curried_map_sync = sync.map
-
-
-def pack(*stuff):
-    """Returns a list generated from the provided input.
-
-    >>> pack(1, 2, 3)
-    (1, 2, 3)
-    """
-    return stuff
+sort_reversed = sort_by_reversed(operator.identity)
 
 
 def do_if(condition, fun):
@@ -102,12 +78,12 @@ def singleize(func: Callable) -> Callable:
     def wrapped(some_input):
         if isinstance(some_input, tuple):
             return func(some_input)
-        return head(func((some_input,)))
+        return operator.head(func((some_input,)))
 
     async def wrapped_async(some_input):
         if isinstance(some_input, tuple):
             return await func(some_input)
-        return head(await func((some_input,)))
+        return operator.head(await func((some_input,)))
 
     if inspect.iscoroutinefunction(func):
         return wrapped_async
@@ -208,21 +184,6 @@ def pmap(f, n_workers, it):
     return tuple(futures.ThreadPoolExecutor(max_workers=n_workers).map(f, it))
 
 
-def just(x):
-    """Ignores the input upon execution and returns the given argument.
-
-    >>> f = just(1)
-    >>> f(2)
-    1
-    """
-
-    def just(*args, **kwargs):
-        del args, kwargs
-        return x
-
-    return just
-
-
 # To get a unique caching key for each function invocation, we take `args` and `items()`
 # of `kwargs` and sort them (by keys), while also marking the beginning of `kwargs`.
 # Inspired by: http://code.activestate.com/recipes/578078/ (python LRU cache
@@ -236,7 +197,7 @@ def make_call_key(args, kwargs):
 
 
 @currying.curry
-def top(iterable: Iterable, key=identity):
+def top(iterable: Iterable, key=operator.identity):
     """Generates elements from max to min.
 
     >>> tuple(top((1, 3, 2)))
@@ -250,11 +211,11 @@ def top(iterable: Iterable, key=identity):
         # Use the index as a tie breaker.
         heapq_max.heappush_max(h, (key(value), i, value))
     while h:
-        yield nth(2)(heapq_max.heappop_max(h))
+        yield operator.nth(2)(heapq_max.heappop_max(h))
 
 
 @currying.curry
-def bottom(iterable, key=identity):
+def bottom(iterable, key=operator.identity):
     """Generates elements from min to max.
 
     >>> tuple(bottom((3, 2, 1)))
@@ -268,81 +229,7 @@ def bottom(iterable, key=identity):
         # Use the index as a tie breaker.
         heapq.heappush(h, (key(value), i, value))
     while h:
-        yield nth(2)(heapq.heappop(h))
-
-
-def inside(val):
-    """A functional `in` operator.
-
-    >>> inside(1)([0, 1, 2])
-    True
-
-    >>> inside("a", "word")
-    False
-    """
-
-    def inside(container):
-        return val in container
-
-    return inside
-
-
-def len_equals(length: int):
-    """Measures if the length of a sequence equals to a given length.
-
-    >>> len_equals(3)([0, 1, 2])
-    True
-    """
-
-    def len_equals(x: Iterable) -> bool:
-        return count(x) == length
-
-    return len_equals
-
-
-def len_greater(length: int):
-    """Measures if the length of a sequence is greater than a given length.
-
-    >>> len_greater(2)([0, 1, 2])
-    True
-    """
-
-    def len_greater(seq):
-        return count(seq) > length
-
-    return len_greater
-
-
-def len_smaller(length: int) -> Callable:
-    """Measures if the length of a sequence is smaller than a given length.
-
-    >>> len_smaller(2)([0, 1, 2])
-    False
-    """
-
-    def len_smaller(seq):
-        return count(seq) < length
-
-    return len_smaller
-
-
-def between(low: int, high: int):
-    def between(number: Union[int, float]):
-        return low <= number < high
-
-    return between
-
-
-def empty(seq):
-    try:
-        next(iter(seq))
-    except StopIteration:
-        return True
-    return False
-
-
-def nonempty(seq):
-    return not empty(seq)
+        yield operator.nth(2)(heapq.heappop(h))
 
 
 def skip(n: int):
@@ -479,7 +366,7 @@ def dataclass_transform(
     >>> assert d.x == 10
     """
     transformation = sync.compose_left(
-        attrgetter(attr_name),
+        operator.attrgetter(attr_name),
         attr_transformer,
     )
 
@@ -697,156 +584,7 @@ def unique_by(f):
 #:
 #: >>> tuple(unique(["cat", "mouse", "dog", "cat"]))
 #: ('cat', 'mouse', 'dog')
-unique = unique_by(identity)
-
-
-def attrgetter(attr):
-    """Access the object attribute by its name `attr`.
-
-    >>> attrgetter("lower")("ASD")()
-    'asd'
-    """
-
-    def attrgetter(obj):
-        return getattr(obj, attr)
-
-    return attrgetter
-
-
-def equals(x):
-    def equals(y):
-        return x == y
-
-    return equals
-
-
-def not_equals(x):
-    """A functional !=.
-
-    >>> not_equals(2)(2)
-    False
-
-    >>> not_equals("David")("Michael")
-    True
-    """
-
-    def not_equals(y):
-        return x != y
-
-    return not_equals
-
-
-def contains(x):
-    """Contains operator.
-
-    >>> contains([1, 2, 3])(2)
-    True
-
-    >>> contains("David")("x")
-    False
-    """
-
-    def contains(y):
-        return y in x
-
-    return contains
-
-
-def add(x):
-    """Addition operator.
-
-    >>> add(1)(2)
-    3
-
-    >>> add(["c"])(["a", "b"])
-    ['a', 'b', 'c']
-    """
-
-    def add(y):
-        return y + x
-
-    return add
-
-
-def greater_than(x):
-    """Greater than operator.
-
-    >>> greater_than(1)(2)
-    True
-
-    >>> greater_than(1)(0)
-    False
-    """
-
-    def greater_than(y):
-        return y > x
-
-    return greater_than
-
-
-def greater_equals(x):
-    """Greater than or equal operator.
-
-    >>> greater_equals(1)(1)
-    True
-
-    >>> greater_equals(1)(0)
-    False
-    """
-
-    def greater_equals(y):
-        return y >= x
-
-    return greater_equals
-
-
-def less_than(x):
-    """Less than operator.
-
-    >>> less_than(1)(1)
-    False
-    """
-
-    def less_than(y):
-        return y < x
-
-    return less_than
-
-
-def less_equals(x):
-    """Less than or equal operator.
-
-    >>> less_equals(1)(1)
-    True
-
-    >>> less_equals(1)(3)
-    False
-    """
-
-    def less_equals(y):
-        return y <= x
-
-    return less_equals
-
-
-def multiply(x):
-    """Multiply operator.
-
-    >>> multiply(2)(1)
-    2
-    """
-
-    def multiply(y):
-        return y * x
-
-    return multiply
-
-
-def divide_by(x):
-    def divide_by(y):
-        return y / x
-
-    return divide_by
+unique = unique_by(operator.identity)
 
 
 def interpose(el):
@@ -862,19 +600,6 @@ def interpose(el):
     return interpose_inner
 
 
-def tail(n: int):
-    """Get the last n elements of a sequence.
-
-    >>> tail(3) ([1, 2, 3, 4, 5])
-    [3, 4, 5]
-    """
-
-    def tail(seq: Iterable):
-        return toolz.tail(n, seq)
-
-    return tail
-
-
 def take(n: int):
     """Get an iterator for the first n elements of a sequence.
 
@@ -886,19 +611,6 @@ def take(n: int):
         return itertools.islice(seq, n)
 
     return take
-
-
-def nth(n: int):
-    """Returns the nth element in a sequence
-
-    >>> nth(1, 'ABC')
-    ['B']
-    """
-
-    def nth(seq):
-        return toolz.nth(n, seq)
-
-    return nth
 
 
 def drop(n: int):
@@ -945,24 +657,6 @@ def flip(func: Callable):
 #: >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
 #: {'cat': 3, 'ox': 1, 'pig': 2}
 frequencies = toolz.frequencies
-
-#: The first element in a sequence.
-#:
-#: >>> head('ABC')
-#: 'A'
-head = toolz.first
-
-#: The second element in a sequence.
-#:
-#: >>> second('ABC')
-#: 'B'
-second = toolz.second
-
-#: The last element in a sequence.
-#:
-#: >>> last('ABC')
-#: 'C'
-last = toolz.last
 
 #: Determines whether the element is iterable.
 #:
@@ -1023,7 +717,7 @@ def ends_with(expected_tail: Iterable) -> Callable[[Sequence], bool]:
     expected_tail_as_tuple = tuple(expected_tail)
 
     def ends_with(seq: Iterable):
-        tail_of_seq = tail(len(expected_tail_as_tuple))(seq)
+        tail_of_seq = operator.tail(len(expected_tail_as_tuple))(seq)
         for a, b in itertools.zip_longest(
             tail_of_seq,
             expected_tail_as_tuple,
@@ -1059,9 +753,22 @@ def intersect(collections: Collection[Collection]) -> Iterable:
             yield x
 
 
-have_intersection = sync.compose_left(intersect, nonempty)
+have_intersection = sync.compose_left(intersect, operator.nonempty)
 
 
 def function_to_uid(f: Callable) -> str:
     """Returns a unique identifier for the given function."""
     return hashlib.sha1(f.__name__.encode("utf-8")).hexdigest()
+
+
+#: Average of an iterable. If the sequence is empty, returns 0.
+#: >>> average([1,2,3])
+#: 2.0
+average = sync.compose_left(
+    sync.bifurcate(sum, operator.count),
+    excepts_decorator.excepts(
+        ZeroDivisionError,
+        operator.just(0),
+        sync.star(truediv),
+    ),
+)

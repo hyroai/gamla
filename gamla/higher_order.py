@@ -1,4 +1,4 @@
-from gamla import functional, functional_generic
+from gamla import functional_generic, operator
 from gamla.optimized import async_functions
 
 
@@ -43,6 +43,6 @@ def prepare_and_apply_async(f):
 
 
 #: Make a function act on the first element on incoming input.
-on_first = functional_generic.before(functional.head)
+on_first = functional_generic.before(operator.head)
 #: Make a function act on the second element on incoming input.
-on_second = functional_generic.before(functional.second)
+on_second = functional_generic.before(operator.second)

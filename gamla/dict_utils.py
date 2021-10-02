@@ -1,8 +1,8 @@
 import functools
-import operator
+from operator import getitem
 from typing import Any, Callable, Dict, Iterable
 
-from gamla import currying, functional, functional_generic
+from gamla import currying, functional_generic, operator
 
 
 def itemgetter(attr):
@@ -62,10 +62,11 @@ def get_or_transform(f, d):
     return get_or_transform
 
 
-get_or_identity = get_or_transform(functional.identity)
+get_or_identity = get_or_transform(operator.identity)
 
 
 def get_in(keys: Iterable):
+
     """Creates a function that returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
 
     >>> get_in(["a", "b", 1])({"a": {"b": [0, 1, 2]}})
@@ -73,7 +74,7 @@ def get_in(keys: Iterable):
     """
 
     def get_in(coll):
-        return functools.reduce(operator.getitem, keys, coll)
+        return functools.reduce(getitem, keys, coll)
 
     return get_in
 
@@ -158,7 +159,7 @@ def make_index(
     if not steps:
         return frozenset
     return functional_generic.compose_left(
-        functional.head(steps),
+        operator.head(steps),
         functional_generic.valmap(make_index(steps[1:])),
         lambda d: lambda x: d.get(
             x,

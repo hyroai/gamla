@@ -1,13 +1,13 @@
 from typing import Any, AsyncGenerator, Callable, Hashable, Text, Tuple
 
-from gamla import currying, functional, functional_generic
+from gamla import currying, functional, functional_generic, operator
 
 
 @currying.curry
 async def agraph_traverse(
     source: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],
-    key: Callable = functional.identity,
+    key: Callable = operator.identity,
 ) -> AsyncGenerator:
     """Gets a graph and a function to get a node's neighbours,
     BFS over it from a single source node, returns an AsyncGenerator of unique nodes.
@@ -32,7 +32,7 @@ async def agraph_traverse(
 async def agraph_traverse_many(
     sources: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],
-    key: Callable = functional.identity,
+    key: Callable = operator.identity,
 ) -> AsyncGenerator[Any, None]:
     """BFS over a graph, yielding unique nodes.
     Use when `aget_neighbors` returns an AsyncGenerator.
@@ -64,7 +64,7 @@ async def atraverse_graph_by_radius(
     source: Any,
     aget_neighbors: Callable[[Any], AsyncGenerator],
     radius: int,
-    key: Callable = functional.identity,
+    key: Callable = operator.identity,
 ) -> AsyncGenerator[Any, None]:
     """Gets a graph and a function to get a node's neighbours,
     BFS over it from a single source node, returns an AsyncGenerator of unique nodes.
@@ -90,9 +90,9 @@ async def atraverse_graph_by_radius(
     async for s in agraph_traverse(
         source=(source, 0),
         aget_neighbors=get_neighbors_limiting_radius,
-        key=functional_generic.compose_left(functional.head, key),
+        key=functional_generic.compose_left(operator.head, key),
     ):
-        yield functional.head(s)
+        yield operator.head(s)
 
 
 class _IgnoreChild:
@@ -137,6 +137,6 @@ async def reduce_graph_async(
         ),
         functional_generic.remove(functional.is_instance(_IgnoreChild)),
         tuple,
-        functional_generic.pair_right(functional.just(current)),
+        functional_generic.pair_right(operator.just(current)),
         functional_generic.star(reducer),
     )

@@ -1,6 +1,6 @@
 import pytest
 
-from gamla import apply_utils, asyncio, functional
+from gamla import apply_utils, asyncio, operator
 
 pytestmark = pytest.mark.asyncio
 
@@ -38,7 +38,7 @@ async def test_apply_method_async():
 
 
 def test_apply():
-    assert apply_utils.apply(1)(functional.add(2)) == 3
+    assert apply_utils.apply(1)(operator.add(2)) == 3
 
 
 async def test_apply_async():

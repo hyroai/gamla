@@ -241,7 +241,6 @@ def star(f):
     return starred
 
 
-# TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def pair_left(f):
     def pair_left(x):
         return f(x), x
@@ -337,3 +336,19 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
 
 
 case_dict = compose_left(dict.items, tuple, case)
+stack = compose_left(
+    enumerate,
+    map(star(lambda i, f: compose(f, lambda x: x[i]))),
+    star(juxt),
+)
+
+
+def bifurcate(*funcs):
+    """Serially run each function on tee'd copies of a sequence.
+    If the sequence is a generator, it is duplicated so it will not be exhausted (which may incur a substantial memory signature in some cases).
+    >>> f = bifurcate(sum, gamla.count)
+    >>> seq = map(gamla.identity, [1, 2, 3, 4, 5])
+    >>> f(seq)
+    (15, 5)
+    """
+    return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))

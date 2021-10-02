@@ -2,7 +2,7 @@ import asyncio
 import functools
 import inspect
 import itertools
-import operator
+from operator import not_
 from typing import (
     Any,
     Callable,
@@ -18,7 +18,7 @@ from typing import (
     Union,
 )
 
-from gamla import apply_utils, data, excepts_decorator, functional
+from gamla import apply_utils, data, excepts_decorator, functional, operator
 from gamla.optimized import async_functions, sync
 
 
@@ -116,7 +116,7 @@ def compose(*funcs):
         composed = async_functions.compose(*funcs)
     else:
         composed = sync.compose(*funcs)
-    composed = functools.wraps(functional.last(funcs))(composed)
+    composed = functools.wraps(operator.last(funcs))(composed)
     frame = inspect.currentframe().f_back.f_back
     composed.__code__ = composed.__code__.replace(
         co_name=f"{frame.f_code.co_filename}:{frame.f_lineno}",
@@ -124,7 +124,7 @@ def compose(*funcs):
         co_firstlineno=frame.f_lineno,
     )
     composed.__name__ = _get_name_for_function_group(funcs)
-    _match_return_typing(composed, functional.head(funcs))
+    _match_return_typing(composed, operator.head(funcs))
     return composed
 
 
@@ -283,7 +283,7 @@ def when(condition: Callable, f_true: Callable) -> Callable:
     >>> f(3)
     '3'
     """
-    return ternary(condition, f_true, functional.identity)
+    return ternary(condition, f_true, operator.identity)
 
 
 def unless(condition, f_false):
@@ -298,7 +298,7 @@ def unless(condition, f_false):
     >>> f(3)
     '-3'
     """
-    return ternary(condition, functional.identity, f_false)
+    return ternary(condition, operator.identity, f_false)
 
 
 def first(*funcs, exception_type: Type[Exception]):
@@ -396,8 +396,8 @@ itemmap = compose(after(dict), before(dict.items), curried_map)
 #: }
 keymap = compose(
     itemmap,
-    lambda f: juxt(f, functional.second),
-    before(functional.head),
+    lambda f: juxt(f, operator.second),
+    before(operator.head),
 )
 
 #: Creates a function then maps the supplied mapper over the values of a dict.
@@ -411,8 +411,8 @@ keymap = compose(
 #: }
 valmap = compose(
     itemmap,
-    lambda f: juxt(functional.head, f),
-    before(functional.second),
+    lambda f: juxt(operator.head, f),
+    before(operator.second),
 )
 
 
@@ -423,7 +423,7 @@ def pair_with(f):
     >>> add_one(3)
     (4, 3)
     """
-    return juxt(f, functional.identity)
+    return juxt(f, operator.identity)
 
 
 def pair_right(f):
@@ -433,7 +433,7 @@ def pair_right(f):
     >>> add_one(3)
     (3, 4)
     """
-    return juxt(functional.identity, f)
+    return juxt(operator.identity, f)
 
 
 #: Constructs a function that filters elements of a given iterable for which function returns true.
@@ -444,9 +444,9 @@ def pair_right(f):
 #: [11, 12, 13]
 curried_filter = compose(
     after(
-        compose(
-            functional.curried_map_sync(functional.second),
-            sync.filter(functional.head),
+        sync.compose(
+            sync.map(operator.second),
+            sync.filter(operator.head),
         ),
     ),
     curried_map,
@@ -476,7 +476,7 @@ itemfilter = compose(after(dict), before(dict.items), curried_filter)
 #: }
 keyfilter = compose(
     itemfilter,
-    before(functional.head),
+    before(operator.head),
 )
 
 #: Create a function that filters a dict using a predicate over values.
@@ -489,7 +489,7 @@ keyfilter = compose(
 #: }
 valfilter = compose(
     itemfilter,
-    before(functional.second),
+    before(operator.second),
 )
 
 #: Complement of a boolean function.
@@ -499,7 +499,7 @@ valfilter = compose(
 #: False
 #: >>> f(1)
 #: True
-complement = after(operator.not_)
+complement = after(not_)
 
 #: Constructs a function that removes elements of a given iterable for which function returns true.
 #: Returns an async function iff the filter function is async, else returns a sync function.
@@ -522,7 +522,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
     >>> f(10)
     `NoConditionMatched`
     """
-    if any_is_async(functional.concat(predicates_and_mappers)):
+    if any_is_async(operator.concat(predicates_and_mappers)):
         predicates, mappers = zip(*predicates_and_mappers)
         predicates = tuple(map(_make_async, predicates))
         mappers = tuple(map(_make_async, mappers))
@@ -577,7 +577,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
         if isinstance(value, Iterable) and not isinstance(value, str):
             return pipe(
                 value,
-                functional.curried_map_sync(
+                sync.map(
                     map_dict(nonterminal_mapper, terminal_mapper),
                 ),
                 type(value),  # Keep the same format as input.
@@ -593,7 +593,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
 
 def _iterdict(d):
     results = []
-    map_dict(functional.identity, results.append)(d)
+    map_dict(operator.identity, results.append)(d)
     return results
 
 
@@ -615,7 +615,7 @@ def apply_spec(spec: Dict):
 
         async def apply_spec_async(*args, **kwargs):
             return await map_dict(
-                functional.identity,
+                operator.identity,
                 compose_left(
                     apply_utils.apply(*args, **kwargs),
                     async_functions.to_awaitable,
@@ -625,7 +625,7 @@ def apply_spec(spec: Dict):
         return apply_spec_async
     return compose_left(
         apply_utils.apply,
-        lambda applier: map_dict(functional.identity, applier),
+        lambda applier: map_dict(operator.identity, applier),
         apply_utils.apply(spec),
     )
 
@@ -639,7 +639,7 @@ def apply_spec(spec: Dict):
 #: (6, 4)
 stack = compose_left(
     enumerate,
-    functional.curried_map_sync(
+    sync.map(
         sync.star(lambda i, f: compose(f, lambda x: x[i])),
     ),
     sync.star(juxt),
@@ -655,19 +655,6 @@ def bifurcate(*funcs):
     (15, 5)
     """
     return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
-
-
-#: Average of an iterable. If the sequence is empty, returns 0.
-#: >>> average([1,2,3])
-#: 2.0
-average = compose_left(
-    bifurcate(sum, functional.count),
-    excepts_decorator.excepts(
-        ZeroDivisionError,
-        functional.just(0),
-        sync.star(operator.truediv),
-    ),
-)
 
 
 def value_to_dict(key: Text):
@@ -719,7 +706,7 @@ def scan(
         async def reduce_keeping_history_async(
             past_states: Tuple[_ReducerState, ...], element: _ReducedElement
         ) -> Tuple[_ReducerState, ...]:
-            return (*past_states, await reducer(functional.last(past_states), element))
+            return (*past_states, await reducer(operator.last(past_states), element))
 
         return reduce_curried(reduce_keeping_history_async, (initial_value,))
 
@@ -727,7 +714,7 @@ def scan(
         past_states: Tuple[_ReducerState, ...],
         element: _ReducedElement,
     ) -> Tuple[_ReducerState, ...]:
-        return (*past_states, reducer(functional.last(past_states), element))
+        return (*past_states, reducer(operator.last(past_states), element))
 
     return reduce_curried(reduce_keeping_history, (initial_value,))
 
@@ -745,8 +732,8 @@ find = compose(
     after(
         excepts_decorator.excepts(
             StopIteration,
-            functional.just(None),
-            functional.head,
+            operator.just(None),
+            operator.head,
         ),
     ),
     curried_filter,
@@ -766,10 +753,10 @@ find = compose(
 #: See Also:
 #:  - find
 find_index = compose_left(
-    before(functional.second),
+    before(operator.second),
     find,
     before(enumerate),
-    after(ternary(functional.equals(None), functional.just(-1), functional.head)),
+    after(ternary(operator.equals(None), operator.just(-1), operator.head)),
 )
 
 
@@ -786,7 +773,7 @@ def _inner_merge_with(dicts):
     return result
 
 
-map_filter_empty = compose_left(curried_map, after(curried_filter(functional.identity)))
+map_filter_empty = compose_left(curried_map, after(curried_filter(operator.identity)))
 
 
 def merge_with(f):
@@ -806,7 +793,7 @@ def merge_with(f):
 
 
 merge = sync.compose_left(lambda *x: x if len(x) > 1 else x[0], sync.merge)
-mapcat = compose_left(curried_map, after(functional.concat))
+mapcat = compose_left(curried_map, after(operator.concat))
 
 _K = TypeVar("_K")
 
@@ -866,7 +853,7 @@ def count_by_many(f: Callable[[Any], Iterable]) -> Dict[Any, int]:
 
     >>> count_by_many(
     ...     gamla.juxt(
-    ...         functional.head,
+    ...         operator.head,
     ...         gamla.last,
     ...     )
     ... )(["aa", "ab", "ac", "bc"])
@@ -884,7 +871,7 @@ countby_many = count_by_many
 count_by = compose_left(after(functional.wrap_tuple), count_by_many)
 
 #: Like `stack` but doesn't require additional brackets.
-packstack = compose_left(functional.pack, stack)
+packstack = compose_left(operator.pack, stack)
 #: Runs `packstack` with given functions, then runs `all` on the output.
 allstack = compose_left(packstack, after(all))
 #: Runs `packstack` with given functions, then runs `any` on the output.

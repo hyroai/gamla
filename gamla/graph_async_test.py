@@ -1,12 +1,6 @@
 import pytest
 
-from gamla import (
-    async_functions,
-    dict_utils,
-    functional,
-    functional_generic,
-    graph_async,
-)
+from gamla import async_functions, dict_utils, functional_generic, graph_async, operator
 
 pytestmark = pytest.mark.asyncio
 
@@ -31,7 +25,7 @@ async def test_reduce_graph_async1():
                 async_functions.to_awaitable,
             ),
             set_instance.add,
-            functional.contains(set_instance),
+            operator.contains(set_instance),
             1,
         )
         == 5
@@ -51,7 +45,7 @@ async def test_reduce_graph_async2():
                 async_functions.to_awaitable,
             ),
             set_instance.add,
-            functional.contains(set_instance),
+            operator.contains(set_instance),
             1,
         )
         == 15
@@ -71,7 +65,7 @@ async def test_reduce_graph_async_reducer():
                 async_functions.to_awaitable,
             ),
             set_instance.add,
-            functional.contains(set_instance),
+            operator.contains(set_instance),
             1,
         )
         == 5

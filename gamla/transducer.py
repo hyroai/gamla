@@ -6,7 +6,7 @@ from typing import Any, Callable, Iterable, TypeVar
 
 import toolz
 
-from gamla import functional, functional_generic
+from gamla import functional, functional_generic, operator
 from gamla.optimized import sync
 
 _S = TypeVar("_S")
@@ -62,7 +62,7 @@ apply_spec = functional_generic.compose_left(
 #: ... )
 #: ((2, 3, 4), 6)
 juxt = functional_generic.compose_left(
-    functional.pack,
+    operator.pack,
     enumerate,
     sync.map(sync.star(_transform_by_key(_replace_index))),
     sync.star(functional_generic.compose),

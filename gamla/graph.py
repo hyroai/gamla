@@ -1,7 +1,7 @@
 import itertools
 from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
-from gamla import currying, dict_utils, functional, functional_generic
+from gamla import currying, dict_utils, functional, functional_generic, operator
 from gamla.optimized import sync
 
 
@@ -9,7 +9,7 @@ from gamla.optimized import sync
 def graph_traverse(
     source: Any,
     get_neighbors: Callable,
-    key: Callable = functional.identity,
+    key: Callable = operator.identity,
 ) -> Iterable:
     """Gets a graph and a function to get a node's neighbours, BFS over it from a single source node, return an iterator of unique nodes.
 
@@ -23,7 +23,7 @@ def graph_traverse(
 def graph_traverse_many(
     sources: Any,
     get_neighbors: Callable,
-    key: Callable = functional.identity,
+    key: Callable = operator.identity,
 ) -> Iterable:
     """Gets a graph and a function to get a node's neighbours, BFS over it starting from multiple sources, return an iterator of unique nodes.
 
@@ -36,7 +36,7 @@ def graph_traverse_many(
     remember = functional_generic.compose_left(key, seen_set.add)
     should_traverse = functional_generic.compose_left(
         key,
-        sync.complement(functional.contains(seen_set)),
+        sync.complement(operator.contains(seen_set)),
     )
     yield from general_graph_traverse_many(
         sources,
@@ -57,7 +57,7 @@ def general_graph_traverse_many(
     BFS over the graph and return an iterator of unique nodes.
 
     >>> seen_set = set(); key =  len; g = {'one': ['two', 'three'], 'two': ['three'], 'three': ['four'], 'four': []}
-    >>> list(general_graph_traverse_many(['one', 'three'], g.__getitem__, functional_generic.compose_left(key, seen_set.add), functional_generic.compose_left(key, sync.complement(functional.contains(seen_set)))))
+    >>> list(general_graph_traverse_many(['one', 'three'], g.__getitem__, functional_generic.compose_left(key, seen_set.add), functional_generic.compose_left(key, sync.complement(operator.contains(seen_set)))))
     ['three', 'one', 'four']
 
     Note: `get_neighbors` must return elements without duplicates."""
@@ -96,7 +96,7 @@ def traverse_graph_by_radius(
             )
 
     return map(
-        functional.head,
+        operator.head,
         graph_traverse(source=(source, 0), get_neighbors=get_neighbors_limiting_radius),
     )
 
@@ -109,10 +109,10 @@ edges_to_graph = functional_generic.compose(
     functional_generic.sync.valmap(
         functional_generic.sync.compose(
             frozenset,
-            functional_generic.sync.map(functional.second),
+            functional_generic.sync.map(operator.second),
         ),
     ),
-    sync.groupby(functional.head),
+    sync.groupby(operator.head),
 )
 #: Gets a graph and returns an iterator of all edges in it.
 #:
@@ -157,9 +157,9 @@ def get_connectivity_components(graph: Dict) -> Iterable[FrozenSet]:
     while nodes_left:
         result = frozenset(
             graph_traverse(
-                source=functional.head(nodes_left),
+                source=operator.head(nodes_left),
                 get_neighbors=functional_generic.compose(
-                    sync.filter(functional.contains(nodes_left)),
+                    sync.filter(operator.contains(nodes_left)),
                     graph.get,
                 ),
             ),
@@ -238,7 +238,7 @@ def has_cycle(graph):
 
 _non_sources = sync.compose_left(
     dict.values,
-    functional.concat,
+    operator.concat,
     frozenset,
 )
 
@@ -251,6 +251,6 @@ def find_sources(graph: Dict) -> FrozenSet:
     """
     return sync.pipe(
         graph,
-        sync.remove(functional.contains(_non_sources(graph))),
+        sync.remove(operator.contains(_non_sources(graph))),
         frozenset,
     )

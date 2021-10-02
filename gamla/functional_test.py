@@ -1,19 +1,13 @@
 import asyncio
-import operator
 import time
+from operator import not_, truediv
 
 import pytest
 
-from gamla import currying, dict_utils, functional, functional_generic
+from gamla import currying, dict_utils, functional, functional_generic, operator
 from gamla.optimized import sync
 
 pytestmark = pytest.mark.asyncio
-
-
-def _generator():
-    yield 1
-    yield 2
-    yield 5
 
 
 async def _opposite_async(x):
@@ -27,7 +21,7 @@ async def _equals(x, y):
 
 
 def test_do_if():
-    assert functional.do_if(functional.just(True), functional.just(2))(1) == 1
+    assert functional.do_if(operator.just(True), operator.just(2))(1) == 1
 
 
 def test_currying():
@@ -41,7 +35,7 @@ def test_currying():
 
 
 def test_juxt():
-    assert functional_generic.juxt(functional.identity, functional.add(1))(3) == (3, 4)
+    assert functional_generic.juxt(operator.identity, operator.add(1))(3) == (3, 4)
 
 
 def test_juxt_zero_params():
@@ -61,28 +55,28 @@ async def test_juxt_async():
         await asyncio.sleep(0.01)
         return x
 
-    assert await functional_generic.juxt(functional.identity, slow_identity)(3) == (
+    assert await functional_generic.juxt(operator.identity, slow_identity)(3) == (
         3,
         3,
     )
 
 
 def test_anyjuxt():
-    assert functional_generic.anyjuxt(operator.not_, functional.identity)(True)
+    assert functional_generic.anyjuxt(not_, operator.identity)(True)
 
 
 def test_alljuxt():
-    assert not functional_generic.alljuxt(operator.not_, functional.identity)(True)
+    assert not functional_generic.alljuxt(not_, operator.identity)(True)
 
 
 async def test_alljuxt_async():
-    assert not await functional_generic.alljuxt(_opposite_async, functional.identity)(
+    assert not await functional_generic.alljuxt(_opposite_async, operator.identity)(
         True,
     )
 
 
 async def test_anyjuxt_async():
-    assert await functional_generic.anyjuxt(_opposite_async, functional.identity)(True)
+    assert await functional_generic.anyjuxt(_opposite_async, operator.identity)(True)
 
 
 async def test_anymap():
@@ -116,7 +110,7 @@ async def test_allmap_in_async_pipe():
 async def test_anymap_in_pipe():
     assert not functional_generic.pipe(
         [True, True, False],
-        functional_generic.allmap(operator.not_),
+        functional_generic.allmap(not_),
     )
 
 
@@ -133,7 +127,7 @@ async def test_itemmap_async_sync_mixed():
             functional_generic.itemmap(
                 functional_generic.compose(
                     tuple,
-                    functional_generic.curried_map(operator.not_),
+                    functional_generic.curried_map(not_),
                 ),
             ),
         )
@@ -160,7 +154,7 @@ async def test_keymap_async_curried():
 
 async def test_keyfilter_sync_curried():
     assert (
-        functional_generic.keyfilter(functional.identity)(
+        functional_generic.keyfilter(operator.identity)(
             {False: True, True: False},
         )
         == {True: False}
@@ -168,12 +162,12 @@ async def test_keyfilter_sync_curried():
 
 
 async def test_valmap_sync_curried():
-    assert functional_generic.valmap(operator.not_)({True: True}) == {True: False}
+    assert functional_generic.valmap(not_)({True: True}) == {True: False}
 
 
 async def test_valfilter_sync_curried():
     assert (
-        functional_generic.valfilter(functional.identity)(
+        functional_generic.valfilter(operator.identity)(
             {False: True, True: False},
         )
         == {False: True}
@@ -190,7 +184,7 @@ async def test_filter_curried_async_sync_mix():
         await functional_generic.pipe(
             [1, 2, 3, 4],
             functional_generic.curried_filter(_is_even_async),
-            functional_generic.curried_map(functional.add(10)),
+            functional_generic.curried_map(operator.add(10)),
             tuple,
         )
         == (12, 14)
@@ -202,14 +196,14 @@ def test_wrap_str():
 
 
 def test_case_single_predicate():
-    assert functional_generic.case_dict({functional.identity: functional.identity})(
+    assert functional_generic.case_dict({operator.identity: operator.identity})(
         True,
     )
 
 
 def test_case_multiple_predicates():
     assert not functional_generic.case_dict(
-        {operator.not_: functional.identity, functional.identity: operator.not_},
+        {not_: operator.identity, operator.identity: not_},
     )(True)
 
 
@@ -217,25 +211,25 @@ def test_case_no_predicate():
     with pytest.raises(sync.NoConditionMatched):
         functional_generic.case_dict(
             {
-                operator.not_: functional.identity,
+                not_: operator.identity,
                 # Can't repeat keys.
-                lambda x: not x: functional.identity,
+                lambda x: not x: operator.identity,
             },
         )(True)
 
 
 async def test_case_async():
     assert not await functional_generic.case_dict(
-        {_opposite_async: functional.identity, functional.identity: _opposite_async},
+        {_opposite_async: operator.identity, operator.identity: _opposite_async},
     )(True)
 
 
 def test_partition_after():
-    assert functional.partition_after(functional.equals(1), []) == ()
+    assert functional.partition_after(operator.equals(1), []) == ()
     assert (
         tuple(
             functional.partition_after(
-                functional.equals(1),
+                operator.equals(1),
                 [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
             ),
         )
@@ -244,11 +238,11 @@ def test_partition_after():
 
 
 def test_partition_before():
-    assert functional.partition_before(functional.equals(1), []) == ()
+    assert functional.partition_before(operator.equals(1), []) == ()
     assert (
         tuple(
             functional.partition_before(
-                functional.equals(1),
+                operator.equals(1),
                 [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
             ),
         )
@@ -257,13 +251,13 @@ def test_partition_before():
 
 
 async def test_drop_last_while():
-    assert tuple(functional.drop_last_while(functional.equals(1), [])) == ()
-    assert tuple(functional.drop_last_while(functional.equals(1), [1])) == ()
-    assert tuple(functional.drop_last_while(functional.equals(1), [2])) == (2,)
+    assert tuple(functional.drop_last_while(operator.equals(1), [])) == ()
+    assert tuple(functional.drop_last_while(operator.equals(1), [1])) == ()
+    assert tuple(functional.drop_last_while(operator.equals(1), [2])) == (2,)
     assert (
         tuple(
             functional.drop_last_while(
-                functional.equals(1),
+                operator.equals(1),
                 [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
             ),
         )
@@ -274,7 +268,7 @@ async def test_drop_last_while():
 def test_apply_spec():
     assert (
         functional_generic.apply_spec(
-            {"identity": functional.identity, "increment": functional.add(1)},
+            {"identity": operator.identity, "increment": operator.add(1)},
         )(1)
         == {"identity": 1, "increment": 2}
     )
@@ -287,7 +281,7 @@ async def test_apply_spec_async():
 
     assert (
         await functional_generic.apply_spec(
-            {"identity": async_identity, "increment": functional.add(1)},
+            {"identity": async_identity, "increment": operator.add(1)},
         )(1)
         == {"identity": 1, "increment": 2}
     )
@@ -299,7 +293,7 @@ async def test_apply_spec_async_recursive():
         return x
 
     f = functional_generic.apply_spec(
-        {"identity": {"nested": async_identity}, "increment": functional.add(1)},
+        {"identity": {"nested": async_identity}, "increment": operator.add(1)},
     )
     assert await f(1) == {"identity": {"nested": 1}, "increment": 2}
 
@@ -316,8 +310,8 @@ async def test_async_bifurcate():
 
     average = await functional_generic.pipe(
         gen(),
-        functional_generic.bifurcate(async_sum, functional.count),
-        sync.star(operator.truediv),
+        functional_generic.bifurcate(async_sum, operator.count),
+        sync.star(truediv),
     )
 
     assert average == 2
@@ -329,7 +323,7 @@ def test_average():
         yield 2
         yield 3
 
-    assert functional_generic.average(gen()) == 2
+    assert functional.average(gen()) == 2
 
 
 def test_countby_many():
@@ -394,7 +388,7 @@ def test_find():
         functional_generic.find(
             functional_generic.compose_left(
                 dict_utils.itemgetter("key"),
-                functional.equals(2),
+                operator.equals(2),
             ),
         )(
             iter(seq),
@@ -406,7 +400,7 @@ def test_find():
         functional_generic.find(
             functional_generic.compose_left(
                 dict_utils.itemgetter("key"),
-                functional.equals(4),
+                operator.equals(4),
             ),
         )(iter(seq))
         is None
@@ -420,7 +414,7 @@ def test_find_index():
         functional_generic.find_index(
             functional_generic.compose_left(
                 dict_utils.itemgetter("key"),
-                functional.equals(2),
+                operator.equals(2),
             ),
         )(iter(seq))
         == 1
@@ -430,7 +424,7 @@ def test_find_index():
         functional_generic.find_index(
             functional_generic.compose_left(
                 dict_utils.itemgetter("key"),
-                functional.equals(4),
+                operator.equals(4),
             ),
         )(iter(seq))
         == -1
@@ -440,8 +434,8 @@ def test_find_index():
 def test_compositions_have_name():
     assert (
         functional_generic.compose_left(
-            functional.identity,
-            functional.identity,
+            operator.identity,
+            operator.identity,
             functional.unique,
         ).__name__
         == "unique_OF_identity_OF_identity"
@@ -455,7 +449,7 @@ def test_async_compositions_have_name():
 
     assert (
         functional_generic.compose_left(
-            functional.identity,
+            operator.identity,
             async_identity,
             functional.unique,
         ).__name__
@@ -477,7 +471,7 @@ def test_compositions_correct_typing():
 
 
 def test_attrgetter():
-    assert functional.attrgetter("lower")("ASD")() == "asd"
+    assert operator.attrgetter("lower")("ASD")() == "asd"
 
 
 def test_latency():
@@ -485,10 +479,10 @@ def test_latency():
     for _ in range(1000):
         functional_generic.pipe(
             True,
-            functional_generic.juxt(functional.equals(True), functional.equals(False)),
-            functional.head,
-            functional.just("bla"),
-            functional.attrgetter("lower"),
+            functional_generic.juxt(operator.equals(True), operator.equals(False)),
+            operator.head,
+            operator.just("bla"),
+            operator.attrgetter("lower"),
         )
     assert time.time() - start_time < 0.1
 
@@ -515,7 +509,7 @@ def test_merge():
 
 def test_merge_with():
     assert (
-        functional_generic.merge_with(functional.head)(
+        functional_generic.merge_with(operator.head)(
             {"1": 1, "2": 2},
             {"2": 3, "3": 3},
         )
@@ -542,19 +536,17 @@ async def test_async_when():
         await asyncio.sleep(0.01)
         return x == 1
 
-    assert await functional_generic.when(async_equals_1, functional.just(True))(1)
+    assert await functional_generic.when(async_equals_1, operator.just(True))(1)
 
-    assert await functional_generic.when(async_equals_1, functional.just(True))(2) == 2
+    assert await functional_generic.when(async_equals_1, operator.just(True))(2) == 2
 
 
 async def test_unless1():
-    assert (
-        functional_generic.unless(functional.equals(1), functional.just(True))(1) == 1
-    )
+    assert functional_generic.unless(operator.equals(1), operator.just(True))(1) == 1
 
 
 async def test_unless2():
-    assert functional_generic.unless(functional.equals(1), functional.just(True))(2)
+    assert functional_generic.unless(operator.equals(1), operator.just(True))(2)
 
 
 def test_compose_many_to_one():
@@ -591,7 +583,7 @@ def test_wrap_dict():
 
 def test_groupby():
     names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
-    assert functional_generic.groupby(functional.last)(names) == {
+    assert functional_generic.groupby(operator.last)(names) == {
         "e": ("alice", "charlie"),
         "b": ("bob",),
         "n": ("dan",),
@@ -601,15 +593,11 @@ def test_groupby():
 
 
 def test_groupby_empty():
-    assert functional_generic.groupby(functional.last)([]) == {}
+    assert functional_generic.groupby(operator.last)([]) == {}
 
 
 def test_take():
     assert tuple(functional.take(2)(["a", "b", "c"])) == ("a", "b")
-
-
-def test_nth():
-    assert functional.nth(1)(["a", "b", "c"]) == "b"
 
 
 def test_drop():
@@ -621,19 +609,19 @@ def test_drop_last():
 
 
 def test_count_by():
-    assert functional_generic.count_by(functional.head)(["aa", "ab", "ac", "bc"]) == {
+    assert functional_generic.count_by(operator.head)(["aa", "ab", "ac", "bc"]) == {
         "a": 3,
         "b": 1,
     }
 
 
 def test_add():
-    assert functional.add(1)(2) == 3
-    assert functional.add(["c"])(["a", "b"]) == ["a", "b", "c"]
+    assert operator.add(1)(2) == 3
+    assert operator.add(["c"])(["a", "b"]) == ["a", "b", "c"]
 
 
 def test_assert_that():
-    functional.assert_that(functional.equals(2))(2)
+    functional.assert_that(operator.equals(2))(2)
 
 
 def test_assoc_in():
@@ -650,14 +638,14 @@ def test_concat_with():
 
 
 def test_contains():
-    assert functional.contains([1, 2, 3])(2)
-    assert not functional.contains("David")("x")
+    assert operator.contains([1, 2, 3])(2)
+    assert not operator.contains("David")("x")
 
 
 def test_side_effect():
     side_result = []
     side_effect = functional_generic.compose_left(
-        functional.multiply(2),
+        operator.multiply(2),
         side_result.append,
     )
     assert functional_generic.side_effect(side_effect)(2) == 2
@@ -695,32 +683,8 @@ def test_ends_with():
     assert not functional.ends_with([1])(())
 
 
-def test_len_equals():
-    assert functional.len_equals(3)(_generator())
-
-
-def test_not_empty():
-    assert functional.empty(_generator()) is False
-
-
-def test_is_empty():
-    assert functional.empty([]) is True
-
-
 def test_flip():
-    assert functional.flip(operator.truediv)(2, 6) == 3.0
-
-
-def test_nonempty():
-    assert functional.nonempty(_generator()) is True
-
-
-def test_between():
-    assert functional.between(1, 100)(30) is True
-
-
-def test_not_between():
-    assert functional.between(2, 5)(14) is False
+    assert functional.flip(truediv)(2, 6) == 3.0
 
 
 def test_intersect():

@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Any, Callable
 
-from gamla import currying, dict_utils, functional, functional_generic
+from gamla import currying, dict_utils, functional, functional_generic, operator
 from gamla.optimized import async_functions, sync
 
 
@@ -64,7 +64,7 @@ class KeyValue:
     value: Any
 
 
-_is_terminal = functional_generic.anyjuxt(
+_is_terminal = sync.anyjuxt(
     functional.is_instance(str),
     functional.is_instance(int),
     functional.is_instance(float),
@@ -74,12 +74,12 @@ _is_terminal = functional_generic.anyjuxt(
 def _get_children(element):
     return functional_generic.case_dict(
         {
-            _is_terminal: functional.just(()),
-            functional.is_instance(tuple): functional.identity,
-            functional.is_instance(list): functional.identity,
+            _is_terminal: operator.just(()),
+            functional.is_instance(tuple): operator.identity,
+            functional.is_instance(list): operator.identity,
             functional.is_instance(dict): functional_generic.compose_left(
                 dict.items,
-                functional.curried_map_sync(sync.star(KeyValue)),
+                sync.map(sync.star(KeyValue)),
             ),
             functional.is_instance(KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
@@ -106,7 +106,7 @@ def _make_matched_unmatched(matched, unmatched):
 _merge_children_as_matched = functional_generic.compose_left(
     sync.mapcat(sync.juxtcat(_get_matched, _get_unmatched)),
     tuple,
-    functional_generic.pair_right(functional.just(())),
+    functional_generic.pair_right(operator.just(())),
     sync.star(_make_matched_unmatched),
 )
 
@@ -152,7 +152,7 @@ def get_leaves_by_ancestor_predicate(predicate: Callable):
 def _filter_leaves_reducer(predicate, node, children):
     if _is_terminal(node) and predicate(node):
         return (node,)
-    return functional.concat(children)
+    return operator.concat(children)
 
 
 def filter_leaves(predicate: Callable):

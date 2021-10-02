@@ -5,7 +5,7 @@ from typing import Any, Callable, Collection, Dict, Text, Tuple
 
 import dataclasses_json
 
-from gamla import currying, functional, functional_generic
+from gamla import currying, functional, functional_generic, operator
 from gamla.optimized import sync
 
 
@@ -52,7 +52,7 @@ def _freeze_nonterminal(v):
 #: data.frozendict(
 #:  {"1": data.frozendict({"2": "345", "some-string": ("hello",)})},
 #: )
-freeze_deep = functional_generic.map_dict(_freeze_nonterminal, functional.identity)
+freeze_deep = functional_generic.map_dict(_freeze_nonterminal, operator.identity)
 
 
 @currying.curry
@@ -93,11 +93,11 @@ def _do_on_positions(f, predicate: Callable[[int], bool]):
         sync.map(
             sync.ternary(
                 sync.compose_left(
-                    functional.head,
+                    operator.head,
                     predicate,
                 ),
-                sync.compose_left(functional.second, f),
-                functional.second,
+                sync.compose_left(operator.second, f),
+                operator.second,
             ),
         ),
     )
@@ -123,7 +123,7 @@ def explode(*positions: Collection[int]):
     return sync.compose_left(
         _do_on_positions(
             functional.wrap_tuple,
-            sync.complement(functional.contains(positions)),
+            sync.complement(operator.contains(positions)),
         ),
         sync.star(itertools.product),
     )

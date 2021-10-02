@@ -2,7 +2,7 @@ import typing
 from collections import abc
 from typing import Any, Callable, Optional, Tuple, Union
 
-from gamla import functional, sync
+from gamla import operator, sync
 
 
 def _handle_union_on_left(type1, type2):
@@ -21,14 +21,14 @@ def _handle_union_on_right(type1, type2):
     )
 
 
-_origin_equals = sync.compose_left(functional.equals, sync.before(typing.get_origin))
+_origin_equals = sync.compose_left(operator.equals, sync.before(typing.get_origin))
 
 _handle_union = sync.case_dict(
     {
-        sync.compose_left(functional.head, _origin_equals(Union)): sync.star(
+        sync.compose_left(operator.head, _origin_equals(Union)): sync.star(
             _handle_union_on_left,
         ),
-        sync.compose_left(functional.second, _origin_equals(Union)): sync.star(
+        sync.compose_left(operator.second, _origin_equals(Union)): sync.star(
             _handle_union_on_right,
         ),
     },
@@ -73,21 +73,21 @@ _is_subtype: Callable[[Tuple[Any, Any]], bool] = sync.compose_left(
                 sync.mapcat(typing.get_args),
                 sync.star(_handle_callable),
             ),
-            functional.inside(Any): sync.compose_left(
-                functional.second,
-                functional.equals(Any),
+            operator.inside(Any): sync.compose_left(
+                operator.second,
+                operator.equals(Any),
             ),
             sync.anymap(_origin_equals(Union)): _handle_union,
             sync.allmap(typing.get_origin): _handle_generics,
-            functional.inside(Ellipsis): sync.allmap(functional.equals(Ellipsis)),
+            operator.inside(Ellipsis): sync.allmap(operator.equals(Ellipsis)),
             sync.complement(sync.anymap(typing.get_origin)): sync.star(issubclass),
-            functional.just(True): functional.just(False),
+            operator.just(True): operator.just(False),
         },
     ),
 )
 
 #: Given two typings, checks if the second is a superset of the first.
-is_subtype = sync.compose_left(functional.pack, _is_subtype)
+is_subtype = sync.compose_left(operator.pack, _is_subtype)
 
 
 def composable(destination: Callable, source: Callable, key: Optional[str]) -> bool:
@@ -106,5 +106,5 @@ def composable(destination: Callable, source: Callable, key: Optional[str]) -> b
         if not d:
             return True
         assert len(d) == 1
-        d = functional.head(d.values())
+        d = operator.head(d.values())
     return is_subtype(s["return"], d)

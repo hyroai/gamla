@@ -13,6 +13,7 @@ from .graph import *
 from .graph_async import *
 from .higher_order import *
 from .io_utils import *
+from .operator import *
 from .optimized import async_functions, sync
 from .string_utils import *
 from .tree import *

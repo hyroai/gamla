@@ -1,4 +1,4 @@
-from gamla import dict_utils, functional, functional_generic
+from gamla import dict_utils, functional_generic, operator
 
 
 def test_itemgetter():
@@ -43,8 +43,8 @@ def test_dict_to_getter_with_default_values_does_not_exist():
 
 
 def test_get_or_transform():
-    assert dict_utils.get_or_transform(functional.add(1), {1: 1})(1) == 1
-    assert dict_utils.get_or_transform(functional.add(1), {1: 1})(3) == 4
+    assert dict_utils.get_or_transform(operator.add(1), {1: 1})(1) == 1
+    assert dict_utils.get_or_transform(operator.add(1), {1: 1})(3) == 4
 
 
 def test_get_or_identity():
@@ -54,7 +54,7 @@ def test_get_or_identity():
 
 def test_make_index():
     index = dict_utils.make_index(
-        map(functional_generic.groupby, [functional.head, functional.second]),
+        map(functional_generic.groupby, [operator.head, operator.second]),
     )(["uri", "dani"])
     assert index("d")("a") == frozenset(["dani"])
     assert index("u")("r") == frozenset(["uri"])
