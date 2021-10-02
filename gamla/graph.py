@@ -36,7 +36,7 @@ def graph_traverse_many(
     remember = functional_generic.compose_left(key, seen_set.add)
     should_traverse = functional_generic.compose_left(
         key,
-        functional_generic.complement(functional.contains(seen_set)),
+        sync.complement(functional.contains(seen_set)),
     )
     yield from general_graph_traverse_many(
         sources,
@@ -57,7 +57,7 @@ def general_graph_traverse_many(
     BFS over the graph and return an iterator of unique nodes.
 
     >>> seen_set = set(); key =  len; g = {'one': ['two', 'three'], 'two': ['three'], 'three': ['four'], 'four': []}
-    >>> list(general_graph_traverse_many(['one', 'three'], g.__getitem__, functional_generic.compose_left(key, seen_set.add), functional_generic.compose_left(key, functional_generic.complement(functional.contains(seen_set)))))
+    >>> list(general_graph_traverse_many(['one', 'three'], g.__getitem__, functional_generic.compose_left(key, seen_set.add), functional_generic.compose_left(key, sync.complement(functional.contains(seen_set)))))
     ['three', 'one', 'four']
 
     Note: `get_neighbors` must return elements without duplicates."""

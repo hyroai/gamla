@@ -16,6 +16,7 @@ from .io_utils import *
 from .optimized import async_functions, sync
 from .string_utils import *
 from .tree import *
+from .type_safety import *
 from .url_utils import *
 
 check = sync.check

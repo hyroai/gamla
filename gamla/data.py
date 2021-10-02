@@ -123,7 +123,7 @@ def explode(*positions: Collection[int]):
     return sync.compose_left(
         _do_on_positions(
             functional.wrap_tuple,
-            functional_generic.complement(functional.contains(positions)),
+            sync.complement(functional.contains(positions)),
         ),
         sync.star(itertools.product),
     )

@@ -195,6 +195,43 @@ def anyjuxt(*functions):
     return anyjuxt
 
 
+def alljuxt(*functions):
+    def alljuxt(x):
+        for f in functions:
+            if not f(x):
+                return False
+        return True
+
+    return alljuxt
+
+
+def complement(f):
+    def complement(*args, **kwargs):
+        return not f(*args, **kwargs)
+
+    return complement
+
+
+def allmap(f):
+    def allmap(xs):
+        for x in xs:
+            if not f(x):
+                return False
+        return True
+
+    return allmap
+
+
+def anymap(f):
+    def anymap(xs):
+        for x in xs:
+            if f(x):
+                return True
+        return False
+
+    return anymap
+
+
 # TODO(uri): This might be used to optimize functions in gamla instead of its generic counterpart.
 def star(f):
     def starred(args):
@@ -245,6 +282,13 @@ def after(f):
     return after
 
 
+def before(f):
+    def before(g):
+        return compose(g, f)
+
+    return before
+
+
 juxtduct = compose_left(juxt, after(star(itertools.product)))
 mapdict = compose_left(map, after(dict))
 mapduct = compose_left(map, after(star(itertools.product)))
@@ -266,3 +310,12 @@ def thunk(f, *args, **kwargs):
         return f(*args, **kwargs)(*inner_args, **inner_kwargs)
 
     return thunk
+
+
+def when(f, g):
+    def when(x):
+        if f(x):
+            return g(x)
+        return x
+
+    return when
