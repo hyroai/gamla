@@ -900,3 +900,9 @@ def _choose_by_async(f_sync, f_async):
 #: >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
 #: 5
 star = _choose_by_async(sync.star, async_functions.star)
+
+
+#: Return a dict with number of occurrences of each value in a sequence.
+#: >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
+#: {'cat': 3, 'ox': 1, 'pig': 2}
+frequencies = count_by(operator.identity)

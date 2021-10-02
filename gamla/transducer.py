@@ -4,8 +4,6 @@ import functools
 import itertools
 from typing import Any, Callable, Iterable, TypeVar
 
-import toolz
-
 from gamla import functional, functional_generic, operator
 from gamla.optimized import sync
 
@@ -46,7 +44,9 @@ def _replace_index(the_tuple, index, value):
 #: {"incremented": (2, 3, 4), "sum": 6}
 apply_spec = functional_generic.compose_left(
     dict.items,
-    sync.map(sync.star(_transform_by_key(toolz.assoc))),
+    sync.map(
+        sync.star(_transform_by_key(lambda x, y, z: functional.add_key_value(y, z)(x))),
+    ),
     sync.star(functional_generic.compose),
 )
 
@@ -141,7 +141,7 @@ def groupby_many(keys: Callable[[Any], Iterable], reducer: Reducer, initial):
             ),
         ),
         lambda step: lambda s, x: step(
-            toolz.assoc(s, x[0], reducer(s.get(x[0], initial), x[1])),
+            functional.add_key_value(x[0], reducer(s.get(x[0], initial), x[1]))(s),
             x,
         ),
     )

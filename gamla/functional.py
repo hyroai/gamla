@@ -621,7 +621,7 @@ def drop(n: int):
     """
 
     def drop(seq):
-        return toolz.drop(n, seq)
+        return itertools.islice(seq, n, None)
 
     return drop
 
@@ -652,11 +652,6 @@ def flip(func: Callable):
 
     return flip
 
-
-#: Return a dict with number of occurrences of each value in a sequence.
-#: >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
-#: {'cat': 3, 'ox': 1, 'pig': 2}
-frequencies = toolz.frequencies
 
 #: Determines whether the element is iterable.
 #:
