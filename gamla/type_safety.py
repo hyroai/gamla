@@ -2,7 +2,8 @@ import typing
 from collections import abc
 from typing import Any, Callable, Optional, Tuple, Union
 
-from gamla import operator, sync
+from gamla import operator
+from gamla.optimized import sync
 
 
 def _handle_union_on_left(type1, type2):
@@ -90,21 +91,25 @@ _is_subtype: Callable[[Tuple[Any, Any]], bool] = sync.compose_left(
 is_subtype = sync.compose_left(operator.pack, _is_subtype)
 
 
-def composable(destination: Callable, source: Callable, key: Optional[str]) -> bool:
+_RETURN_TYPING = "return"
+
+
+def composable(destination: Callable, origin: Callable, key: Optional[str]) -> bool:
     """Checks if `destination` can be composed after `source`, considering their typing."""
-    s = typing.get_type_hints(source)
+    s = typing.get_type_hints(origin)
     d = typing.get_type_hints(destination)
-    if "return" not in s:
+    if _RETURN_TYPING not in s:
         return True
     if key:
         if key not in d:
             return True
         d = d[key]
     else:
-        if "return" in d:
-            del d["return"]
+        if _RETURN_TYPING in d:
+            del d[_RETURN_TYPING]
         if not d:
             return True
-        assert len(d) == 1
+        if len(d) != 1:
+            return False
         d = operator.head(d.values())
-    return is_subtype(s["return"], d)
+    return is_subtype(s[_RETURN_TYPING], d)

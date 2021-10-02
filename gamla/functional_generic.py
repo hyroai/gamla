@@ -112,6 +112,13 @@ def compose(*funcs):
         compose_left
         pipe
     """
+    # TODO(uri): Enable after optimization checks.
+    # prev = funcs[0]
+    # for f in funcs[1:]:
+    #     if not type_safety.composable(prev, f, None):
+    #         logging.error(f"composing {prev} after {f}, which don't fit")
+    #     prev = f
+
     if any_is_async(funcs):
         composed = async_functions.compose(*funcs)
     else:
