@@ -186,6 +186,29 @@ def throttle(limit, f):
     return wrapped
 
 
+@currying.curry
+def throttle_all(limit, fs):
+    """Wraps a tuple of coroutines fs assuring only `limit` amount of calls are done in parallel.
+
+    >>> throttled_get_async_and_post = throttle_all(3, (get_async, post_json_async))
+    """
+    semaphore = None
+
+    def wrap_function(f):
+        @functools.wraps(f)
+        async def wrap(*args, **kwargs):
+            nonlocal semaphore
+            # This must be in the inner function so that we avoid creating an event loop before the user has, causing the code to run with two different event loops.
+            if not semaphore:
+                semaphore = asyncio.Semaphore(limit)
+            async with semaphore:
+                return await f(*args, **kwargs)
+
+        return wrap
+
+    return sync.map(wrap_function)(fs)
+
+
 def timeout(seconds: float):
     """Wraps a coroutine with a timeout (seconds) after
     which it will raise `asyncio.TimeoutError`.
