@@ -24,6 +24,7 @@ async_functions
    compose_left
    map
    star
+   thunk
    to_awaitable
 
 currying
@@ -204,6 +205,7 @@ functional_generic
    alljuxt
    allmap
    allstack
+   any_is_async
    anyjuxt
    anymap
    anystack
@@ -341,9 +343,14 @@ sync
 
 .. autosummary::
    after
+   alljuxt
+   allmap
    anyjuxt
+   anymap
+   before
    binary_curry
    check
+   complement
    compose
    compose_left
    filter
@@ -368,7 +375,9 @@ sync
    remove
    star
    ternary
+   thunk
    valmap
+   when
 
 tree
 ----
@@ -379,8 +388,18 @@ tree
    filter_leaves
    get_leaves_by_ancestor_predicate
    json_tree_reduce
+   map_reduce_tree
    tree_reduce
    tree_reduce_async
+
+type_safety
+-----------
+
+.. currentmodule:: gamla.type_safety
+
+.. autosummary::
+   composable
+   is_subtype
 
 url_utils
 ---------
@@ -445,6 +464,9 @@ Definitions
    :members:
 
 .. automodule:: gamla.tree
+   :members:
+
+.. automodule:: gamla.type_safety
    :members:
 
 .. automodule:: gamla.url_utils
