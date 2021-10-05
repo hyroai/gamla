@@ -40,7 +40,6 @@ data
 .. currentmodule:: gamla.data
 
 .. autosummary::
-   csv_to_list_of_dicts
    explode
    freeze_deep
    get_encode_config
@@ -219,6 +218,7 @@ functional_generic
    compose_left
    compose_many_to_one
    count_by
+   count_by_many
    countby_many
    curried_filter
    curried_map
@@ -283,8 +283,8 @@ graph_async
 .. autosummary::
    agraph_traverse
    agraph_traverse_many
-   async_graph_traverse_many
    atraverse_graph_by_radius
+   reduce_graph_async
 
 higher_order
 ------------
@@ -305,11 +305,13 @@ io_utils
 .. autosummary::
    batch_calls
    get_async
+   head_async_with_headers
    post_json_async
    post_json_with_extra_headers_and_params_async
    post_json_with_extra_headers_async
    queue_identical_calls
    requests_with_retry
+   retry
    throttle
    timeit
    timeout
