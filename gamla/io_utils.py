@@ -11,7 +11,7 @@ import requests
 import requests.adapters
 from requests.packages.urllib3.util import retry as retry_lib
 
-from gamla import currying, functional, operator
+from gamla import currying, functional
 from gamla.optimized import sync
 
 
@@ -166,11 +166,12 @@ def queue_identical_calls(f):
     return wrapped
 
 
-@currying.curry
-def throttle_all(limit, funcs):
-    """Wraps a tuple of coroutines funcs assuring only `limit` amount of calls are done in parallel.
+def make_throttler(limit):
+    """Returns a function that can be used on any number of coroutines to make sure only `limit` amount of calls are done in parallel.
 
-    >>> throttled_get_async_and_post = throttle_all(3, (get_async, post_json_async))
+    >>> throttler = make_throttler(3)
+    >>> throttler(get_async)
+    >>> throttler(post_json_async)
     """
     semaphore = None
 
@@ -186,7 +187,7 @@ def throttle_all(limit, funcs):
 
         return wrap
 
-    return sync.map(wrap_function)(funcs)
+    return wrap_function
 
 
 @currying.curry
@@ -195,7 +196,7 @@ def throttle(limit, f):
 
     >>> throttled_get_async = throttle(3, get_async)
     """
-    return operator.head(throttle_all(limit, (f,)))
+    return make_throttler(limit)(f)
 
 
 def timeout(seconds: float):

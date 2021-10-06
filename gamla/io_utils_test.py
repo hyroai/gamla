@@ -163,22 +163,23 @@ async def test_throtle():
     )
 
 
-async def test_throtle_all():
+async def test_make_throttler():
     total = 0
+    throttle = io_utils.make_throttler(1)
 
-    async def inc_with_delay():
+    @throttle
+    async def inc():
         nonlocal total
         total = total + 1
         await asyncio.sleep(0.01)
         assert total <= 1
 
-    async def dec_with_delay():
+    @throttle
+    async def dec():
         await asyncio.sleep(0.01)
         nonlocal total
         total = total - 1
         assert total >= 0
-
-    inc, dec = io_utils.throttle_all(1, (inc_with_delay, dec_with_delay))
 
     await asyncio.gather(inc(), dec(), inc(), dec())
     assert total == 0
