@@ -87,6 +87,8 @@ def _get_name_for_function_group(funcs):
 
 def _match_return_typing(x: Callable, y: Callable):
     if not hasattr(y, "__annotations__"):
+        if "return" in x.__annotations__:
+            del x.__annotations__["return"]
         return
     if "return" in y.__annotations__:
         x.__annotations__["return"] = y.__annotations__["return"]

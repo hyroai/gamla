@@ -470,6 +470,15 @@ def test_compositions_correct_typing():
     }
 
 
+def test_typing_for_composition_with_builtin():
+    def f(x: str) -> str:
+        return "hello " + x
+
+    assert functional_generic.compose_left(f, bool).__annotations__ == {
+        "x": str,
+    }
+
+
 def test_attrgetter():
     assert operator.attrgetter("lower")("ASD")() == "asd"
 
