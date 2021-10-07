@@ -149,4 +149,3 @@ Increment the version in master, and pypi will automatically update.
 1. Install md-to-rst converter: `pip install m2r`
 2. Convert README.md to README.rst: `m2r README.md`
 3. Move README.rst to docs/source folder instead of existing one: `mv README.rst docs/source`
-

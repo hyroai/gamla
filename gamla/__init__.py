@@ -25,3 +25,5 @@ map = functional_generic.curried_map
 filter = functional_generic.curried_filter
 
 to_awaitable = async_functions.to_awaitable
+
+NoConditionMatched = sync.NoConditionMatched
