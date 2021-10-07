@@ -2,6 +2,7 @@ import asyncio
 import functools
 import inspect
 import itertools
+import typing
 from operator import not_
 from typing import (
     Any,
@@ -103,6 +104,35 @@ def _match_return_typing(x: Callable, y: Callable):
         del x.__annotations__["return"]
 
 
+class _TypeError(Exception):
+    pass
+
+
+_get_unary_input_typing = sync.compose_left(
+    typing.get_type_hints,
+    sync.when(operator.inside("return"), functional.remove_key("return")),
+    dict.values,
+    operator.head,
+)
+
+
+def _pretty_print_function_name(f: Callable) -> str:
+    return f"{f.__code__.co_filename}:{f.__code__.co_firstlineno}:{f.__name__}"
+
+
+def _mismatch_message(key, source: Callable, destination: Callable) -> str:
+    return "\n".join(
+        [
+            "",
+            f"source: {_pretty_print_function_name(source)}",
+            f"destination: {_pretty_print_function_name(destination)}",
+            f"key: {key}",
+            str(typing.get_type_hints(source)["return"]),
+            str(_get_unary_input_typing(destination)),
+        ],
+    )
+
+
 def compose(*funcs):
     """Compose sync and async functions to operate in series.
 
@@ -123,11 +153,8 @@ def compose(*funcs):
     """
     prev = funcs[0]
     for f in funcs[1:]:
-        assert type_safety.composable(
-            prev,
-            f,
-            None,
-        ), f"composing {prev} after {f}, which don't fit"
+        if not type_safety.composable(prev, f, None):
+            raise _TypeError(_mismatch_message(prev, f))
         prev = f
 
     if any_is_async(funcs):
