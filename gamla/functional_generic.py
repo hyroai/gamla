@@ -120,13 +120,12 @@ def _pretty_print_function_name(f: Callable) -> str:
     return f"{f.__code__.co_filename}:{f.__code__.co_firstlineno}:{f.__name__}"
 
 
-def _mismatch_message(key, source: Callable, destination: Callable) -> str:
+def _mismatch_message(source: Callable, destination: Callable) -> str:
     return "\n".join(
         [
             "",
             f"source: {_pretty_print_function_name(source)}",
             f"destination: {_pretty_print_function_name(destination)}",
-            f"key: {key}",
             str(typing.get_type_hints(source)["return"]),
             str(_get_unary_input_typing(destination)),
         ],
