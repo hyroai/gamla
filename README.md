@@ -93,7 +93,7 @@ def sometimes_has_a_bug(x):
 
 increment_with_bug = gamla.map(gamla.compose_left(increment, sometimes_has_a_bug))
 
-tuple(inrement_with_bug(range(1000)))
+tuple(increment_with_bug(range(1000)))
 ```
 
 Adding a `gamla.debug` here can be quite tedious, because the code will break many times.
