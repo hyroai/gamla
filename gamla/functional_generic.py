@@ -155,7 +155,7 @@ def compose(*funcs):
     prev = funcs[0]
     for f in funcs[1:]:
         if not type_safety.composable(prev, f, None):
-            raise _TypeError(_mismatch_message(prev, f))
+            raise _TypeError(_mismatch_message(f, prev))
         prev = f
 
     if any_is_async(funcs):
