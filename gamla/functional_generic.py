@@ -117,7 +117,9 @@ _get_unary_input_typing = sync.compose_left(
 
 
 def _pretty_print_function_name(f: Callable) -> str:
-    return f"{f.__code__.co_filename}:{f.__code__.co_firstlineno}:{f.__name__}"
+    if hasattr(f, "__code__"):
+        return f"{f.__code__.co_filename}:{f.__code__.co_firstlineno}:{f.__name__}"
+    return f.__name__
 
 
 def _mismatch_message(source: Callable, destination: Callable) -> str:
