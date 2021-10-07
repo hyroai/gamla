@@ -18,7 +18,14 @@ from typing import (
     Union,
 )
 
-from gamla import apply_utils, data, excepts_decorator, functional, operator
+from gamla import (
+    apply_utils,
+    data,
+    excepts_decorator,
+    functional,
+    operator,
+    type_safety,
+)
 from gamla.optimized import async_functions, sync
 
 
@@ -114,12 +121,14 @@ def compose(*funcs):
         compose_left
         pipe
     """
-    # TODO(uri): Enable after optimization checks.
-    # prev = funcs[0]
-    # for f in funcs[1:]:
-    #     if not type_safety.composable(prev, f, None):
-    #         logging.error(f"composing {prev} after {f}, which don't fit")
-    #     prev = f
+    prev = funcs[0]
+    for f in funcs[1:]:
+        assert type_safety.composable(
+            prev,
+            f,
+            None,
+        ), f"composing {prev} after {f}, which don't fit"
+        prev = f
 
     if any_is_async(funcs):
         composed = async_functions.compose(*funcs)
@@ -550,7 +559,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
     return sync.case(predicates_and_mappers)
 
 
-#: Applies functions to values according to predicates given in a dict. Raises `gamla.functional_generic.NoConditionMatched` if no predicate matches.
+#: Applies functions to values according to predicates given in a dict. Raises `gamla.NoConditionMatched` if no predicate matches.
 #: >>> f = case_dict({gamla.less_than(10): gamla.identity, gamla.greater_than(10): gamla.add(100)})
 #: >>> f(5)
 #: 5

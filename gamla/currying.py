@@ -15,13 +15,11 @@ def _curry_helper(
         return f(*args_so_far, **kwargs_so_far)
     if len_so_far + 1 == len(f_len_args) and is_coroutine:
 
-        @functools.wraps(f)
         async def curry_inner_async(*args, **kwargs):
             return await f(*(args_so_far + args), **{**kwargs_so_far, **kwargs})
 
         return curry_inner_async
 
-    @functools.wraps(f)
     def curry_inner(*args, **kwargs):
         return _curry_helper(
             is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
