@@ -93,15 +93,16 @@ def _get_name_for_function_group(funcs):
     return "_OF_".join(map(lambda x: x.__name__, funcs))
 
 
-def _match_return_typing(x: Callable, y: Callable):
-    if not hasattr(y, "__annotations__"):
+def _match_return_typing(x: Callable, y: Callable) -> Dict:
+    if hasattr(y, "__annotations__"):
+        if "return" in y.__annotations__:
+            return {**x.__annotations__, "return": y.__annotations__["return"]}
         if "return" in x.__annotations__:
-            del x.__annotations__["return"]
-        return
-    if "return" in y.__annotations__:
-        x.__annotations__["return"] = y.__annotations__["return"]
-    elif "return" in x.__annotations__:
-        del x.__annotations__["return"]
+            return functional.remove_key("return")(x.__annotations__)
+        return x.__annotations__
+    if "return" in x.__annotations__:
+        return functional.remove_key("return")(x.__annotations__)
+    return x.__annotations__
 
 
 class _TypeError(Exception):
@@ -170,7 +171,7 @@ def compose(*funcs):
         co_firstlineno=frame.f_lineno,
     )
     composed.__name__ = _get_name_for_function_group(funcs)
-    _match_return_typing(composed, operator.head(funcs))
+    composed.__annotations__ = _match_return_typing(composed, operator.head(funcs))
     return composed
 
 
