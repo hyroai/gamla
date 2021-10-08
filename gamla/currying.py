@@ -1,9 +1,11 @@
 import asyncio
 import inspect
 
+from gamla import function_editing
+
 
 def _curry_helper(
-    is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
+    frame, is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
 ):
     args_so_far += args
     kwargs_so_far = {**kwargs_so_far, **kwargs}
@@ -21,8 +23,17 @@ def _curry_helper(
 
     def curry_inner(*args, **kwargs):
         return _curry_helper(
-            is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
+            frame,
+            is_coroutine,
+            f_len_args,
+            f,
+            args_so_far,
+            kwargs_so_far,
+            *args,
+            **kwargs,
         )
+
+    curry_inner.__code__ = function_editing.fit_to_frame(curry_inner, frame)
 
     return curry_inner
 
@@ -46,7 +57,7 @@ def curry(f):
     10
 
     Can also be used as a decorator:
-    >>>@gamla.curry
+    >>> @gamla.curry
     ... def addition(a, b):
     ...    return a + b
 
@@ -70,8 +81,12 @@ def curry(f):
     ), f"Curry function must have at least 2 parameters, {f} has {len(f_len_args)}"
     defaults = _infer_defaults(f_len_args)
     is_coroutine = asyncio.iscoroutinefunction(f)
+    frame = inspect.currentframe().f_back
 
     def indirection(*args, **kwargs):
-        return _curry_helper(is_coroutine, f_len_args, f, (), defaults, *args, **kwargs)
+        return _curry_helper(
+            frame, is_coroutine, f_len_args, f, (), defaults, *args, **kwargs
+        )
 
+    indirection.__code__ = function_editing.fit_to_frame(indirection, frame)
     return indirection

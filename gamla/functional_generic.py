@@ -23,6 +23,7 @@ from gamla import (
     apply_utils,
     data,
     excepts_decorator,
+    function_editing,
     functional,
     operator,
     type_safety,
@@ -164,11 +165,9 @@ def compose(*funcs):
     else:
         composed = sync.compose(*funcs)
     composed = functools.wraps(operator.last(funcs))(composed)
-    frame = inspect.currentframe().f_back.f_back
-    composed.__code__ = composed.__code__.replace(
-        co_name=f"{frame.f_code.co_filename}:{frame.f_lineno}",
-        co_filename=frame.f_code.co_filename,
-        co_firstlineno=frame.f_lineno,
+    composed.__code__ = function_editing.fit_to_frame(
+        composed,
+        inspect.currentframe().f_back.f_back,
     )
     composed.__name__ = _get_name_for_function_group(funcs)
     composed.__annotations__ = _match_return_typing(composed, operator.head(funcs))
