@@ -24,6 +24,7 @@ async_functions
    compose_left
    map
    star
+   thunk
    to_awaitable
 
 currying
@@ -40,7 +41,6 @@ data
 .. currentmodule:: gamla.data
 
 .. autosummary::
-   csv_to_list_of_dicts
    explode
    freeze_deep
    get_encode_config
@@ -95,62 +95,36 @@ functional
 .. currentmodule:: gamla.functional
 
 .. autosummary::
-   add
    add_key_value
    assert_that
    assoc_in
-   attrgetter
-   between
+   average
    bottom
    concat_with
-   contains
-   count
-   curried_map_sync
    dataclass_replace
    dataclass_replace_attribute
    dataclass_transform
    dataclass_transform_attribute
-   divide_by
    do_if
    drop
    drop_last
    drop_last_while
-   empty
    ends_with
    eq_by
    eq_str_ignore_case
-   equals
    flip
-   frequencies
    function_to_uid
    get_all_n_grams
-   greater_equals
-   greater_than
    groupby_many_reduce
    have_intersection
-   head
-   identity
    ignore_input
-   inside
    interpose
    intersect
    is_instance
    is_iterable
-   just
    just_raise
-   last
-   len_equals
-   len_greater
-   len_smaller
-   less_equals
-   less_than
    make_call_key
    make_raise
-   multiply
-   nonempty
-   not_equals
-   nth
-   pack
    partition_after
    partition_all
    partition_before
@@ -159,7 +133,6 @@ functional
    reduce
    remove_key
    sample
-   second
    singleize
    skip
    sliding_window
@@ -168,7 +141,6 @@ functional
    sort_by_reversed
    sort_reversed
    suffix
-   tail
    take
    take_while
    to_json
@@ -205,11 +177,11 @@ functional_generic
    alljuxt
    allmap
    allstack
+   any_is_async
    anyjuxt
    anymap
    anystack
    apply_spec
-   average
    before
    bifurcate
    case
@@ -219,6 +191,7 @@ functional_generic
    compose_left
    compose_many_to_one
    count_by
+   count_by_many
    countby_many
    curried_filter
    curried_map
@@ -226,6 +199,7 @@ functional_generic
    find
    find_index
    first
+   frequencies
    groupby
    itemfilter
    itemmap
@@ -283,8 +257,8 @@ graph_async
 .. autosummary::
    agraph_traverse
    agraph_traverse_many
-   async_graph_traverse_many
    atraverse_graph_by_radius
+   reduce_graph_async
 
 higher_order
 ------------
@@ -305,14 +279,50 @@ io_utils
 .. autosummary::
    batch_calls
    get_async
+   head_async_with_headers
    post_json_async
    post_json_with_extra_headers_and_params_async
    post_json_with_extra_headers_async
    queue_identical_calls
    requests_with_retry
+   retry
    throttle
    timeit
    timeout
+
+operator
+--------
+
+.. currentmodule:: gamla.operator
+
+.. autosummary::
+   add
+   attrgetter
+   between
+   contains
+   count
+   divide_by
+   empty
+   equals
+   greater_equals
+   greater_than
+   head
+   identity
+   inside
+   just
+   last
+   len_equals
+   len_greater
+   len_smaller
+   less_equals
+   less_than
+   multiply
+   nonempty
+   not_equals
+   nth
+   pack
+   second
+   tail
 
 optimized
 ---------
@@ -339,9 +349,17 @@ sync
 
 .. autosummary::
    after
+   alljuxt
+   allmap
    anyjuxt
+   anymap
+   before
+   bifurcate
    binary_curry
+   case
+   case_dict
    check
+   complement
    compose
    compose_left
    filter
@@ -364,9 +382,12 @@ sync
    pipe
    reduce
    remove
+   stack
    star
    ternary
+   thunk
    valmap
+   when
 
 tree
 ----
@@ -377,8 +398,18 @@ tree
    filter_leaves
    get_leaves_by_ancestor_predicate
    json_tree_reduce
+   map_reduce_tree
    tree_reduce
    tree_reduce_async
+
+type_safety
+-----------
+
+.. currentmodule:: gamla.type_safety
+
+.. autosummary::
+   composable
+   is_subtype
 
 url_utils
 ---------
@@ -433,6 +464,9 @@ Definitions
 .. automodule:: gamla.io_utils
    :members:
 
+.. automodule:: gamla.operator
+   :members:
+
 .. automodule:: gamla.optimized
    :members:
 
@@ -443,6 +477,9 @@ Definitions
    :members:
 
 .. automodule:: gamla.tree
+   :members:
+
+.. automodule:: gamla.type_safety
    :members:
 
 .. automodule:: gamla.url_utils
