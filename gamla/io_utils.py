@@ -166,24 +166,37 @@ def queue_identical_calls(f):
     return wrapped
 
 
+def make_throttler(limit):
+    """Returns a function that can be used on any number of coroutines to make sure only `limit` amount of calls are done in parallel.
+
+    >>> throttler = make_throttler(3)
+    >>> throttler(get_async)
+    >>> throttler(post_json_async)
+    """
+    semaphore = None
+
+    def wrap_function(f):
+        @functools.wraps(f)
+        async def wrap(*args, **kwargs):
+            nonlocal semaphore
+            # This must be in the inner function so that we avoid creating an event loop before the user has, causing the code to run with two different event loops.
+            if not semaphore:
+                semaphore = asyncio.Semaphore(limit)
+            async with semaphore:
+                return await f(*args, **kwargs)
+
+        return wrap
+
+    return wrap_function
+
+
 @currying.curry
 def throttle(limit, f):
     """Wraps a coroutine f assuring only `limit` amount of calls are done in parallel.
 
     >>> throttled_get_async = throttle(3, get_async)
     """
-    semaphore = None
-
-    @functools.wraps(f)
-    async def wrapped(*args, **kwargs):
-        nonlocal semaphore
-        # This must be in the inner function so that we avoid creating an event loop before the user has, causing the code to run with two different event loops.
-        if not semaphore:
-            semaphore = asyncio.Semaphore(limit)
-        async with semaphore:
-            return await f(*args, **kwargs)
-
-    return wrapped
+    return make_throttler(limit)(f)
 
 
 def timeout(seconds: float):
