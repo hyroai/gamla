@@ -1,5 +1,4 @@
 import asyncio
-import functools
 import inspect
 
 
@@ -72,7 +71,6 @@ def curry(f):
     defaults = _infer_defaults(f_len_args)
     is_coroutine = asyncio.iscoroutinefunction(f)
 
-    @functools.wraps(f)
     def indirection(*args, **kwargs):
         return _curry_helper(is_coroutine, f_len_args, f, (), defaults, *args, **kwargs)
 
