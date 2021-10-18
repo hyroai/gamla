@@ -21,6 +21,17 @@ def keyfilter(predicate):
     return keyfilter
 
 
+def valfilter(predicate):
+    def valfilter(d):
+        new_d = {}
+        for (k, v) in d.items():
+            if predicate(v):
+                new_d[k] = d[k]
+        return new_d
+
+    return valfilter
+
+
 def mapcat(f):
     def mapcat(it):
         for i in it:
@@ -246,6 +257,13 @@ def pair_left(f):
         return f(x), x
 
     return pair_left
+
+
+def pair_right(f):
+    def pair_right(x):
+        return x, f(x)
+
+    return pair_right
 
 
 def reduce(f, initial):
