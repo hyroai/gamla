@@ -380,6 +380,7 @@ sync
    merge_with_reducer
    packstack
    pair_left
+   pair_right
    pipe
    reduce
    remove
@@ -387,6 +388,7 @@ sync
    star
    ternary
    thunk
+   valfilter
    valmap
    when
 

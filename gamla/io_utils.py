@@ -218,13 +218,20 @@ def timeout(seconds: float):
 
 
 @currying.curry
-async def get_async(timeout: float, url: Text):
-    """Performs an async GET request to url with the specified timeout (seconds).
+async def get_async_with_headers(headers: Dict[str, str], timeout: float, url: Text):
+    """Performs an async GET request to url with the specified timeout (seconds) and headers.
 
-    >>> response = await get_async(30, "https://www.someurl.com")
+    >>> response = await get_async_with_headers({some_header: some_value}, 30, "https://www.someurl.com")
     """
     async with httpx.AsyncClient() as client:
-        return await client.get(url, timeout=timeout)
+        return await client.get(url, timeout=timeout, headers=headers)
+
+
+#: Performs an async GET request to url with the specified timeout (seconds) and headers.
+#: Expects the payload to be a json serializable object.
+#:
+#: >>> response = await get_async(30, "https://www.someurl.com")
+get_async = get_async_with_headers({})
 
 
 @currying.curry
