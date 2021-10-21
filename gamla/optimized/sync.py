@@ -21,6 +21,26 @@ def keyfilter(predicate):
     return keyfilter
 
 
+def valfilter(predicate):
+    """Create a function that filters a dict using a predicate over values.
+    >>> f = valefilter(lambda k: k > 2)
+    >>> f({"a": 1, "b": 2, "c": 3, "d": 4})
+    {
+    "c": 3,
+    "d": 4
+    }
+    """
+
+    def valfilter(d):
+        new_d = {}
+        for (k, v) in d.items():
+            if predicate(v):
+                new_d[k] = d[k]
+        return new_d
+
+    return valfilter
+
+
 def mapcat(f):
     def mapcat(it):
         for i in it:
@@ -246,6 +266,20 @@ def pair_left(f):
         return f(x), x
 
     return pair_left
+
+
+def pair_right(f):
+    """Returns a function that given a value x, returns a tuple of the form: (x, f(x)).
+
+    >>> add_one = pair_right(lambda x: x + 1)
+    >>> add_one(3)
+    (3, 4)
+    """
+
+    def pair_right(x):
+        return x, f(x)
+
+    return pair_right
 
 
 def reduce(f, initial):
