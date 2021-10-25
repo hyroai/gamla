@@ -14,19 +14,6 @@ apply_utils
    apply_method_async
    invoke
 
-async_functions
----------------
-
-.. currentmodule:: gamla.async_functions
-
-.. autosummary::
-   compose
-   compose_left
-   map
-   star
-   thunk
-   to_awaitable
-
 currying
 --------
 
@@ -279,6 +266,7 @@ io_utils
 .. autosummary::
    batch_calls
    get_async
+   get_async_with_headers
    head_async_with_headers
    make_throttler
    post_json_async
@@ -325,13 +313,6 @@ operator
    second
    tail
 
-optimized
----------
-
-.. currentmodule:: gamla.optimized
-
-.. autosummary::
-
 string_utils
 ------------
 
@@ -342,55 +323,6 @@ string_utils
    regex_match
    replace_in_text
    split_text
-
-sync
-----
-
-.. currentmodule:: gamla.sync
-
-.. autosummary::
-   after
-   alljuxt
-   allmap
-   anyjuxt
-   anymap
-   before
-   bifurcate
-   binary_curry
-   case
-   case_dict
-   check
-   complement
-   compose
-   compose_left
-   filter
-   groupby
-   groupby_many
-   juxt
-   juxtcat
-   juxtduct
-   keyfilter
-   keymap
-   map
-   mapcat
-   mapdict
-   mapduct
-   maptuple
-   merge
-   merge_with_reducer
-   packstack
-   pair_left
-   pair_right
-   pipe
-   reduce
-   remove
-   stack
-   star
-   ternary
-   thunk
-   valfilter
-   valmap
-   when
 
 tree
 ----
@@ -426,9 +358,6 @@ Definitions
 -----------
 
 .. automodule:: gamla.apply_utils
-   :members:
-
-.. automodule:: gamla.async_functions
    :members:
 
 .. automodule:: gamla.currying
@@ -470,13 +399,7 @@ Definitions
 .. automodule:: gamla.operator
    :members:
 
-.. automodule:: gamla.optimized
-   :members:
-
 .. automodule:: gamla.string_utils
-   :members:
-
-.. automodule:: gamla.sync
    :members:
 
 .. automodule:: gamla.tree
