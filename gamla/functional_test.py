@@ -748,3 +748,10 @@ def test_translate_exception():
             iter([]),
             functional.translate_exception(next, StopIteration, ValueError),
         )
+
+
+def test_speed_of_apply_spec():
+    start_time = time.time()
+    for _ in range(1000):
+        functional_generic.apply_spec({"a": operator.identity, "b": lambda x: x + 1})(1)
+    assert time.time() - start_time < 0.1
