@@ -378,7 +378,8 @@ stack = compose_left(
     star(juxt),
 )
 
-_is_terminal = anyjuxt(*map(operator.is_instance)([str, int, float]))
+
+_is_iterable = anyjuxt(*map(operator.is_instance)([tuple, list, set, frozenset()]))
 
 
 def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable) -> Callable:
@@ -389,16 +390,16 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable) -> Callabl
     )
     return case_dict(
         {
-            _is_terminal: terminal_mapper,
             operator.is_instance(dict): compose_left(
                 valmap(recurse),
                 nonterminal_mapper,
             ),
-            operator.just(True): compose_left(
+            _is_iterable: compose_left(
                 map(recurse),
                 tuple,
                 nonterminal_mapper,
             ),
+            operator.just(True): terminal_mapper,
         },
     )
 
