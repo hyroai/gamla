@@ -614,11 +614,11 @@ def apply_spec(spec: Dict):
             )(spec)
 
         return apply_spec_async
-    return compose_left(
-        apply_utils.apply,
-        lambda applier: sync.map_dict(operator.identity, applier),
-        apply_utils.apply(spec),
-    )
+
+    def apply_spec_sync(*args, **kwargs):
+        return sync.map_dict(operator.identity, lambda f: f(*args, **kwargs))(spec)
+
+    return apply_spec_sync
 
 
 #: Construct a function that applies the i'th function in an iterable
