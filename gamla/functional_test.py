@@ -103,7 +103,7 @@ async def test_allmap_in_async_pipe():
         [True, True, False],
         functional_generic.allmap(_opposite_async),
         # Check that the `pipe` serves a value and not a future.
-        sync.check(functional.is_instance(bool), AssertionError),
+        sync.check(operator.is_instance(bool), AssertionError),
     )
 
 

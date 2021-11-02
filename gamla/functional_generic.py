@@ -576,29 +576,10 @@ async def _await_dict(value):
 
 
 def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
-    def map_dict_inner(value):
-        if isinstance(value, dict) or isinstance(value, data.frozendict):
-            return pipe(
-                value,
-                dict,  # In case input is a `frozendict`.
-                valmap(map_dict(nonterminal_mapper, terminal_mapper)),
-                nonterminal_mapper,
-            )
-        if isinstance(value, Iterable) and not isinstance(value, str):
-            return pipe(
-                value,
-                sync.map(
-                    map_dict(nonterminal_mapper, terminal_mapper),
-                ),
-                type(value),  # Keep the same format as input.
-                nonterminal_mapper,
-            )
-        return terminal_mapper(value)
-
+    f = sync.map_dict(nonterminal_mapper, terminal_mapper)
     if any_is_async([nonterminal_mapper, terminal_mapper]):
-        return compose_left(map_dict_inner, _await_dict)
-
-    return map_dict_inner
+        return compose_left(f, _await_dict)
+    return f
 
 
 def _iterdict(d):
@@ -635,7 +616,7 @@ def apply_spec(spec: Dict):
         return apply_spec_async
     return compose_left(
         apply_utils.apply,
-        lambda applier: map_dict(operator.identity, applier),
+        lambda applier: sync.map_dict(operator.identity, applier),
         apply_utils.apply(spec),
     )
 
