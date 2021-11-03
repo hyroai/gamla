@@ -637,16 +637,6 @@ def flip(func: Callable):
     return flip
 
 
-#: Determines whether the element is iterable.
-#:
-#: >>> isiterable([1, 2, 3])
-#: True
-#:
-#: >>> isiterable(5)
-#: False
-is_iterable = toolz.isiterable
-
-
 def sliding_window(n: int):
     """A sequence of overlapping subsequences.
 

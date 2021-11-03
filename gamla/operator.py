@@ -332,3 +332,19 @@ def is_instance(the_type):
         return type(the_value) == the_type
 
     return is_instance
+
+
+def is_iterable(x):
+    """Determines whether the element is iterable.
+
+    >>> isiterable([1, 2, 3])
+    True
+    >>> isiterable('abc')
+    True
+    >>> isiterable(5)
+    False"""
+    try:
+        iter(x)
+        return True
+    except TypeError:
+        return False
