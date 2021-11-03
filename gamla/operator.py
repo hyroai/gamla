@@ -329,7 +329,7 @@ def is_instance(the_type):
     """
 
     def is_instance(the_value):
-        return type(the_value) == the_type
+        return isinstance(the_value, the_type)
 
     return is_instance
 

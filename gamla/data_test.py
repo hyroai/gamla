@@ -14,6 +14,10 @@ def test_freeze_deep():
     {data.freeze_deep(original)}
 
 
+def test_freeze_deep_idempotent():
+    assert data.freeze_deep(data.freeze_deep({"a": 1})) == data.freeze_deep({"a": 1})
+
+
 def test_frozendict_serializable():
     fd = data.frozendict({"a": "something", "b": 1})
     fd_str = pickle.dumps(fd)
