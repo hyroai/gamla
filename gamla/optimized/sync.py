@@ -2,6 +2,8 @@
 import itertools
 from typing import Callable, Tuple
 
+from gamla import operator
+
 
 def packstack(*functions):
     def packstack(values):
@@ -375,6 +377,32 @@ stack = compose_left(
     map(star(lambda i, f: compose(f, lambda x: x[i]))),
     star(juxt),
 )
+
+_is_terminal = anyjuxt(*map(operator.is_instance)([str, int, float]))
+
+
+def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable) -> Callable:
+    recurse = thunk(
+        map_dict,
+        nonterminal_mapper,
+        terminal_mapper,
+    )
+    return case_dict(
+        {
+            _is_terminal: terminal_mapper,
+            operator.is_instance(dict): compose_left(
+                valmap(recurse),
+                nonterminal_mapper,
+            ),
+            operator.is_iterable: compose_left(
+                map(recurse),
+                tuple,
+                nonterminal_mapper,
+            ),
+            # Other types are considered terminals to support things like `apply_spec`.
+            operator.just(True): terminal_mapper,
+        },
+    )
 
 
 def bifurcate(*funcs):

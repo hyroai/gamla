@@ -103,7 +103,7 @@ async def test_allmap_in_async_pipe():
         [True, True, False],
         functional_generic.allmap(_opposite_async),
         # Check that the `pipe` serves a value and not a future.
-        sync.check(functional.is_instance(bool), AssertionError),
+        sync.check(operator.is_instance(bool), AssertionError),
     )
 
 
@@ -748,3 +748,10 @@ def test_translate_exception():
             iter([]),
             functional.translate_exception(next, StopIteration, ValueError),
         )
+
+
+def test_speed_of_apply_spec():
+    start_time = time.time()
+    for _ in range(1000):
+        functional_generic.apply_spec({"a": operator.identity, "b": lambda x: x + 1})(1)
+    assert time.time() - start_time < 0.1
