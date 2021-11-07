@@ -107,8 +107,6 @@ functional
    ignore_input
    interpose
    intersect
-   is_instance
-   is_iterable
    just_raise
    make_call_key
    make_raise
@@ -298,6 +296,8 @@ operator
    head
    identity
    inside
+   is_instance
+   is_iterable
    just
    last
    len_equals

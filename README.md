@@ -51,7 +51,7 @@ Is this a good thing? that's for you to decide.
 
 The upside:
 
-Functional programming is mainly about how to split your code into composable parts. Composability means that things are easy to move, replace or combine together like lego. It helps you identify recurring patterns \(e.g. `filter`\), factor them out and reuse them. If your generalizations are good, they free your mind to focus on the new logic. Concretely it saves a lot of code and helps a reader understand what a piece of code is doing. For example, if you are familir with what `filter` is, you don't have to squint and realize that an `if` and a `for` actually do a filtering pattern.
+Functional programming is mainly about how to split your code into composable parts. Composability means that things are easy to move, replace or combine together like lego. It helps you identify recurring patterns \(e.g. `filter`\), factor them out and reuse them. If your generalizations are good, they free your mind to focus on the new logic. Concretely it saves a lot of code and helps a reader understand what a piece of code is doing. For example, if you are familiar with what `filter` is, you don't have to squint and realize that an `if` and a `for` actually do a filtering pattern.
 
 The downside:
 
