@@ -2,7 +2,8 @@ import functools
 from operator import getitem
 from typing import Any, Callable, Dict, Iterable
 
-from gamla import currying, functional_generic, operator
+from gamla import currying, functional, functional_generic, operator
+from gamla.optimized import sync
 
 
 def itemgetter(attr):
@@ -165,4 +166,23 @@ def make_index(
             x,
             _return_after_n_calls(len(steps) - 1, frozenset()),
         ),
+    )
+
+
+def rename_key(old: str, new: str) -> Callable[[dict], dict]:
+    """Renames key.
+
+    >>> my_dict = {"name": "Danny", "age": 20}
+    >>> rename_key("name", "first_name")(my_dict)
+    {"first_name": "Danny", "age": 20}
+    """
+    return sync.compose_left(
+        sync.juxt(
+            sync.compose_left(
+                itemgetter(old),
+                functional.wrap_dict(new),
+            ),
+            sync.keyfilter(operator.not_equals(old)),
+        ),
+        sync.merge,
     )

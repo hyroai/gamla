@@ -59,3 +59,12 @@ def test_make_index():
     assert index("d")("a") == frozenset(["dani"])
     assert index("u")("r") == frozenset(["uri"])
     assert index("h")("i") == frozenset()
+
+
+def test_rename_key():
+    assert (
+        dict_utils.rename_key("name", "first_name")(
+            {"name": "Danny", "age": 20},
+        )
+        == {"first_name": "Danny", "age": 20}
+    )
