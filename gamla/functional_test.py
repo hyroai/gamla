@@ -578,18 +578,6 @@ def test_empty_pipe():
         )
 
 
-def test_add_key_value():
-    assert functional.add_key_value("1", "1")({"2": "2"}) == {"1": "1", "2": "2"}
-
-
-def test_remove_key():
-    assert functional.remove_key("1")({"1": 1, "2": 2}) == {"2": 2}
-
-
-def test_wrap_dict():
-    assert functional.wrap_dict("some_key")("some_value") == {"some_key": "some_value"}
-
-
 def test_groupby():
     names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
     assert functional_generic.groupby(operator.last)(names) == {

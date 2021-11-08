@@ -4,7 +4,7 @@ import functools
 import itertools
 from typing import Any, Callable, Iterable, TypeVar
 
-from gamla import functional, functional_generic, operator
+from gamla import dict_utils, functional, functional_generic, operator
 from gamla.optimized import sync
 
 _S = TypeVar("_S")
@@ -45,7 +45,7 @@ def _replace_index(the_tuple, index, value):
 apply_spec = functional_generic.compose_left(
     dict.items,
     sync.map(
-        sync.star(_transform_by_key(lambda x, y, z: functional.add_key_value(y, z)(x))),
+        sync.star(_transform_by_key(lambda x, y, z: dict_utils.add_key_value(y, z)(x))),
     ),
     sync.star(functional_generic.compose),
 )
@@ -141,7 +141,7 @@ def groupby_many(keys: Callable[[Any], Iterable], reducer: Reducer, initial):
             ),
         ),
         lambda step: lambda s, x: step(
-            functional.add_key_value(x[0], reducer(s.get(x[0], initial), x[1]))(s),
+            dict_utils.add_key_value(x[0], reducer(s.get(x[0], initial), x[1]))(s),
             x,
         ),
     )

@@ -275,46 +275,6 @@ def assoc_in(d, keys, value, factory=dict):
     return update_in(d, keys, lambda x: value, value, factory)
 
 
-def add_key_value(key, value):
-    """Associate a key-value pair to the input dict.
-
-    >>> add_key_value("1", "1")({"2": "2"})
-    {'2': '2', '1': '1'}
-    """
-
-    def add_key_value(d):
-        return assoc_in(d, [key], value)
-
-    return add_key_value
-
-
-def remove_key(key):
-    """Given a dictionary, return a new dictionary with 'key' removed.
-    >>> remove_key("two")({"one": 1, "two": 2, "three": 3})
-    {'one': 1, 'three': 3}
-    """
-
-    def remove_key(d: dict):
-        updated = d.copy()
-        del updated[key]
-        return updated
-
-    return remove_key
-
-
-def wrap_dict(key: Any):
-    """Wrap a key and a value in a dict (in a curried fashion).
-
-    >>> wrap_dict("one") (1)
-    {'one': 1}
-    """
-
-    def wrap_dict(value):
-        return {key: value}
-
-    return wrap_dict
-
-
 @currying.curry
 def update_in(d: dict, keys: Iterable, func: Callable, default=None, factory=dict):
     """Gets a (potentially nested) dictionary, key(s) and a function, and return new `dictionary` d' where d'[key] = func(d[key]).

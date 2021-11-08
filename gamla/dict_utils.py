@@ -2,7 +2,8 @@ import functools
 from operator import getitem
 from typing import Any, Callable, Dict, Iterable
 
-from gamla import currying, functional_generic, operator
+from gamla import currying, functional, functional_generic, operator
+from gamla.optimized import sync
 
 
 def itemgetter(attr):
@@ -165,4 +166,63 @@ def make_index(
             x,
             _return_after_n_calls(len(steps) - 1, frozenset()),
         ),
+    )
+
+
+def add_key_value(key, value):
+    """Associate a key-value pair to the input dict.
+
+    >>> add_key_value("1", "1")({"2": "2"})
+    {'2': '2', '1': '1'}
+    """
+
+    def add_key_value(d):
+        return functional.assoc_in(d, [key], value)
+
+    return add_key_value
+
+
+def remove_key(key):
+    """Given a dictionary, return a new dictionary with 'key' removed.
+    >>> remove_key("two")({"one": 1, "two": 2, "three": 3})
+    {'one': 1, 'three': 3}
+    """
+
+    def remove_key(d: dict):
+        updated = d.copy()
+        del updated[key]
+        return updated
+
+    return remove_key
+
+
+def wrap_dict(key: Any):
+    """Wrap a key and a value in a dict (in a curried fashion).
+
+    >>> wrap_dict("one") (1)
+    {'one': 1}
+    """
+
+    def wrap_dict(value):
+        return {key: value}
+
+    return wrap_dict
+
+
+def rename_key(old: str, new: str) -> Callable[[dict], dict]:
+    """Rename a key in a dictionary.
+
+    >>> my_dict = {"name": "Danny", "age": 20}
+    >>> rename_key("name", "first_name")(my_dict)
+    {"first_name": "Danny", "age": 20}
+    """
+    return sync.compose_left(
+        sync.juxt(
+            sync.compose_left(
+                itemgetter(old),
+                wrap_dict(new),
+            ),
+            remove_key(old),
+        ),
+        sync.merge,
     )
