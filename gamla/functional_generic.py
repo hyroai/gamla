@@ -18,7 +18,7 @@ from typing import (
     Union,
 )
 
-from gamla import apply_utils, data, excepts_decorator, functional, operator
+from gamla import apply_utils, data, dict_utils, excepts_decorator, functional, operator
 from gamla.optimized import async_functions, sync
 
 
@@ -90,10 +90,10 @@ def _match_return_typing(x: Callable, y: Callable) -> Dict:
         if "return" in y.__annotations__:
             return {**x.__annotations__, "return": y.__annotations__["return"]}
         if "return" in x.__annotations__:
-            return functional.remove_key("return")(x.__annotations__)
+            return dict_utils.remove_key("return")(x.__annotations__)
         return x.__annotations__
     if "return" in x.__annotations__:
-        return functional.remove_key("return")(x.__annotations__)
+        return dict_utils.remove_key("return")(x.__annotations__)
     return x.__annotations__
 
 

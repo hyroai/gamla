@@ -169,6 +169,46 @@ def make_index(
     )
 
 
+def add_key_value(key, value):
+    """Associate a key-value pair to the input dict.
+
+    >>> add_key_value("1", "1")({"2": "2"})
+    {'2': '2', '1': '1'}
+    """
+
+    def add_key_value(d):
+        return functional.assoc_in(d, [key], value)
+
+    return add_key_value
+
+
+def remove_key(key):
+    """Given a dictionary, return a new dictionary with 'key' removed.
+    >>> remove_key("two")({"one": 1, "two": 2, "three": 3})
+    {'one': 1, 'three': 3}
+    """
+
+    def remove_key(d: dict):
+        updated = d.copy()
+        del updated[key]
+        return updated
+
+    return remove_key
+
+
+def wrap_dict(key: Any):
+    """Wrap a key and a value in a dict (in a curried fashion).
+
+    >>> wrap_dict("one") (1)
+    {'one': 1}
+    """
+
+    def wrap_dict(value):
+        return {key: value}
+
+    return wrap_dict
+
+
 def rename_key(old: str, new: str) -> Callable[[dict], dict]:
     """Rename a key in a dictionary.
 
@@ -180,9 +220,9 @@ def rename_key(old: str, new: str) -> Callable[[dict], dict]:
         sync.juxt(
             sync.compose_left(
                 itemgetter(old),
-                functional.wrap_dict(new),
+                wrap_dict(new),
             ),
-            functional.remove_key(old),
+            remove_key(old),
         ),
         sync.merge,
     )
