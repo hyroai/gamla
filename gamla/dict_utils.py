@@ -170,7 +170,7 @@ def make_index(
 
 
 def rename_key(old: str, new: str) -> Callable[[dict], dict]:
-    """Renames key.
+    """Rename a key in a dictionary.
 
     >>> my_dict = {"name": "Danny", "age": 20}
     >>> rename_key("name", "first_name")(my_dict)
@@ -182,7 +182,7 @@ def rename_key(old: str, new: str) -> Callable[[dict], dict]:
                 itemgetter(old),
                 functional.wrap_dict(new),
             ),
-            sync.keyfilter(operator.not_equals(old)),
+            functional.remove_key(old),
         ),
         sync.merge,
     )
