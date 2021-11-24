@@ -403,6 +403,19 @@ def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
 
 
+def wrap_multiple_str(wrapping_string: str):
+    """Wrap multiple values in a wrapping string by passing a dict where the keys are the parameters in the wrapping string and the values are the desired values.
+
+    >>> wrap_multiple_str("hello {first} {second}")({ "first": "happy", "second": "world" })
+    'hello happy world'
+    """
+
+    def inner(x: Dict[str, str]) -> str:
+        return wrapping_string.format(**x)
+
+    return inner
+
+
 @currying.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
     return sync.pipe(
