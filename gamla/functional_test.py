@@ -195,6 +195,16 @@ def test_wrap_str():
     assert functional_generic.pipe("john", functional.wrap_str("hi {}")) == "hi john"
 
 
+def test_wrap_multiple_str():
+    assert (
+        functional_generic.pipe(
+            {"first": "happy", "second": "world"},
+            functional.wrap_multiple_str("hello {first} {second}"),
+        )
+        == "hello happy world"
+    )
+
+
 def test_case_single_predicate():
     assert functional_generic.case_dict({operator.identity: operator.identity})(
         True,
