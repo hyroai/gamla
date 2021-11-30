@@ -214,15 +214,6 @@ def rename_key(old: str, new: str) -> Callable[[dict], dict]:
 
     >>> my_dict = {"name": "Danny", "age": 20}
     >>> rename_key("name", "first_name")(my_dict)
-    {"first_name": "Danny", "age": 20}
+    {'first_name': 'Danny', 'age': 20}
     """
-    return sync.compose_left(
-        sync.juxt(
-            sync.compose_left(
-                itemgetter(old),
-                wrap_dict(new),
-            ),
-            remove_key(old),
-        ),
-        sync.merge,
-    )
+    return sync.keymap(sync.when(operator.equals(old), operator.just(new)))
