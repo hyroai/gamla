@@ -137,6 +137,7 @@ functional
    unique_by
    update_in
    wrap_frozenset
+   wrap_multiple_str
    wrap_str
    wrap_tuple
 
