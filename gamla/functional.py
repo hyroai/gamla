@@ -164,18 +164,24 @@ def compute_stable_json_hash(item) -> Text:
     ).hexdigest()
 
 
-def assert_that(f):
-    """Assert a function `f` on the input.
+@currying.curry
+def assert_that_with_message(f, message):
+    """Assert a function `f` on the input, printing `message` if assertion is False.
 
-    >>> assert_that(equals(2))(2)
+    >>> assert_that_with_message(operator.equals(2), "Input is not 2!")(2)
     2
+    >>> assert_that_with_message(operator.equals(2), "Input is not 2!")(3)
+    "Output is not 2!"
     """
 
     def assert_that_f(inp):
-        assert f(inp)
+        assert f(inp), message
         return inp
 
     return assert_that_f
+
+
+assert_that = assert_that_with_message(message="")
 
 
 @currying.curry
