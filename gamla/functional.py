@@ -165,23 +165,23 @@ def compute_stable_json_hash(item) -> Text:
 
 
 @currying.curry
-def assert_that_with_message(f, message):
-    """Assert a function `f` on the input, printing `message` if assertion is False.
+def assert_that_with_message(input_to_message: Callable, f: Callable):
+    """Assert a function `f` on the input, printing the output of `input_to_message(input)` if assertion is False.
 
-    >>> assert_that_with_message(operator.equals(2), "Input is not 2!")(2)
+    >>> assert_that_with_message(gamla.just("Input is not 2!"), operator.equals(2))(2)
     2
-    >>> assert_that_with_message(operator.equals(2), "Input is not 2!")(3)
+    >>> assert_that_with_message(gamla.just("Input is not 2!"), operator.equals(2))(3)
     "Output is not 2!"
     """
 
     def assert_that_f(inp):
-        assert f(inp), message
+        assert f(inp), input_to_message(inp)
         return inp
 
     return assert_that_f
 
 
-assert_that = assert_that_with_message(message="")
+assert_that = assert_that_with_message(operator.just(""))
 
 
 @currying.curry
