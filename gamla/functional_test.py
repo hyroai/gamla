@@ -632,9 +632,15 @@ def test_assert_that():
 
 
 def test_assert_that_with_message():
-    functional.assert_that_with_message(operator.equals(2), "Input is not 2!")(2)
+    functional.assert_that_with_message(
+        operator.just("Input is not 2!"),
+        operator.equals(2),
+    )(2)
     with pytest.raises(AssertionError, match="Input is not 2!"):
-        functional.assert_that_with_message(operator.equals(2), "Input is not 2!")(3)
+        functional.assert_that_with_message(
+            operator.just("Input is not 2!"),
+            operator.equals(2),
+        )(3)
 
 
 def test_assoc_in():
