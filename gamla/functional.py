@@ -5,6 +5,7 @@ import heapq
 import inspect
 import itertools
 import json
+import os
 import random
 from concurrent import futures
 from operator import truediv
@@ -707,6 +708,30 @@ have_intersection = sync.compose_left(intersect, operator.nonempty)
 def function_to_uid(f: Callable) -> str:
     """Returns a unique identifier for the given function."""
     return hashlib.sha1(f.__name__.encode("utf-8")).hexdigest()
+
+
+#: Directory path of a given function
+function_to_directory = sync.compose_left(
+    operator.attrgetter("__code__"),
+    operator.attrgetter("co_filename"),
+    os.path.dirname,
+)
+
+
+def function_and_input_to_identifier(factory) -> Callable:
+    """Returns a unique identifier for the given function and input."""
+
+    def inner(args, kwargs) -> str:
+        return sync.pipe(
+            (
+                function_to_uid(factory),
+                compute_stable_json_hash(make_call_key(args, kwargs)),
+            ),
+            sync.filter(operator.identity),
+            "-".join,
+        )
+
+    return inner
 
 
 #: Average of an iterable. If the sequence is empty, returns 0.
