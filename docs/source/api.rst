@@ -87,6 +87,7 @@ functional
 
 .. autosummary::
    assert_that
+   assert_that_with_message
    assoc_in
    average
    bottom
@@ -138,6 +139,7 @@ functional
    update_in
    wrap_frozenset
    wrap_str
+   wrap_multiple_str
    wrap_tuple
 
 functional_async
