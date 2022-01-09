@@ -15,7 +15,7 @@ def tree_reduce(get_children: Callable, reduce_fn: Callable, tree_node):
     """
     return reduce_fn(
         tree_node,
-        map(tree_reduce(get_children, reduce_fn), get_children(tree_node)),
+        tuple(map(tree_reduce(get_children, reduce_fn), get_children(tree_node))),
     )
 
 
