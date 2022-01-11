@@ -22,5 +22,6 @@ setuptools.setup(
         "tabulate",
         "toolz",
         "yappi",
+        "termcolor",
     ],
 )
