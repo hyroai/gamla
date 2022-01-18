@@ -366,7 +366,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
         for predicate, transformation in predicates_and_mappers:
             if predicate(*args, **kwargs):
                 return transformation(*args, **kwargs)
-        raise NoConditionMatched
+        raise NoConditionMatched({"input args": args, "input kwargs": kwargs})
 
     return case
 
