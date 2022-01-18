@@ -544,7 +544,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
             ):
                 if is_matched:
                     return await mapper(*args, *kwargs)
-            raise sync.NoConditionMatched
+            raise sync.NoConditionMatched({"input args": args, "input kwargs": kwargs})
 
         return case_async
 
