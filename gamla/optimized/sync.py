@@ -263,6 +263,13 @@ def star(f):
     return starred
 
 
+def double_star(f):
+    def double_star(kwargs):
+        return f(**kwargs)
+
+    return double_star
+
+
 def pair_left(f):
     def pair_left(x):
         return f(x), x

@@ -880,11 +880,15 @@ def _choose_by_async(f_sync, f_async):
 
 #: Turns a variadic function into an unary one that gets a tuple of args to the original function.
 #:
-#: >>> from gamla import functional_generic
-#: >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
+#: >>> pipe((2, 3), star(lambda x, y: x + y))
 #: 5
 star = _choose_by_async(sync.star, async_functions.star)
 
+#: Turns a variadic function into an unary one that gets a dict of keywoded args to the original function.
+#:
+#: >>> pipe(({"x": 2, "y": 3}), double_star(lambda x, y: x + y))
+#: 5
+double_star = _choose_by_async(sync.double_star, async_functions.double_star)
 
 #: Return a dict with number of occurrences of each value in a sequence.
 #: >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
