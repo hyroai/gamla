@@ -19,15 +19,6 @@ def _time_to_readable(time_s: float) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(time_s)
 
 
-def _request_id(f: Callable, args, kwargs) -> Text:
-    name = f.__name__
-    params_str = f", args: {args}, kwargs: {kwargs}"
-    together = name + params_str
-    if len(together) > 100:
-        return name
-    return together
-
-
 def _log_finish(req_id: Text, start: float):
     finish = time.time()
     elapsed = finish - start
@@ -45,7 +36,7 @@ def _log_start(req_id: Text) -> float:
 def _async_timeit(f):
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
-        req_id = _request_id(f, args, kwargs)
+        req_id = f.__name__
         start = _log_start(req_id)
         result = await f(*args, **kwargs)
         _log_finish(req_id, start)
@@ -57,7 +48,6 @@ def _async_timeit(f):
 def timeit(f):
     """Wraps a function `f` with a timer.
     Logs the start time, and end time (and difference in seconds).
-    Logs also contain the `args` and `kwargs` that were used to invoke `f`.
 
     >>> timed_get_async = timeit(get_async)
     """
@@ -66,7 +56,7 @@ def timeit(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        req_id = _request_id(f, args, kwargs)
+        req_id = f.__name__
         start = _log_start(req_id)
         result = f(*args, **kwargs)
         _log_finish(req_id, start)
