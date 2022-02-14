@@ -52,6 +52,9 @@ def test_compose_on_key():
 @pytest.mark.parametrize(
     "subtype,supertype",
     [
+        [Callable, Callable],
+        [Callable[[str], str], Callable],
+        [Callable[..., str], Callable],
         [Callable[[str], str], Callable[[str], str]],
         [Callable[..., str], Callable[[str], str]],
         [Callable[[str], str], Callable[..., str]],
@@ -79,6 +82,8 @@ def test_is_subtype(subtype, supertype):
 @pytest.mark.parametrize(
     "subtype,supertype",
     [
+        [Callable, Callable[[str], str]],
+        [Callable, Callable[..., str]],
         [Callable[[str, str], str], Callable[[str], str]],
         [Callable[[int, str], str], Callable[[str, int], str]],
         [Dict[str, str], Dict[str, int]],

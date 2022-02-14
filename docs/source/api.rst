@@ -55,7 +55,6 @@ dict_utils
 .. currentmodule:: gamla.dict_utils
 
 .. autosummary::
-   add_key_value
    dict_to_getter_with_default
    get_in
    get_in_or_none
@@ -67,9 +66,6 @@ dict_utils
    itemgetter_or_none
    itemgetter_with_default
    make_index
-   remove_key
-   rename_key
-   wrap_dict
 
 excepts_decorator
 -----------------
@@ -86,8 +82,8 @@ functional
 .. currentmodule:: gamla.functional
 
 .. autosummary::
+   add_key_value
    assert_that
-   assert_that_with_message
    assoc_in
    average
    bottom
@@ -104,8 +100,6 @@ functional
    eq_by
    eq_str_ignore_case
    flip
-   function_and_input_to_identifier
-   function_to_directory
    function_to_uid
    get_all_n_grams
    groupby_many_reduce
@@ -113,6 +107,8 @@ functional
    ignore_input
    interpose
    intersect
+   is_instance
+   is_iterable
    just_raise
    make_call_key
    make_raise
@@ -122,6 +118,7 @@ functional
    pmap
    prefix
    reduce
+   remove_key
    sample
    singleize
    skip
@@ -139,8 +136,8 @@ functional
    unique
    unique_by
    update_in
+   wrap_dict
    wrap_frozenset
-   wrap_multiple_str
    wrap_str
    wrap_tuple
 
@@ -301,8 +298,6 @@ operator
    head
    identity
    inside
-   is_instance
-   is_iterable
    just
    last
    len_equals

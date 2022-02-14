@@ -57,11 +57,19 @@ _handle_generics = sync.alljuxt(
 )
 
 
-def _handle_callable(args1, output1, args2, output2):
+def _handle_callable(c1, c2):
+    args1 = typing.get_args(c1)
+    args2 = typing.get_args(c2)
+    if not args1 and args2:
+        return False
+    if not args2:
+        return True
+    input1, output1 = args1
+    input2, output2 = args2
     return is_subtype(output1, output2) and (
-        Ellipsis in [args1, args2]
-        or len(args1) == len(args2)
-        and sync.pipe([args1, args2], sync.star(zip), sync.allmap(_is_subtype))
+        Ellipsis in [input1, input2]
+        or len(input1) == len(input2)
+        and sync.pipe([input1, input2], sync.star(zip), sync.allmap(_is_subtype))
     )
 
 
@@ -70,10 +78,7 @@ _is_subtype: Callable[[Tuple[Any, Any]], bool] = sync.compose_left(
     tuple,
     sync.case_dict(
         {
-            sync.allmap(_origin_equals(abc.Callable)): sync.compose_left(
-                sync.mapcat(typing.get_args),
-                sync.star(_handle_callable),
-            ),
+            sync.allmap(_origin_equals(abc.Callable)): sync.star(_handle_callable),
             operator.inside(Any): sync.compose_left(
                 operator.second,
                 operator.equals(Any),
