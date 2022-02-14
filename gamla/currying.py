@@ -5,8 +5,9 @@ from gamla import function_editing
 
 
 def _curry_helper(
-    frame, is_coroutine, f_len_args, f, args_so_far, kwargs_so_far, *args, **kwargs
+    is_coroutine, signature, f, args_so_far, kwargs_so_far, *args, **kwargs
 ):
+    f_len_args = signature.parameters
     args_so_far += args
     kwargs_so_far = {**kwargs_so_far, **kwargs}
     len_so_far = len(args_so_far) + len(kwargs_so_far)
@@ -19,23 +20,37 @@ def _curry_helper(
         async def curry_inner_async(*args, **kwargs):
             return await f(*(args_so_far + args), **{**kwargs_so_far, **kwargs})
 
+        curry_inner_async.__signature__ = _update_signature(
+            args_so_far,
+            kwargs_so_far,
+            signature,
+        )
         return curry_inner_async
 
     def curry_inner(*args, **kwargs):
         return _curry_helper(
-            frame,
-            is_coroutine,
-            f_len_args,
-            f,
-            args_so_far,
-            kwargs_so_far,
-            *args,
-            **kwargs,
+            is_coroutine, signature, f, args_so_far, kwargs_so_far, *args, **kwargs
         )
 
-    curry_inner.__code__ = function_editing.fit_to_frame(curry_inner, frame)
-
+    curry_inner.__signature__ = _update_signature(
+        args_so_far,
+        kwargs_so_far,
+        signature,
+    )
     return curry_inner
+
+
+def _update_signature(args_so_far, kwargs_so_far, signature):
+    bounded = signature.bind_partial(
+        *args_so_far,
+        **kwargs_so_far,
+    )
+    new_signature = signature.replace(
+        parameters=[
+            v for k, v in signature.parameters.items() if k not in bounded.arguments
+        ],
+    )
+    return new_signature
 
 
 def _infer_defaults(params):
@@ -75,7 +90,8 @@ def curry(f):
 
     The variables can be given with keywords, but mixing keyword and call by order might have unexpected results.
     """
-    f_len_args = inspect.signature(f).parameters
+    signature = inspect.signature(f)
+    f_len_args = signature.parameters
     assert (
         len(f_len_args) > 1
     ), f"Curry function must have at least 2 parameters, {f} has {len(f_len_args)}"
@@ -84,9 +100,7 @@ def curry(f):
     frame = inspect.currentframe().f_back
 
     def indirection(*args, **kwargs):
-        return _curry_helper(
-            frame, is_coroutine, f_len_args, f, (), defaults, *args, **kwargs
-        )
+        return _curry_helper(is_coroutine, signature, f, (), defaults, *args, **kwargs)
 
     indirection.__code__ = function_editing.fit_to_frame(indirection, frame)
     return indirection

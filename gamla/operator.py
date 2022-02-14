@@ -316,3 +316,35 @@ def pack(*stuff):
     (1, 2, 3)
     """
     return stuff
+
+
+def is_instance(the_type):
+    """Returns if `the_value` is an instance of `the_type`.
+
+    >>> is_instance(str)("hello")
+    True
+
+    >>> is_instance(int)("a")
+    False
+    """
+
+    def is_instance(the_value):
+        return isinstance(the_value, the_type)
+
+    return is_instance
+
+
+def is_iterable(x):
+    """Determines whether the element is iterable.
+
+    >>> isiterable([1, 2, 3])
+    True
+    >>> isiterable('abc')
+    True
+    >>> isiterable(5)
+    False"""
+    try:
+        iter(x)
+        return True
+    except TypeError:
+        return False

@@ -103,7 +103,7 @@ async def test_allmap_in_async_pipe():
         [True, True, False],
         functional_generic.allmap(_opposite_async),
         # Check that the `pipe` serves a value and not a future.
-        sync.check(functional.is_instance(bool), AssertionError),
+        sync.check(operator.is_instance(bool), AssertionError),
     )
 
 
@@ -193,6 +193,16 @@ async def test_filter_curried_async_sync_mix():
 
 def test_wrap_str():
     assert functional_generic.pipe("john", functional.wrap_str("hi {}")) == "hi john"
+
+
+def test_wrap_multiple_str():
+    assert (
+        functional_generic.pipe(
+            {"first": "happy", "second": "world"},
+            functional.wrap_multiple_str("hello {first} {second}"),
+        )
+        == "hello happy world"
+    )
 
 
 def test_case_single_predicate():
@@ -578,18 +588,6 @@ def test_empty_pipe():
         )
 
 
-def test_add_key_value():
-    assert functional.add_key_value("1", "1")({"2": "2"}) == {"1": "1", "2": "2"}
-
-
-def test_remove_key():
-    assert functional.remove_key("1")({"1": 1, "2": 2}) == {"2": 2}
-
-
-def test_wrap_dict():
-    assert functional.wrap_dict("some_key")("some_value") == {"some_key": "some_value"}
-
-
 def test_groupby():
     names = ["alice", "bob", "charlie", "dan", "edith", "frank"]
     assert functional_generic.groupby(operator.last)(names) == {
@@ -631,6 +629,18 @@ def test_add():
 
 def test_assert_that():
     functional.assert_that(operator.equals(2))(2)
+
+
+def test_assert_that_with_message():
+    functional.assert_that_with_message(
+        operator.just("Input is not 2!"),
+        operator.equals(2),
+    )(2)
+    with pytest.raises(AssertionError, match="Input is not 2!"):
+        functional.assert_that_with_message(
+            operator.just("Input is not 2!"),
+            operator.equals(2),
+        )(3)
 
 
 def test_assoc_in():
@@ -748,3 +758,10 @@ def test_translate_exception():
             iter([]),
             functional.translate_exception(next, StopIteration, ValueError),
         )
+
+
+def test_speed_of_apply_spec():
+    start_time = time.time()
+    for _ in range(1000):
+        functional_generic.apply_spec({"a": operator.identity, "b": lambda x: x + 1})(1)
+    assert time.time() - start_time < 0.1

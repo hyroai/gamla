@@ -1,13 +1,18 @@
 
+README
+======
+
 
 .. image:: https://travis-ci.com/hyroai/gamla.svg?branch=master
    :target: https://travis-ci.com/hyroai/gamla
    :alt: Build Status
 
 
-גamla is a performant functional programming library for python which supports mixing ``async`` and regular functions.
+**λ**\ amla is a performant functional programming library for python which supports mixing ``async`` and regular functions.
 
 Installation: ``pip install gamla``
+
+API reference: `https://gamla.readthedocs.io/ <https://gamla.readthedocs.io/>`_
 
 Basic example
 -------------
@@ -46,18 +51,18 @@ into this:
        age: int
        name: str
 
-   is_eligible = gamla.compose_left(attrgetter("age"), greater_than(9))
+   is_eligible = compose_left(attrgetter("age"), greater_than(9))
    get_names_eligible_for_vaccine = compose_left(filter(is_eligible), map(attrgetter("name")), list)
 
 Is this a good thing? that's for you to decide.
 
 The upside:
 
-Functional programming is mainly about how to split your code into composable parts. Composability means that things are easy to move, replace or combine together like lego. It helps you identify recurring patterns (e.g. ``filter``\ ), factor them out and reuse them. If your generalizations are good, they free your mind to focus on the new logic. Concretely it saves a lot of code and helps a reader understand what a piece of code is doing. For example, if you are familir with what ``filter`` is, you don't have to squint and realize that an ``if`` and a ``for`` actually do a filtering pattern.
+Functional programming is mainly about how to split your code into composable parts. Composability means that things are easy to move, replace or combine together like lego. It helps you identify recurring patterns (e.g. ``filter``\ ), factor them out and reuse them. If your generalizations are good, they free your mind to focus on the new logic. Concretely it saves a lot of code and helps a reader understand what a piece of code is doing. For example, if you are familiar with what ``filter`` is, you don't have to squint and realize that an ``if`` and a ``for`` actually do a filtering pattern.
 
 The downside:
 
-Programming in this style in python means some tools won't be so useful (e.g. stack traces, your debugger, static analysis tools).
+Programming in this style in python means some tools won't be so useful (e.g. your debugger, static analysis tools).
 
 Debugging anonymous compositions
 --------------------------------
@@ -65,12 +70,11 @@ Debugging anonymous compositions
 ``gamla.debug``
 ^^^^^^^^^^^^^^^^^^^
 
-It is sometimes hard to debug pipelines because you can't place ordinary breakpoints. For this ``gamla.debug`` and ``gamla.debug_exception`` were created.
+Classic breakpoints are less useful when working with compositions, as there isn't always a line of code to place the breakpoint on. Instead one can use ``gamla.debug`` and ``gamla.debug_exception``.
 
-``gamla.debug`` can be used within pipelines and provide a pdb breakpoint prompt where the value at this position can be referenced by ``x``.
+``gamla.debug`` can be used within pipelines and will provide a ``pdb`` breakpoint prompt where the value at this position can be referenced by ``x``.
 
 .. code-block:: python
-
 
    def increment(x):
        return x + 1
@@ -90,7 +94,6 @@ In some cases tracking down an exception involves inspecting code that runs many
 
 .. code-block:: python
 
-
    def increment(x):
        return x + 1
 
@@ -101,7 +104,7 @@ In some cases tracking down an exception involves inspecting code that runs many
 
    increment_with_bug = gamla.map(gamla.compose_left(increment, sometimes_has_a_bug))
 
-   tuple(inrement_with_bug(range(1000)))
+   tuple(increment_with_bug(range(1000)))
 
 Adding a ``gamla.debug`` here can be quite tedious, because the code will break many times.
 
@@ -118,11 +121,6 @@ One can also use ``gamla.debug_exception`` using a decorator.
        if x == 666:
            raise Exception
        return x
-
-Debug mode
-^^^^^^^^^^
-
-``gamla.compose(x, y, z)`` produces a new function which doesn't have a proper name. If ``x`` raises an exception, it is sometimes hard to figure out where this occurred. To overcome this, set the env variable ``GAMLA_DEBUG_MODE`` (to anything) to get more useful exceptions. This is turned on only by flag because it incurs significant overhead so things might get slow.
 
 Mixing asynchronous and synchronous code
 ----------------------------------------
@@ -143,7 +141,7 @@ For example:
 
 
    async def increment_async(i):
-       asyncio.sleep(1)
+       await asyncio.sleep(1)
        return i + 1
 
 

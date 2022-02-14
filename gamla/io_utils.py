@@ -19,15 +19,6 @@ def _time_to_readable(time_s: float) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(time_s)
 
 
-def _request_id(f: Callable, args, kwargs) -> Text:
-    name = f.__name__
-    params_str = f", args: {args}, kwargs: {kwargs}"
-    together = name + params_str
-    if len(together) > 100:
-        return name
-    return together
-
-
 def _log_finish(req_id: Text, start: float):
     finish = time.time()
     elapsed = finish - start
@@ -45,7 +36,7 @@ def _log_start(req_id: Text) -> float:
 def _async_timeit(f):
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
-        req_id = _request_id(f, args, kwargs)
+        req_id = f.__name__
         start = _log_start(req_id)
         result = await f(*args, **kwargs)
         _log_finish(req_id, start)
@@ -57,7 +48,6 @@ def _async_timeit(f):
 def timeit(f):
     """Wraps a function `f` with a timer.
     Logs the start time, and end time (and difference in seconds).
-    Logs also contain the `args` and `kwargs` that were used to invoke `f`.
 
     >>> timed_get_async = timeit(get_async)
     """
@@ -66,7 +56,7 @@ def timeit(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        req_id = _request_id(f, args, kwargs)
+        req_id = f.__name__
         start = _log_start(req_id)
         result = f(*args, **kwargs)
         _log_finish(req_id, start)
@@ -218,13 +208,20 @@ def timeout(seconds: float):
 
 
 @currying.curry
-async def get_async(timeout: float, url: Text):
-    """Performs an async GET request to url with the specified timeout (seconds).
+async def get_async_with_headers(headers: Dict[str, str], timeout: float, url: Text):
+    """Performs an async GET request to url with the specified timeout (seconds) and headers.
 
-    >>> response = await get_async(30, "https://www.someurl.com")
+    >>> response = await get_async_with_headers({some_header: some_value}, 30, "https://www.someurl.com")
     """
     async with httpx.AsyncClient() as client:
-        return await client.get(url, timeout=timeout)
+        return await client.get(url, timeout=timeout, headers=headers)
+
+
+#: Performs an async GET request to url with the specified timeout (seconds) and headers.
+#: Expects the payload to be a json serializable object.
+#:
+#: >>> response = await get_async(30, "https://www.someurl.com")
+get_async = get_async_with_headers({})
 
 
 @currying.curry

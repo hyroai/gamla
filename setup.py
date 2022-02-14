@@ -6,7 +6,8 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gamla",
-    version="108",
+    version="121",
+    python_requires=">=3.9.5",
     long_description=_LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     packages=setuptools.find_namespace_packages(),
@@ -21,5 +22,6 @@ setuptools.setup(
         "tabulate",
         "toolz",
         "yappi",
+        "termcolor",
     ],
 )

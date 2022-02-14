@@ -5,6 +5,7 @@ import heapq
 import inspect
 import itertools
 import json
+import os
 import random
 from concurrent import futures
 from operator import truediv
@@ -164,18 +165,24 @@ def compute_stable_json_hash(item) -> Text:
     ).hexdigest()
 
 
-def assert_that(f):
-    """Assert a function `f` on the input.
+@currying.curry
+def assert_that_with_message(input_to_message: Callable, f: Callable):
+    """Assert a function `f` on the input, printing the output of `input_to_message(input)` if assertion is False.
 
-    >>> assert_that(equals(2))(2)
+    >>> assert_that_with_message(gamla.just("Input is not 2!"), operator.equals(2))(2)
     2
+    >>> assert_that_with_message(gamla.just("Input is not 2!"), operator.equals(2))(3)
+    "Output is not 2!"
     """
 
     def assert_that_f(inp):
-        assert f(inp)
+        assert f(inp), input_to_message(inp)
         return inp
 
     return assert_that_f
+
+
+assert_that = assert_that_with_message(operator.just(""))
 
 
 @currying.curry
@@ -273,46 +280,6 @@ def assoc_in(d, keys, value, factory=dict):
     {'a': {'b': 2}}
     """
     return update_in(d, keys, lambda x: value, value, factory)
-
-
-def add_key_value(key, value):
-    """Associate a key-value pair to the input dict.
-
-    >>> add_key_value("1", "1")({"2": "2"})
-    {'2': '2', '1': '1'}
-    """
-
-    def add_key_value(d):
-        return assoc_in(d, [key], value)
-
-    return add_key_value
-
-
-def remove_key(key):
-    """Given a dictionary, return a new dictionary with 'key' removed.
-    >>> remove_key("two")({"one": 1, "two": 2, "three": 3})
-    {'one': 1, 'three': 3}
-    """
-
-    def remove_key(d: dict):
-        updated = d.copy()
-        del updated[key]
-        return updated
-
-    return remove_key
-
-
-def wrap_dict(key: Any):
-    """Wrap a key and a value in a dict (in a curried fashion).
-
-    >>> wrap_dict("one") (1)
-    {'one': 1}
-    """
-
-    def wrap_dict(value):
-        return {key: value}
-
-    return wrap_dict
 
 
 @currying.curry
@@ -443,6 +410,19 @@ def wrap_str(wrapping_string: Text, x: Text) -> Text:
     return wrapping_string.format(x)
 
 
+def wrap_multiple_str(wrapping_string: str):
+    """Wrap multiple values in a wrapping string by passing a dict where the keys are the parameters in the wrapping string and the values are the desired values.
+
+    >>> wrap_multiple_str("hello {first} {second}")({ "first": "happy", "second": "world" })
+    'hello happy world'
+    """
+
+    def inner(x: Dict[str, str]) -> str:
+        return wrapping_string.format(**x)
+
+    return inner
+
+
 @currying.curry
 def drop_last_while(predicate: Callable[[Any], bool], seq: Sequence) -> Sequence:
     return sync.pipe(
@@ -500,22 +480,6 @@ def get_all_n_grams(seq: Sequence) -> Iterable[Tuple]:
     for i in range(len(seq)):
         for j in range(i + 1, len(seq) + 1):
             yield tuple(seq[i:j])
-
-
-def is_instance(the_type):
-    """Returns if `the_value` is an instance of `the_type`.
-
-    >>> is_instance(str)("hello")
-    True
-
-    >>> is_instance(int)("a")
-    False
-    """
-
-    def is_instance(the_value):
-        return type(the_value) == the_type
-
-    return is_instance
 
 
 def sample(n: int):
@@ -653,16 +617,6 @@ def flip(func: Callable):
     return flip
 
 
-#: Determines whether the element is iterable.
-#:
-#: >>> isiterable([1, 2, 3])
-#: True
-#:
-#: >>> isiterable(5)
-#: False
-is_iterable = toolz.isiterable
-
-
 def sliding_window(n: int):
     """A sequence of overlapping subsequences.
 
@@ -754,6 +708,30 @@ have_intersection = sync.compose_left(intersect, operator.nonempty)
 def function_to_uid(f: Callable) -> str:
     """Returns a unique identifier for the given function."""
     return hashlib.sha1(f.__name__.encode("utf-8")).hexdigest()
+
+
+#: Directory path of a given function
+function_to_directory = sync.compose_left(
+    operator.attrgetter("__code__"),
+    operator.attrgetter("co_filename"),
+    os.path.dirname,
+)
+
+
+def function_and_input_to_identifier(factory) -> Callable:
+    """Returns a unique identifier for the given function and input."""
+
+    def inner(args, kwargs) -> str:
+        return sync.pipe(
+            (
+                function_to_uid(factory),
+                compute_stable_json_hash(make_call_key(args, kwargs)),
+            ),
+            sync.filter(operator.identity),
+            "-".join,
+        )
+
+    return inner
 
 
 #: Average of an iterable. If the sequence is empty, returns 0.

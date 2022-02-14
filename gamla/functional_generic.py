@@ -22,6 +22,7 @@ from typing import (
 from gamla import (
     apply_utils,
     data,
+    dict_utils,
     excepts_decorator,
     function_editing,
     functional,
@@ -99,10 +100,10 @@ def _match_return_typing(x: Callable, y: Callable) -> Dict:
         if "return" in y.__annotations__:
             return {**x.__annotations__, "return": y.__annotations__["return"]}
         if "return" in x.__annotations__:
-            return functional.remove_key("return")(x.__annotations__)
+            return dict_utils.remove_key("return")(x.__annotations__)
         return x.__annotations__
     if "return" in x.__annotations__:
-        return functional.remove_key("return")(x.__annotations__)
+        return dict_utils.remove_key("return")(x.__annotations__)
     return x.__annotations__
 
 
@@ -112,7 +113,7 @@ class _TypeError(Exception):
 
 _get_unary_input_typing = sync.compose_left(
     typing.get_type_hints,
-    sync.when(operator.inside("return"), functional.remove_key("return")),
+    sync.when(operator.inside("return"), dict_utils.remove_key("return")),
     dict.values,
     operator.head,
 )
@@ -580,7 +581,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
             ):
                 if is_matched:
                     return await mapper(*args, *kwargs)
-            raise sync.NoConditionMatched
+            raise sync.NoConditionMatched({"input args": args, "input kwargs": kwargs})
 
         return case_async
 
@@ -612,29 +613,10 @@ async def _await_dict(value):
 
 
 def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable):
-    def map_dict_inner(value):
-        if isinstance(value, dict) or isinstance(value, data.frozendict):
-            return pipe(
-                value,
-                dict,  # In case input is a `frozendict`.
-                valmap(map_dict(nonterminal_mapper, terminal_mapper)),
-                nonterminal_mapper,
-            )
-        if isinstance(value, Iterable) and not isinstance(value, str):
-            return pipe(
-                value,
-                sync.map(
-                    map_dict(nonterminal_mapper, terminal_mapper),
-                ),
-                type(value),  # Keep the same format as input.
-                nonterminal_mapper,
-            )
-        return terminal_mapper(value)
-
+    f = sync.map_dict(nonterminal_mapper, terminal_mapper)
     if any_is_async([nonterminal_mapper, terminal_mapper]):
-        return compose_left(map_dict_inner, _await_dict)
-
-    return map_dict_inner
+        return compose_left(f, _await_dict)
+    return f
 
 
 def _iterdict(d):
@@ -669,11 +651,11 @@ def apply_spec(spec: Dict):
             )(spec)
 
         return apply_spec_async
-    return compose_left(
-        apply_utils.apply,
-        lambda applier: map_dict(operator.identity, applier),
-        apply_utils.apply(spec),
-    )
+
+    def apply_spec_sync(*args, **kwargs):
+        return sync.map_dict(operator.identity, lambda f: f(*args, **kwargs))(spec)
+
+    return apply_spec_sync
 
 
 #: Construct a function that applies the i'th function in an iterable
@@ -935,11 +917,15 @@ def _choose_by_async(f_sync, f_async):
 
 #: Turns a variadic function into an unary one that gets a tuple of args to the original function.
 #:
-#: >>> from gamla import functional_generic
-#: >>> functional_generic.pipe((2, 3), star(lambda x, y: x + y))
+#: >>> pipe((2, 3), star(lambda x, y: x + y))
 #: 5
 star = _choose_by_async(sync.star, async_functions.star)
 
+#: Turns a variadic function into an unary one that gets a dict of keywoded args to the original function.
+#:
+#: >>> pipe(({"x": 2, "y": 3}), double_star(lambda x, y: x + y))
+#: 5
+double_star = _choose_by_async(sync.double_star, async_functions.double_star)
 
 #: Return a dict with number of occurrences of each value in a sequence.
 #: >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])

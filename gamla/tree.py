@@ -65,9 +65,9 @@ class KeyValue:
 
 
 _is_terminal = sync.anyjuxt(
-    functional.is_instance(str),
-    functional.is_instance(int),
-    functional.is_instance(float),
+    operator.is_instance(str),
+    operator.is_instance(int),
+    operator.is_instance(float),
 )
 
 
@@ -75,13 +75,13 @@ def _get_children(element):
     return functional_generic.case_dict(
         {
             _is_terminal: operator.just(()),
-            functional.is_instance(tuple): operator.identity,
-            functional.is_instance(list): operator.identity,
-            functional.is_instance(dict): functional_generic.compose_left(
+            operator.is_instance(tuple): operator.identity,
+            operator.is_instance(list): operator.identity,
+            operator.is_instance(dict): functional_generic.compose_left(
                 dict.items,
                 sync.map(sync.star(KeyValue)),
             ),
-            functional.is_instance(KeyValue): functional_generic.compose_left(
+            operator.is_instance(KeyValue): functional_generic.compose_left(
                 lambda x: x.value,
                 sync.ternary(
                     _is_terminal,

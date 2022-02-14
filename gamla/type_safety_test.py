@@ -69,6 +69,7 @@ def test_compose_on_key():
         [Union[int, str], Union[int, str]],
         [str, Union[int, str]],
         [Union[List, Set], Collection],
+        [Dict, Dict[str, int]],
     ],
 )
 def test_is_subtype(subtype, supertype):
@@ -92,6 +93,7 @@ def test_is_subtype(subtype, supertype):
         [Any, str],
         [List, Union[int, str]],
         [Union[int, str, List], Union[int, str]],
+        [Dict, Tuple],
     ],
 )
 def test_is_not_subtype(subtype, supertype):

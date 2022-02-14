@@ -2,6 +2,8 @@
 import itertools
 from typing import Callable, Tuple
 
+from gamla import operator
+
 
 def packstack(*functions):
     def packstack(values):
@@ -19,6 +21,26 @@ def keyfilter(predicate):
         return new_d
 
     return keyfilter
+
+
+def valfilter(predicate):
+    """Create a function that filters a dict using a predicate over values.
+    >>> f = valefilter(lambda k: k > 2)
+    >>> f({"a": 1, "b": 2, "c": 3, "d": 4})
+    {
+    "c": 3,
+    "d": 4
+    }
+    """
+
+    def valfilter(d):
+        new_d = {}
+        for (k, v) in d.items():
+            if predicate(v):
+                new_d[k] = d[k]
+        return new_d
+
+    return valfilter
 
 
 def mapcat(f):
@@ -241,11 +263,32 @@ def star(f):
     return starred
 
 
+def double_star(f):
+    def double_star(kwargs):
+        return f(**kwargs)
+
+    return double_star
+
+
 def pair_left(f):
     def pair_left(x):
         return f(x), x
 
     return pair_left
+
+
+def pair_right(f):
+    """Returns a function that given a value x, returns a tuple of the form: (x, f(x)).
+
+    >>> add_one = pair_right(lambda x: x + 1)
+    >>> add_one(3)
+    (3, 4)
+    """
+
+    def pair_right(x):
+        return x, f(x)
+
+    return pair_right
 
 
 def reduce(f, initial):
@@ -330,7 +373,7 @@ def case(predicates_and_mappers: Tuple[Tuple[Callable, Callable], ...]):
         for predicate, transformation in predicates_and_mappers:
             if predicate(*args, **kwargs):
                 return transformation(*args, **kwargs)
-        raise NoConditionMatched
+        raise NoConditionMatched({"input args": args, "input kwargs": kwargs})
 
     return case
 
@@ -341,6 +384,32 @@ stack = compose_left(
     map(star(lambda i, f: compose(f, lambda x: x[i]))),
     star(juxt),
 )
+
+_is_terminal = anyjuxt(*map(operator.is_instance)([str, int, float]))
+
+
+def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable) -> Callable:
+    recurse = thunk(
+        map_dict,
+        nonterminal_mapper,
+        terminal_mapper,
+    )
+    return case_dict(
+        {
+            _is_terminal: terminal_mapper,
+            operator.is_instance(dict): compose_left(
+                valmap(recurse),
+                nonterminal_mapper,
+            ),
+            operator.is_iterable: compose_left(
+                map(recurse),
+                tuple,
+                nonterminal_mapper,
+            ),
+            # Other types are considered terminals to support things like `apply_spec`.
+            operator.just(True): terminal_mapper,
+        },
+    )
 
 
 def bifurcate(*funcs):
