@@ -9,6 +9,7 @@ import async_timeout
 import httpx
 import requests
 import requests.adapters
+import termcolor
 from requests.packages.urllib3.util import retry as retry_lib
 
 from gamla import currying, functional
@@ -23,7 +24,7 @@ def _log_finish(req_id: Text, start: float):
     finish = time.time()
     elapsed = finish - start
     logging.info(
-        f"{req_id} finished at {_time_to_readable(finish)}, took {elapsed:.2f}",
+        f"{req_id} finished at {_time_to_readable(finish)}, took {termcolor.colored(str(round(elapsed, 2)), 'green' if elapsed < 0.1 else 'red')}",
     )
 
 
