@@ -28,19 +28,12 @@ def _log_finish(req_id: Text, start: float):
     )
 
 
-def _log_start(req_id: Text) -> float:
-    start = time.time()
-    logging.info(f"{req_id} started at {_time_to_readable(start)}")
-    return start
-
-
 def _async_timeit(f):
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
-        req_id = f.__name__
-        start = _log_start(req_id)
+        start = time.time()
         result = await f(*args, **kwargs)
-        _log_finish(req_id, start)
+        _log_finish(f.__name__, start)
         return result
 
     return wrapper
@@ -57,10 +50,9 @@ def timeit(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        req_id = f.__name__
-        start = _log_start(req_id)
+        start = time.time()
         result = f(*args, **kwargs)
-        _log_finish(req_id, start)
+        _log_finish(f.__name__, start)
         return result
 
     return wrapper
