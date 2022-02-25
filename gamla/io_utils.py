@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import functools
 import logging
 import time
@@ -16,15 +15,19 @@ from gamla import currying, functional
 from gamla.optimized import sync
 
 
-def _time_to_readable(time_s: float) -> datetime.datetime:
-    return datetime.datetime.fromtimestamp(time_s)
+def _color_for_duration(duration: float):
+    if duration < 0.1:
+        return "green"
+    if duration < 1:
+        return "yellow"
+    return "red"
 
 
 def _log_finish(req_id: Text, start: float):
     finish = time.time()
     elapsed = finish - start
     logging.info(
-        f"{req_id} finished at {_time_to_readable(finish)}, took {termcolor.colored(str(round(elapsed, 2)), 'green' if elapsed < 0.1 else 'red')}",
+        f"{termcolor.colored(req_id, 'white', 'on_grey')} {termcolor.colored(str(round(elapsed, 2)), _color_for_duration(elapsed))} seconds",
     )
 
 
