@@ -816,6 +816,10 @@ def groupby(
     )
 
 
+def is_generator(iterable):
+    return hasattr(iterable, "__iter__") and not hasattr(iterable, "__len__")
+
+
 def side_effect(f: Callable):
     """Runs `f` on `x`, returns `x`
 
@@ -827,12 +831,20 @@ def side_effect(f: Callable):
     if asyncio.iscoroutinefunction(f):
 
         async def do(x):
+            if is_generator(x):
+                a, b = itertools.tee(x)
+                await f(a)
+                return b
             await f(x)
             return x
 
     else:
 
         def do(x):
+            if is_generator(x):
+                a, b = itertools.tee(x)
+                f(a)
+                return b
             f(x)
             return x
 

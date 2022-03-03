@@ -27,10 +27,6 @@ def log_text(text: Text, level: int = logging.INFO):
     return functional_generic.side_effect(lambda x: logging.log(level, text.format(x)))
 
 
-def _is_generator(iterable):
-    return hasattr(iterable, "__iter__") and not hasattr(iterable, "__len__")
-
-
 def _log_and_break(x):
     logging.info(termcolor.colored(x, "yellow"))
     builtins.breakpoint()
@@ -41,7 +37,7 @@ def _log_and_break(x):
 #: - Materializes generators, as most of the time we are interested in looking into them, so can have unexpected results.
 #: - The current value can be referenced by `x` in the debug prompt.
 debug = functional_generic.compose_left(
-    functional_generic.when(_is_generator, tuple),
+    functional_generic.when(functional_generic.is_generator, tuple),
     functional_generic.side_effect(_log_and_break),
 )
 
