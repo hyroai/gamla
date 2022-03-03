@@ -681,6 +681,19 @@ async def test_side_effect_async():
     assert side_result == [True]
 
 
+def test_side_effect_not_exhausting_generator():
+    side_result = []
+    gen = functional_generic.pipe(
+        [1, 2, 3],
+        functional_generic.curried_map(lambda x: x + 1),
+        functional_generic.side_effect(
+            functional_generic.compose_left(tuple, len, side_result.append),
+        ),
+    )
+    assert side_result == [3]
+    assert tuple(gen)
+
+
 def test_sliding_window():
     assert list(functional.sliding_window(2)([1, 2, 3, 4])) == [(1, 2), (2, 3), (3, 4)]
 
