@@ -819,6 +819,10 @@ def groupby(
 def is_generator(iterable):
     return hasattr(iterable, "__iter__") and not hasattr(iterable, "__len__")
 
+def _transform_if_not_none(transform: Callable, value):
+    if value is not None:
+        return transform(value)
+    return value
 
 def side_effect(f: Callable):
     """Runs `f` on `x`, returns `x`
