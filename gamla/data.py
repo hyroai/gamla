@@ -127,3 +127,22 @@ def explode(*positions: Collection[int]):
         ),
         sync.star(itertools.product),
     )
+
+def transform_if_not_none(transform: Callable, value):
+    """
+    Apply a function on a given value if it's not None. Else, return the None value.
+
+    >>> transform_if_not_none(
+    ...     functional_generic.when(operator.is_instance, lambda x: x.casefold())),
+    ...     "Some Title"
+    ... )
+    'some title'
+    >>> transform_if_not_none(
+    ...     functional_generic.when(operator.is_instance, lambda x: x.casefold())),
+    ...     None
+    ... )
+
+    """
+    if value is not None:
+        return transform(value)
+    return value
