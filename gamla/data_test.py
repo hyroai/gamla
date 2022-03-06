@@ -63,13 +63,17 @@ def test_explode():
         ("x", "y3", "z"),
     )
 
+
 def test_transform_if_not_none():
-    assert data.transform_if_not_none(
-        functional_generic.compose_left(
-            functional_generic.when(
-                operator.is_instance(str),
-                lambda x: x.casefold()
-            )
-        ),
-        "Some Title"
-    ) == "some title"
+    assert (
+        data.transform_if_not_none(
+            functional_generic.compose_left(
+                functional_generic.when(
+                    operator.is_instance(str),
+                    lambda x: x.casefold(),
+                ),
+            ),
+            "Some Title",
+        )
+        == "some title"
+    )

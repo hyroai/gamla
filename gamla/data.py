@@ -128,6 +128,7 @@ def explode(*positions: Collection[int]):
         sync.star(itertools.product),
     )
 
+
 def transform_if_not_none(transform: Callable, value):
     """
     Apply a function on a given value if it's not None. Else, return the None value.
