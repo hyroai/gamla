@@ -1,6 +1,6 @@
 import pickle
 
-from gamla import data, functional_generic
+from gamla import data, functional_generic, operator
 
 
 def test_freeze_deep():
@@ -61,4 +61,19 @@ def test_explode():
         ("x", "y1", "z"),
         ("x", "y2", "z"),
         ("x", "y3", "z"),
+    )
+
+
+def test_transform_if_not_none():
+    assert (
+        data.transform_if_not_none(
+            functional_generic.compose_left(
+                functional_generic.when(
+                    operator.is_instance(str),
+                    lambda x: x.casefold(),
+                ),
+            ),
+            "Some Title",
+        )
+        == "some title"
     )
