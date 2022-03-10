@@ -195,7 +195,7 @@ def timeout(seconds: float):
     def wrapper(corofunc):
         @functools.wraps(corofunc)
         async def run(*args, **kwargs):
-            with async_timeout.timeout(seconds):
+            async with async_timeout.timeout(seconds):
                 return await corofunc(*args, **kwargs)
 
         return run
