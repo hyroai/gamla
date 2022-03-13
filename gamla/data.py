@@ -1,11 +1,11 @@
 import dataclasses
 import itertools
 import json
-from typing import Any, Callable, Collection, Dict, Text, Tuple
+from typing import Callable, Collection, Dict
 
 import dataclasses_json
 
-from gamla import currying, functional, functional_generic, operator
+from gamla import functional, functional_generic, operator
 from gamla.optimized import sync
 
 
@@ -53,31 +53,6 @@ def _freeze_nonterminal(v):
 #:  {"1": data.frozendict({"2": "345", "some-string": ("hello",)})},
 #: )
 freeze_deep = functional_generic.map_dict(_freeze_nonterminal, operator.identity)
-
-
-@currying.curry
-def tuple_of_tuples_to_csv(
-    tuple_of_tuples: Tuple[Tuple[Any], ...],
-    separator: Text = "\t",
-) -> Text:
-    """Return a CSV formatted string given a tuple of tuples. Each element is separated by the character "separator" (default is \t).
-
-    >>> tuple_of_tuples_to_csv((("name", "age"), ("David", "23"), ("Itay", "26")))
-    'name\\tage\\nDavid\\t23\\nItay\\t26'
-    >>> tuple_of_tuples_to_csv((("name", "age"), ("David", "23"), ("Itay", "26")), " ")
-    'name age\\nDavid 23\\nItay 26'
-    """
-    return functional_generic.pipe(
-        tuple_of_tuples,
-        functional_generic.curried_map(
-            functional_generic.compose_left(
-                functional_generic.curried_map(str),
-                tuple,
-                separator.join,
-            ),
-        ),
-        "\n".join,
-    )
 
 
 class Enum(frozenset):

@@ -31,6 +31,7 @@ data
    explode
    freeze_deep
    get_encode_config
+   transform_if_not_none
    tuple_of_tuples_to_csv
 
 debug_utils
@@ -192,6 +193,7 @@ functional_generic
    first
    frequencies
    groupby
+   is_generator
    itemfilter
    itemmap
    juxt

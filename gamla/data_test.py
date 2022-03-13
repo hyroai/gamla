@@ -27,23 +27,6 @@ def test_frozendict_serializable():
     assert fd == fd_clone
 
 
-def test_tuple_of_tuples_to_csv():
-    assert (
-        data.tuple_of_tuples_to_csv((("name", "age"), ("David", "23"), ("Itay", "26")))
-        == "name\tage\nDavid\t23\nItay\t26"
-    )
-
-
-def test_tuple_of_tuples_to_csv_custom_separator():
-    assert (
-        data.tuple_of_tuples_to_csv(
-            (("name", "age"), ("David", "23"), ("Itay", "26")),
-            " ",
-        )
-        == "name age\nDavid 23\nItay 26"
-    )
-
-
 def test_explode():
     assert functional_generic.pipe(
         [
