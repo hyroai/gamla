@@ -31,6 +31,9 @@ class frozendict(dict):  # noqa: N801
     setdefault = _immutable
 
 
+FrozenDict = frozendict()
+
+
 def get_encode_config():
     """Display dataclass field as a tuple of JSON strings."""
     return dataclasses.field(
