@@ -27,7 +27,6 @@ from typing import (
 import heapq_max
 import toolz
 
-import gamla
 from gamla import currying, excepts_decorator, operator
 from gamla.optimized import sync
 
@@ -756,4 +755,7 @@ def attr_equals(attribute: str, equals_what: Any) -> Callable[[Any], bool]:
     >>> attr_equals("imag", 5.0)(8)
     False
     """
-    return sync.compose_left(operator.attrgetter(attribute), gamla.equals(equals_what))
+    return sync.compose_left(
+        operator.attrgetter(attribute),
+        operator.equals(equals_what),
+    )
