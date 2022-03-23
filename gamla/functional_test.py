@@ -493,6 +493,11 @@ def test_attrgetter():
     assert operator.attrgetter("lower")("ASD")() == "asd"
 
 
+def test_attr_equals():
+    assert functional.attr_equals("imag", 5.0)(8 + 5j) is True
+    assert functional.attr_equals("real", 5.0)(8 + 5j) is False
+
+
 def test_latency():
     start_time = time.time()
     for _ in range(1000):
