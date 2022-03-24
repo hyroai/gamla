@@ -745,3 +745,17 @@ average = sync.compose_left(
         sync.star(truediv),
     ),
 )
+
+
+def attr_equals(attribute: str, equals_what: Any) -> Callable[[Any], bool]:
+    """Returns a function that get an object x and returns whether x.attribute == equals_what
+
+    >>> attr_equals("imag", 5.0)(8 + 5j)
+    True
+    >>> attr_equals("imag", 5.0)(8)
+    False
+    """
+    return sync.compose_left(
+        operator.attrgetter(attribute),
+        operator.equals(equals_what),
+    )
