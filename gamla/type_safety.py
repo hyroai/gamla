@@ -41,10 +41,10 @@ def _rewrite_optional(x):
 
 
 def _forward_ref(x):
-    def _forward_ref(*args, **kwargs):
+    def forward_ref(*args, **kwargs):
         return x()(*args, **kwargs)
 
-    return _forward_ref
+    return forward_ref
 
 
 _handle_generics = sync.alljuxt(

@@ -1,8 +1,4 @@
-import pytest
-
 from gamla import higher_order
-
-pytestmark = pytest.mark.asyncio
 
 
 def test_prepare_and_apply():

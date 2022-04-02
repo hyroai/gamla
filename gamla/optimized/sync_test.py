@@ -1,9 +1,5 @@
-import pytest
-
 from gamla import operator
 from gamla.optimized import sync
-
-pytestmark = pytest.mark.asyncio
 
 
 def test_valfilter_sync():

@@ -1,8 +1,4 @@
-import pytest
-
 from gamla import async_functions, dict_utils, functional_generic, graph_async, operator
-
-pytestmark = pytest.mark.asyncio
 
 
 def _reduce_max(children, current):

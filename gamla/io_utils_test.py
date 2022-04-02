@@ -5,8 +5,6 @@ import pytest
 
 from gamla import functional_generic, io_utils
 
-pytestmark = pytest.mark.asyncio
-
 
 async def test_batch_decorator():
     times_f_called = 0

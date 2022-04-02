@@ -7,8 +7,6 @@ import pytest
 from gamla import currying, dict_utils, functional, functional_generic, operator
 from gamla.optimized import sync
 
-pytestmark = pytest.mark.asyncio
-
 
 async def _opposite_async(x):
     await asyncio.sleep(0.01)

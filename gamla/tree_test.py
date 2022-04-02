@@ -1,11 +1,7 @@
 import asyncio
 import time
 
-import pytest
-
 from gamla import operator, tree
-
-pytestmark = pytest.mark.asyncio
 
 
 def test_get_leaves_by_ancestor_predicate():

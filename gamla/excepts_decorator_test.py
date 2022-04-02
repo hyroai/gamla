@@ -1,11 +1,7 @@
 import asyncio
 import dataclasses
 
-import pytest
-
 from gamla import excepts_decorator, functional, functional_generic, operator
-
-pytestmark = pytest.mark.asyncio
 
 
 @dataclasses.dataclass(frozen=True)
