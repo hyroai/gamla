@@ -20,7 +20,8 @@ def run_sync(f):
 
 @currying.curry
 async def amap_ascompleted(
-    f: Callable[[Any], Awaitable[Any]], it: Iterable
+    f: Callable[[Any], Awaitable[Any]],
+    it: Iterable,
 ) -> AsyncGenerator[Any, None]:
     """Returns an AsyncGenerator of the results after applying async `f` to each element of Iterable `it`
 
@@ -37,7 +38,10 @@ async def amap_ascompleted(
 
 @currying.curry
 async def aexcepts(
-    exception_type: Type[Exception], func: Callable, handler: Callable, x: Any
+    exception_type: Type[Exception],
+    func: Callable,
+    handler: Callable,
+    x: Any,
 ):
     """An async functional try/except block: await and return `func` on `x`.
     If fails with `exception_type`, return the reult of running handler on the error.

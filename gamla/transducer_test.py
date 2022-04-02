@@ -18,15 +18,12 @@ def test_map():
 
 
 def test_filter():
-    assert (
-        transducer.transduce(
-            transducer.filter(lambda x: x > 2),
-            _append_to_tuple,
-            [],
-            [1, 2, 3],
-        )
-        == (3,)
-    )
+    assert transducer.transduce(
+        transducer.filter(lambda x: x > 2),
+        _append_to_tuple,
+        [],
+        [1, 2, 3],
+    ) == (3,)
 
 
 def test_composition():
@@ -59,46 +56,37 @@ def test_composition_of_3_functions():
 
 
 def test_juxt():
-    assert (
-        transducer.transduce(
-            transducer.juxt(
-                _increment(_append_to_tuple),
-                lambda s, x: x + s,
-            ),
-            lambda s, _: s,
-            ((), 0),
-            [1, 2, 3],
-        )
-        == ((2, 3, 4), 6)
-    )
+    assert transducer.transduce(
+        transducer.juxt(
+            _increment(_append_to_tuple),
+            lambda s, x: x + s,
+        ),
+        lambda s, _: s,
+        ((), 0),
+        [1, 2, 3],
+    ) == ((2, 3, 4), 6)
 
 
 def test_apply_spec():
-    assert (
-        transducer.transduce(
-            transducer.apply_spec(
-                {
-                    "incremented": _increment(_append_to_tuple),
-                    "sum": lambda s, x: x + s,
-                },
-            ),
-            lambda s, _: s,
-            {"incremented": (), "sum": 0},
-            [1, 2, 3],
-        )
-        == {"incremented": (2, 3, 4), "sum": 6}
-    )
+    assert transducer.transduce(
+        transducer.apply_spec(
+            {
+                "incremented": _increment(_append_to_tuple),
+                "sum": lambda s, x: x + s,
+            },
+        ),
+        lambda s, _: s,
+        {"incremented": (), "sum": 0},
+        [1, 2, 3],
+    ) == {"incremented": (2, 3, 4), "sum": 6}
 
 
 def test_count_by():
-    assert (
-        transducer.transduce(
-            transducer.count_by(
-                lambda x: ("even",) if x % 2 == 0 else ("odd",),
-            ),
-            lambda s, _: s,
-            {},
-            [1, 2, 3, 4, 5],
-        )
-        == {"even": 2, "odd": 3}
-    )
+    assert transducer.transduce(
+        transducer.count_by(
+            lambda x: ("even",) if x % 2 == 0 else ("odd",),
+        ),
+        lambda s, _: s,
+        {},
+        [1, 2, 3, 4, 5],
+    ) == {"even": 2, "odd": 3}

@@ -43,9 +43,14 @@ repos:
     rev: v0.942
     hooks:
       - id: mypy
+        additional_dependencies: [
+          "types-requests",
+          "types-tabulate",
+          "types-termcolor",
+        ]
 
   - repo: https://github.com/hyroai/lint
-    rev: 96a6998defb11e34d1057cc79616481565f568e3
+    rev: 5a97db4c54d40bb27044b1a037c5f9b35ec503ba
     hooks:
       - id: static-analysis
       - id: make-api-doc

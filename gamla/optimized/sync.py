@@ -364,7 +364,7 @@ def when(f, g):
     return when
 
 
-class NoConditionMatched(Exception):
+class NoConditionMatched(Exception):  # noqa
     pass
 
 

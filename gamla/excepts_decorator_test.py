@@ -5,14 +5,14 @@ from gamla import excepts_decorator, functional, functional_generic, operator
 
 
 @dataclasses.dataclass(frozen=True)
-class SomeException(Exception):
+class _SomeError(Exception):
     pass
 
 
 def test_excepts_sync():
     assert (
         excepts_decorator.excepts(
-            SomeException,
+            _SomeError,
             operator.just(None),
             operator.identity,
         )(1)
@@ -20,9 +20,9 @@ def test_excepts_sync():
     )
     assert (
         excepts_decorator.excepts(
-            SomeException,
+            _SomeError,
             operator.just(None),
-            functional.make_raise(SomeException),
+            functional.make_raise(_SomeError),
         )(1)
         is None
     )
@@ -30,7 +30,7 @@ def test_excepts_sync():
 
 async def test_excepts_async():
     async def async_raise(x):
-        raise SomeException
+        raise _SomeError
 
     async def slow_identity(x):
         await asyncio.sleep(0.01)
@@ -38,7 +38,7 @@ async def test_excepts_async():
 
     assert (
         await excepts_decorator.excepts(
-            SomeException,
+            _SomeError,
             operator.just(None),
             slow_identity,
         )(1)
@@ -46,7 +46,7 @@ async def test_excepts_async():
     )
     assert (
         await excepts_decorator.excepts(
-            SomeException,
+            _SomeError,
             operator.just(None),
             async_raise,
         )(1)
@@ -57,7 +57,7 @@ async def test_excepts_async():
 def test_try_and_excepts_no_exception():
     assert (
         excepts_decorator.try_and_excepts(
-            SomeException,
+            _SomeError,
             operator.just(None),
             operator.identity,
         )(1)
@@ -66,11 +66,8 @@ def test_try_and_excepts_no_exception():
 
 
 def test_try_and_excepts_with_exception():
-    assert (
-        excepts_decorator.try_and_excepts(
-            SomeException,
-            functional_generic.compose_left(operator.pack, operator.identity),
-            functional.make_raise(SomeException),
-        )(1)
-        == (SomeException(), 1)
-    )
+    assert excepts_decorator.try_and_excepts(
+        _SomeError,
+        functional_generic.compose_left(operator.pack, operator.identity),
+        functional.make_raise(_SomeError),
+    )(1) == (_SomeError(), 1)

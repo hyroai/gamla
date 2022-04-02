@@ -80,7 +80,7 @@ async def atraverse_graph_by_radius(
     ['1', '2', '3']"""
 
     async def get_neighbors_limiting_radius(
-        current_and_distance: Tuple[Text, int]
+        current_and_distance: Tuple[Text, int],
     ) -> AsyncGenerator[Tuple[Any, int], None]:
         current, distance = current_and_distance
         if distance < radius:

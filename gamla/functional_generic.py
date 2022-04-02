@@ -347,7 +347,7 @@ def first(*funcs, exception_type: Type[Exception]):
     return inner
 
 
-class PipeNotGivenAnyFunctions(Exception):
+class PipeNotGivenAnyFunctions(Exception):  # noqa
     pass
 
 
@@ -695,7 +695,8 @@ def scan(
     if asyncio.iscoroutinefunction(reducer):
 
         async def reduce_keeping_history_async(
-            past_states: Tuple[_ReducerState, ...], element: _ReducedElement
+            past_states: Tuple[_ReducerState, ...],
+            element: _ReducedElement,
         ) -> Tuple[_ReducerState, ...]:
             return (*past_states, await reducer(operator.last(past_states), element))
 
