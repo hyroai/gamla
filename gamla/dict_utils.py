@@ -2,7 +2,7 @@ import functools
 from operator import getitem
 from typing import Any, Callable, Dict, Iterable
 
-from gamla import currying, functional, functional_generic, operator
+from gamla import construct, currying, functional, functional_generic, operator
 from gamla.optimized import sync
 
 
@@ -196,19 +196,6 @@ def remove_key(key):
     return remove_key
 
 
-def wrap_dict(key: Any):
-    """Wrap a key and a value in a dict (in a curried fashion).
-
-    >>> wrap_dict("one") (1)
-    {'one': 1}
-    """
-
-    def wrap_dict(value):
-        return {key: value}
-
-    return wrap_dict
-
-
 def rename_key(old: str, new: str) -> Callable[[dict], dict]:
     """Rename a key in a dictionary.
 
@@ -216,4 +203,4 @@ def rename_key(old: str, new: str) -> Callable[[dict], dict]:
     >>> rename_key("name", "first_name")(my_dict)
     {'first_name': 'Danny', 'age': 20}
     """
-    return sync.keymap(sync.when(operator.equals(old), operator.just(new)))
+    return sync.keymap(sync.when(operator.equals(old), construct.just(new)))

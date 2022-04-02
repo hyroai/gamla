@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Any, Callable
 
-from gamla import currying, dict_utils, functional, functional_generic, operator
+from gamla import construct, currying, dict_utils, functional_generic, operator
 from gamla.optimized import async_functions, sync
 
 
@@ -74,7 +74,7 @@ _is_terminal = sync.anyjuxt(
 def _get_children(element):
     return functional_generic.case_dict(
         {
-            _is_terminal: operator.just(()),
+            _is_terminal: construct.just(()),
             operator.is_instance(tuple): operator.identity,
             operator.is_instance(list): operator.identity,
             operator.is_instance(dict): functional_generic.compose_left(
@@ -85,7 +85,7 @@ def _get_children(element):
                 lambda x: x.value,
                 sync.ternary(
                     _is_terminal,
-                    functional.wrap_tuple,
+                    construct.wrap_tuple,
                     _get_children,
                 ),
             ),
@@ -106,7 +106,7 @@ def _make_matched_unmatched(matched, unmatched):
 _merge_children_as_matched = functional_generic.compose_left(
     sync.mapcat(sync.juxtcat(_get_matched, _get_unmatched)),
     tuple,
-    functional_generic.pair_right(operator.just(())),
+    functional_generic.pair_right(construct.just(())),
     sync.star(_make_matched_unmatched),
 )
 

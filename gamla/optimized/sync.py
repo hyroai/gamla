@@ -2,7 +2,7 @@
 import itertools
 from typing import Callable, Tuple
 
-from gamla import operator
+from gamla import construct, operator
 
 
 def packstack(*functions):
@@ -407,7 +407,7 @@ def map_dict(nonterminal_mapper: Callable, terminal_mapper: Callable) -> Callabl
                 nonterminal_mapper,
             ),
             # Other types are considered terminals to support things like `apply_spec`.
-            operator.just(True): terminal_mapper,
+            construct.just(True): terminal_mapper,
         },
     )
 

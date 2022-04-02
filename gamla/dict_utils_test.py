@@ -76,7 +76,3 @@ def test_add_key_value():
 
 def test_remove_key():
     assert dict_utils.remove_key("1")({"1": 1, "2": 2}) == {"2": 2}
-
-
-def test_wrap_dict():
-    assert dict_utils.wrap_dict("some_key")("some_value") == {"some_key": "some_value"}

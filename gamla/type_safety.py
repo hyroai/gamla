@@ -1,8 +1,8 @@
 import typing
 from collections import abc
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Tuple, TypeVar, Union
 
-from gamla import operator
+from gamla import construct, operator
 from gamla.optimized import sync
 
 
@@ -47,6 +47,19 @@ def _forward_ref(x):
     return forward_ref
 
 
+def _iterable_to_union(it):
+    it = tuple(it)
+    assert it
+    if len(it) == 1:
+        return it[0]
+    return Union[it[0], _iterable_to_union(it[1:])]
+
+
+_rewrite_typevar = sync.compose_left(
+    operator.attrgetter("__constraints__"),
+    sync.ternary(operator.empty, construct.just(Any), _iterable_to_union),
+)
+
 _handle_generics = sync.alljuxt(
     sync.compose_left(sync.map(typing.get_origin), sync.star(issubclass)),
     sync.compose_left(
@@ -74,7 +87,12 @@ def _handle_callable(c1, c2):
 
 
 _is_subtype: Callable[[Tuple[Any, Any]], bool] = sync.compose_left(
-    sync.map(sync.when(_origin_equals(Optional), _rewrite_optional)),
+    sync.map(
+        sync.compose_left(
+            sync.when(_origin_equals(Optional), _rewrite_optional),
+            sync.when(operator.is_instance(TypeVar), _rewrite_typevar),
+        ),
+    ),
     tuple,
     sync.case_dict(
         {
@@ -87,7 +105,7 @@ _is_subtype: Callable[[Tuple[Any, Any]], bool] = sync.compose_left(
             sync.allmap(typing.get_origin): _handle_generics,
             operator.inside(Ellipsis): sync.allmap(operator.equals(Ellipsis)),
             sync.complement(sync.anymap(typing.get_origin)): sync.star(issubclass),
-            operator.just(True): operator.just(False),
+            construct.just(True): construct.just(False),
         },
     ),
 )

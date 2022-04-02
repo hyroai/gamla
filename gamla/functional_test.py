@@ -4,7 +4,14 @@ from operator import not_, truediv
 
 import pytest
 
-from gamla import currying, dict_utils, functional, functional_generic, operator
+from gamla import (
+    construct,
+    currying,
+    dict_utils,
+    functional,
+    functional_generic,
+    operator,
+)
 from gamla.optimized import sync
 
 
@@ -19,7 +26,7 @@ async def _equals(x, y):
 
 
 def test_do_if():
-    assert functional.do_if(operator.just(True), operator.just(2))(1) == 1
+    assert functional.do_if(construct.just(True), construct.just(2))(1) == 1
 
 
 def test_currying():
@@ -186,20 +193,6 @@ async def test_filter_curried_async_sync_mix():
             tuple,
         )
         == (12, 14)
-    )
-
-
-def test_wrap_str():
-    assert functional_generic.pipe("john", functional.wrap_str("hi {}")) == "hi john"
-
-
-def test_wrap_multiple_str():
-    assert (
-        functional_generic.pipe(
-            {"first": "happy", "second": "world"},
-            functional.wrap_multiple_str("hello {first} {second}"),
-        )
-        == "hello happy world"
     )
 
 
@@ -503,7 +496,7 @@ def test_latency():
             True,
             functional_generic.juxt(operator.equals(True), operator.equals(False)),
             operator.head,
-            operator.just("bla"),
+            construct.just("bla"),
             operator.attrgetter("lower"),
         )
     assert time.time() - start_time < 0.1
@@ -558,17 +551,17 @@ async def test_async_when():
         await asyncio.sleep(0.01)
         return x == 1
 
-    assert await functional_generic.when(async_equals_1, operator.just(True))(1)
+    assert await functional_generic.when(async_equals_1, construct.just(True))(1)
 
-    assert await functional_generic.when(async_equals_1, operator.just(True))(2) == 2
+    assert await functional_generic.when(async_equals_1, construct.just(True))(2) == 2
 
 
 async def test_unless1():
-    assert functional_generic.unless(operator.equals(1), operator.just(True))(1) == 1
+    assert functional_generic.unless(operator.equals(1), construct.just(True))(1) == 1
 
 
 async def test_unless2():
-    assert functional_generic.unless(operator.equals(1), operator.just(True))(2)
+    assert functional_generic.unless(operator.equals(1), construct.just(True))(2)
 
 
 def test_compose_many_to_one():
@@ -636,12 +629,12 @@ def test_assert_that():
 
 def test_assert_that_with_message():
     functional.assert_that_with_message(
-        operator.just("Input is not 2!"),
+        construct.just("Input is not 2!"),
         operator.equals(2),
     )(2)
     with pytest.raises(AssertionError, match="Input is not 2!"):
         functional.assert_that_with_message(
-            operator.just("Input is not 2!"),
+            construct.just("Input is not 2!"),
             operator.equals(2),
         )(3)
 

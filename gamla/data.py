@@ -5,7 +5,7 @@ from typing import Callable, Collection, Dict
 
 import dataclasses_json
 
-from gamla import functional, functional_generic, operator
+from gamla import construct, functional_generic, operator
 from gamla.optimized import sync
 
 
@@ -97,7 +97,7 @@ def explode(*positions: Collection[int]):
     """
     return sync.compose_left(
         _do_on_positions(
-            functional.wrap_tuple,
+            construct.wrap_tuple,
             sync.complement(operator.contains(positions)),
         ),
         sync.star(itertools.product),
