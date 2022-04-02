@@ -120,35 +120,29 @@ async def test_anymap_in_pipe():
 
 
 async def test_itemmap_async_sync_mixed():
-    assert (
-        await functional_generic.pipe(
-            {True: True},
-            functional_generic.itemmap(
-                functional_generic.compose(
-                    tuple,
-                    functional_generic.curried_map(_opposite_async),
-                ),
+    assert await functional_generic.pipe(
+        {True: True},
+        functional_generic.itemmap(
+            functional_generic.compose(
+                tuple,
+                functional_generic.curried_map(_opposite_async),
             ),
-            functional_generic.itemmap(
-                functional_generic.compose(
-                    tuple,
-                    functional_generic.curried_map(not_),
-                ),
+        ),
+        functional_generic.itemmap(
+            functional_generic.compose(
+                tuple,
+                functional_generic.curried_map(not_),
             ),
-        )
-        == {True: True}
-    )
+        ),
+    ) == {True: True}
 
 
 async def test_itemfilter_async_sync_mixed():
-    assert (
-        await functional_generic.pipe(
-            {1: 1, 2: 1, 3: 3},
-            functional_generic.itemfilter(functional_generic.star(_equals)),
-            functional_generic.itemfilter(sync.star(lambda _, val: val == 1)),
-        )
-        == {1: 1}
-    )
+    assert await functional_generic.pipe(
+        {1: 1, 2: 1, 3: 3},
+        functional_generic.itemfilter(functional_generic.star(_equals)),
+        functional_generic.itemfilter(sync.star(lambda _, val: val == 1)),
+    ) == {1: 1}
 
 
 async def test_keymap_async_curried():
@@ -158,12 +152,9 @@ async def test_keymap_async_curried():
 
 
 async def test_keyfilter_sync_curried():
-    assert (
-        functional_generic.keyfilter(operator.identity)(
-            {False: True, True: False},
-        )
-        == {True: False}
-    )
+    assert functional_generic.keyfilter(operator.identity)(
+        {False: True, True: False},
+    ) == {True: False}
 
 
 async def test_valmap_sync_curried():
@@ -171,12 +162,9 @@ async def test_valmap_sync_curried():
 
 
 async def test_valfilter_sync_curried():
-    assert (
-        functional_generic.valfilter(operator.identity)(
-            {False: True, True: False},
-        )
-        == {False: True}
-    )
+    assert functional_generic.valfilter(operator.identity)(
+        {False: True, True: False},
+    ) == {False: True}
 
 
 async def _is_even_async(x):
@@ -185,15 +173,12 @@ async def _is_even_async(x):
 
 
 async def test_filter_curried_async_sync_mix():
-    assert (
-        await functional_generic.pipe(
-            [1, 2, 3, 4],
-            functional_generic.curried_filter(_is_even_async),
-            functional_generic.curried_map(operator.add(10)),
-            tuple,
-        )
-        == (12, 14)
-    )
+    assert await functional_generic.pipe(
+        [1, 2, 3, 4],
+        functional_generic.curried_filter(_is_even_async),
+        functional_generic.curried_map(operator.add(10)),
+        tuple,
+    ) == (12, 14)
 
 
 def test_case_single_predicate():
@@ -227,52 +212,40 @@ async def test_case_async():
 
 def test_partition_after():
     assert functional.partition_after(operator.equals(1), []) == ()
-    assert (
-        tuple(
-            functional.partition_after(
-                operator.equals(1),
-                [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
-            ),
-        )
-        == ((1,), (1,), (2, 2, 1), (1,), (2, 1), (1,), (1,))
-    )
+    assert tuple(
+        functional.partition_after(
+            operator.equals(1),
+            [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+        ),
+    ) == ((1,), (1,), (2, 2, 1), (1,), (2, 1), (1,), (1,))
 
 
 def test_partition_before():
     assert functional.partition_before(operator.equals(1), []) == ()
-    assert (
-        tuple(
-            functional.partition_before(
-                operator.equals(1),
-                [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
-            ),
-        )
-        == ((3,), (1,), (1, 2, 2), (1,), (1, 2), (1,), (1,), (1,))
-    )
+    assert tuple(
+        functional.partition_before(
+            operator.equals(1),
+            [3, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+        ),
+    ) == ((3,), (1,), (1, 2, 2), (1,), (1, 2), (1,), (1,), (1,))
 
 
 async def test_drop_last_while():
     assert tuple(functional.drop_last_while(operator.equals(1), [])) == ()
     assert tuple(functional.drop_last_while(operator.equals(1), [1])) == ()
     assert tuple(functional.drop_last_while(operator.equals(1), [2])) == (2,)
-    assert (
-        tuple(
-            functional.drop_last_while(
-                operator.equals(1),
-                [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
-            ),
-        )
-        == (1, 1, 2, 2, 1, 1, 2)
-    )
+    assert tuple(
+        functional.drop_last_while(
+            operator.equals(1),
+            [1, 1, 2, 2, 1, 1, 2, 1, 1, 1],
+        ),
+    ) == (1, 1, 2, 2, 1, 1, 2)
 
 
 def test_apply_spec():
-    assert (
-        functional_generic.apply_spec(
-            {"identity": operator.identity, "increment": operator.add(1)},
-        )(1)
-        == {"identity": 1, "increment": 2}
-    )
+    assert functional_generic.apply_spec(
+        {"identity": operator.identity, "increment": operator.add(1)},
+    )(1) == {"identity": 1, "increment": 2}
 
 
 async def test_apply_spec_async():
@@ -280,12 +253,9 @@ async def test_apply_spec_async():
         await asyncio.sleep(0.01)
         return x
 
-    assert (
-        await functional_generic.apply_spec(
-            {"identity": async_identity, "increment": operator.add(1)},
-        )(1)
-        == {"identity": 1, "increment": 2}
-    )
+    assert await functional_generic.apply_spec(
+        {"identity": async_identity, "increment": operator.add(1)},
+    )(1) == {"identity": 1, "increment": 2}
 
 
 async def test_apply_spec_async_recursive():
@@ -385,17 +355,12 @@ async def test_scan_async():
 def test_find():
     seq = ({"key": 1}, {"key": 2}, {"key": 3}, {"key": 2})
 
-    assert (
-        functional_generic.find(
-            functional_generic.compose_left(
-                dict_utils.itemgetter("key"),
-                operator.equals(2),
-            ),
-        )(
-            iter(seq),
-        )
-        == {"key": 2}
-    )
+    assert functional_generic.find(
+        functional_generic.compose_left(
+            dict_utils.itemgetter("key"),
+            operator.equals(2),
+        ),
+    )(iter(seq)) == {"key": 2}
 
     assert (
         functional_generic.find(
@@ -503,33 +468,24 @@ def test_latency():
 
 
 def test_unique_by():
-    assert (
-        tuple(
-            functional.unique_by(lambda x: x[0])(["a", "ab", "abc", "bc", "c"]),
-        )
-        == ("a", "bc", "c")
-    )
+    assert tuple(
+        functional.unique_by(lambda x: x[0])(["a", "ab", "abc", "bc", "c"]),
+    ) == ("a", "bc", "c")
     assert tuple(functional.unique(["a", "a", "a", "bc", "a"])) == ("a", "bc")
 
 
 def test_merge():
-    assert (
-        functional_generic.merge(
-            {"1": 1, "2": 2},
-            {"2": 3, "3": 3},
-        )
-        == {"1": 1, "2": 3, "3": 3}
-    )
+    assert functional_generic.merge(
+        {"1": 1, "2": 2},
+        {"2": 3, "3": 3},
+    ) == {"1": 1, "2": 3, "3": 3}
 
 
 def test_merge_with():
-    assert (
-        functional_generic.merge_with(operator.head)(
-            {"1": 1, "2": 2},
-            {"2": 3, "3": 3},
-        )
-        == {"1": 1, "2": 2, "3": 3}
-    )
+    assert functional_generic.merge_with(operator.head)(
+        {"1": 1, "2": 2},
+        {"2": 3, "3": 3},
+    ) == {"1": 1, "2": 2, "3": 3}
 
 
 async def test_async_merge_with():
@@ -537,13 +493,10 @@ async def test_async_merge_with():
         await asyncio.sleep(0.01)
         return x[0]
 
-    assert (
-        await functional_generic.merge_with(async_first)(
-            {"1": 1, "2": 2},
-            {"2": 3, "3": 3},
-        )
-        == {"1": 1, "2": 2, "3": 3}
-    )
+    assert await functional_generic.merge_with(async_first)(
+        {"1": 1, "2": 2},
+        {"2": 3, "3": 3},
+    ) == {"1": 1, "2": 2, "3": 3}
 
 
 async def test_async_when():

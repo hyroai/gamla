@@ -109,7 +109,7 @@ async def test_with_and_without_deduper():
 
 
 async def test_retry():
-    class SomeException(Exception):
+    class SomeError(Exception):
         pass
 
     succeeds_in_n_retries = 3
@@ -119,13 +119,13 @@ async def test_retry():
         if succeeds_in_n_retries == 0:
             return x + y
         succeeds_in_n_retries -= 1
-        raise SomeException
+        raise SomeError
 
-    assert await io_utils.retry(SomeException, 3, 0, f)(3, 2) == 5
+    assert await io_utils.retry(SomeError, 3, 0, f)(3, 2) == 5
 
 
 async def test_retry_raises():
-    class SomeException(Exception):
+    class SomeError(Exception):
         pass
 
     succeeds_in_n_retries = 3
@@ -135,10 +135,10 @@ async def test_retry_raises():
         if succeeds_in_n_retries == 0:
             return x + y
         succeeds_in_n_retries -= 1
-        raise SomeException
+        raise SomeError
 
-    with pytest.raises(SomeException):
-        await io_utils.retry(SomeException, 2, 0, f)(3, 2)
+    with pytest.raises(SomeError):
+        await io_utils.retry(SomeError, 2, 0, f)(3, 2)
 
 
 async def test_throtle():
@@ -151,14 +151,11 @@ async def test_throtle():
         await asyncio.sleep(0.01)
         return x * factor
 
-    assert (
-        await functional_generic.pipe(
-            (1, 2, 3),
-            functional_generic.curried_map(multiply_with_delay),
-            tuple,
-        )
-        == (1, 4, 9)
-    )
+    assert await functional_generic.pipe(
+        (1, 2, 3),
+        functional_generic.curried_map(multiply_with_delay),
+        tuple,
+    ) == (1, 4, 9)
 
 
 async def test_make_throttler():

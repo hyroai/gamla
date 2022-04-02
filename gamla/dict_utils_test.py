@@ -62,12 +62,9 @@ def test_make_index():
 
 
 def test_rename_key():
-    assert (
-        dict_utils.rename_key("name", "first_name")(
-            {"name": "Danny", "age": 20},
-        )
-        == {"first_name": "Danny", "age": 20}
-    )
+    assert dict_utils.rename_key("name", "first_name")(
+        {"name": "Danny", "age": 20},
+    ) == {"first_name": "Danny", "age": 20}
 
 
 def test_add_key_value():
