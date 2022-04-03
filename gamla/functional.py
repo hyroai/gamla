@@ -169,9 +169,9 @@ def compute_stable_json_hash(item) -> Text:
 def assert_that_with_message(input_to_message: Callable, f: Callable):
     """Assert a function `f` on the input, printing the output of `input_to_message(input)` if assertion is False.
 
-    >>> assert_that_with_message(gamlaconstruct.just("Input is not 2!"), operator.equals(2))(2)
+    >>> assert_that_with_message(just("Input is not 2!"), equals(2))(2)
     2
-    >>> assert_that_with_message(gamlaconstruct.just("Input is not 2!"), operator.equals(2))(3)
+    >>> assert_that_with_message(just("Input is not 2!"), equals(2))(3)
     "Output is not 2!"
     """
 
