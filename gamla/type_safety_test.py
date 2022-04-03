@@ -9,6 +9,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    TypeVar,
     Union,
 )
 
@@ -49,6 +50,20 @@ def test_compose_on_key():
     assert not type_safety.composable(f, g, "x")
 
 
+_T = TypeVar("_T")
+_T_number = TypeVar("_T_number", int, float)
+_T_collection_or_dict_of_strings = TypeVar(
+    "_T_collection_or_dict_of_strings",
+    Dict[str, str],
+    Collection[str],
+)
+_T_list_or_frozenset_of_strings = TypeVar(
+    "_T_list_or_frozenset_of_strings",
+    List[str],
+    FrozenSet[str],
+)
+
+
 @pytest.mark.parametrize(
     "subtype,supertype",
     [
@@ -73,6 +88,9 @@ def test_compose_on_key():
         [str, Union[int, str]],
         [Union[List, Set], Collection],
         [Dict, Dict[str, int]],
+        [FrozenSet[int], Collection[_T]],
+        [FrozenSet[int], Collection[_T_number]],
+        [_T_list_or_frozenset_of_strings, _T_collection_or_dict_of_strings],
     ],
 )
 def test_is_subtype(subtype, supertype):
@@ -99,6 +117,7 @@ def test_is_subtype(subtype, supertype):
         [List, Union[int, str]],
         [Union[int, str, List], Union[int, str]],
         [Dict, Tuple],
+        [FrozenSet[str], Collection[_T_number]],
     ],
 )
 def test_is_not_subtype(subtype, supertype):

@@ -1,7 +1,7 @@
 import asyncio
 import dataclasses
 
-from gamla import excepts_decorator, functional, functional_generic, operator
+from gamla import construct, excepts_decorator, functional, functional_generic, operator
 
 
 @dataclasses.dataclass(frozen=True)
@@ -13,7 +13,7 @@ def test_excepts_sync():
     assert (
         excepts_decorator.excepts(
             _SomeError,
-            operator.just(None),
+            construct.just(None),
             operator.identity,
         )(1)
         == 1
@@ -21,7 +21,7 @@ def test_excepts_sync():
     assert (
         excepts_decorator.excepts(
             _SomeError,
-            operator.just(None),
+            construct.just(None),
             functional.make_raise(_SomeError),
         )(1)
         is None
@@ -39,7 +39,7 @@ async def test_excepts_async():
     assert (
         await excepts_decorator.excepts(
             _SomeError,
-            operator.just(None),
+            construct.just(None),
             slow_identity,
         )(1)
         == 1
@@ -47,7 +47,7 @@ async def test_excepts_async():
     assert (
         await excepts_decorator.excepts(
             _SomeError,
-            operator.just(None),
+            construct.just(None),
             async_raise,
         )(1)
         is None
@@ -58,7 +58,7 @@ def test_try_and_excepts_no_exception():
     assert (
         excepts_decorator.try_and_excepts(
             _SomeError,
-            operator.just(None),
+            construct.just(None),
             operator.identity,
         )(1)
         == 1

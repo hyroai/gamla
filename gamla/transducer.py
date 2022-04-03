@@ -4,7 +4,7 @@ import functools
 import itertools
 from typing import Any, Callable, Iterable, TypeVar
 
-from gamla import dict_utils, functional, functional_generic, operator
+from gamla import construct, dict_utils, functional_generic, operator
 from gamla.optimized import sync
 
 _S = TypeVar("_S")
@@ -112,7 +112,7 @@ def mapcat(f: Callable[[Any], Iterable[Any]]):
 def groupby(key: Callable[[Any], Any], reducer: Reducer, initial):
     """Like `groupby_many`, just with a key function that returns a single element."""
     return groupby_many(
-        functional_generic.compose_left(key, functional.wrap_tuple),
+        functional_generic.compose_left(key, construct.wrap_tuple),
         reducer,
         initial,
     )
@@ -136,7 +136,7 @@ def groupby_many(keys: Callable[[Any], Iterable], reducer: Reducer, initial):
     return functional_generic.compose(
         mapcat(
             functional_generic.compose_left(
-                functional_generic.juxt(keys, functional.wrap_tuple),
+                functional_generic.juxt(keys, construct.wrap_tuple),
                 sync.star(itertools.product),
             ),
         ),

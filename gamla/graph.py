@@ -1,7 +1,7 @@
 import itertools
 from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
-from gamla import currying, dict_utils, functional, functional_generic, operator
+from gamla import construct, currying, dict_utils, functional_generic, operator
 from gamla.optimized import sync
 
 
@@ -119,7 +119,7 @@ edges_to_graph = functional_generic.compose(
 #: >>> list(graph_to_edges({'1': ['2', '3'], '2': ['3'], '3': ['4'], '4': []}))
 #: [('1', '2'), ('1', '3'), ('2', '3'), ('3', '4')]
 graph_to_edges = functional_generic.compose_left(
-    sync.keymap(functional.wrap_tuple),
+    sync.keymap(construct.wrap_tuple),
     dict.items,
     sync.mapcat(sync.star(itertools.product)),
 )

@@ -18,7 +18,15 @@ from typing import (
     Union,
 )
 
-from gamla import apply_utils, data, dict_utils, excepts_decorator, functional, operator
+from gamla import (
+    apply_utils,
+    construct,
+    data,
+    dict_utils,
+    excepts_decorator,
+    functional,
+    operator,
+)
 from gamla.optimized import async_functions, sync
 
 
@@ -655,9 +663,9 @@ def value_to_dict(key: Text):
     {'hello': 'world'}
     """
     return compose_left(
-        functional.wrap_tuple,
+        construct.wrap_tuple,
         functional.prefix(key),
-        functional.wrap_tuple,
+        construct.wrap_tuple,
         dict,
     )
 
@@ -724,7 +732,7 @@ find = compose(
     after(
         excepts_decorator.excepts(
             StopIteration,
-            operator.just(None),
+            construct.just(None),
             operator.head,
         ),
     ),
@@ -748,7 +756,7 @@ find_index = compose_left(
     before(operator.second),
     find,
     before(enumerate),
-    after(ternary(operator.equals(None), operator.just(-1), operator.head)),
+    after(ternary(operator.equals(None), construct.just(-1), operator.head)),
 )
 
 
@@ -810,7 +818,7 @@ def groupby(
     """
     return compose_left(
         functional.groupby_many_reduce(
-            compose_left(key, functional.wrap_tuple),
+            compose_left(key, construct.wrap_tuple),
             _groupby_helper,
         ),
         sync.valmap(tuple),
@@ -872,7 +880,7 @@ def count_by_many(f: Callable[[Any], Iterable]) -> Dict[Any, int]:
 countby_many = count_by_many
 
 #: Like `count_by_many` but with a function that returns a single key.
-count_by = compose_left(after(functional.wrap_tuple), count_by_many)
+count_by = compose_left(after(construct.wrap_tuple), count_by_many)
 
 #: Like `stack` but doesn't require additional brackets.
 packstack = compose_left(operator.pack, stack)

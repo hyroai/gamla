@@ -9,20 +9,6 @@ def identity(x):
     return x
 
 
-def just(x):
-    """Ignores the input upon execution and returns the given argument.
-    >>> f = just(1)
-    >>> f(2)
-    1
-    """
-
-    def just(*args, **kwargs):
-        del args, kwargs
-        return x
-
-    return just
-
-
 def nth(n):
     """Returns the nth element in a sequence.
 

@@ -1,6 +1,6 @@
 from typing import Any, AsyncGenerator, Callable, Hashable, Text, Tuple
 
-from gamla import currying, functional_generic, operator
+from gamla import construct, currying, functional_generic, operator
 
 
 @currying.curry
@@ -137,6 +137,6 @@ async def reduce_graph_async(
         ),
         functional_generic.remove(operator.is_instance(_IgnoreChild)),
         tuple,
-        functional_generic.pair_right(operator.just(current)),
+        functional_generic.pair_right(construct.just(current)),
         functional_generic.star(reducer),
     )

@@ -27,7 +27,7 @@ from typing import (
 import heapq_max
 import toolz
 
-from gamla import currying, excepts_decorator, operator
+from gamla import construct, currying, excepts_decorator, operator
 from gamla.optimized import sync
 
 
@@ -169,9 +169,9 @@ def compute_stable_json_hash(item) -> Text:
 def assert_that_with_message(input_to_message: Callable, f: Callable):
     """Assert a function `f` on the input, printing the output of `input_to_message(input)` if assertion is False.
 
-    >>> assert_that_with_message(gamla.just("Input is not 2!"), operator.equals(2))(2)
+    >>> assert_that_with_message(just("Input is not 2!"), equals(2))(2)
     2
-    >>> assert_that_with_message(gamla.just("Input is not 2!"), operator.equals(2))(3)
+    >>> assert_that_with_message(just("Input is not 2!"), equals(2))(3)
     "Output is not 2!"
     """
 
@@ -182,7 +182,7 @@ def assert_that_with_message(input_to_message: Callable, f: Callable):
     return assert_that_f
 
 
-assert_that = assert_that_with_message(operator.just(""))
+assert_that = assert_that_with_message(construct.just(""))
 
 
 @currying.curry
@@ -252,24 +252,6 @@ def skip(n: int):
             yield x
 
     return skip
-
-
-def wrap_tuple(x: Any):
-    """Wrap an element in a tuple.
-
-    >>> wrap_tuple("hello")
-    ('hello',)
-    """
-    return (x,)
-
-
-def wrap_frozenset(x: Any):
-    """Wraps x with frozenset.
-
-    >>> wrap_frozenset(1)
-    frozenset({1})
-    """
-    return frozenset([x])
 
 
 @currying.curry
@@ -398,29 +380,6 @@ def concat_with(new_it: Iterable, it: Iterable):
     (1, 2, 3, 4)
     """
     return itertools.chain(it, new_it)
-
-
-@currying.curry
-def wrap_str(wrapping_string: Text, x: Text) -> Text:
-    """Wrap a string in a wrapping string.
-
-    >>> wrap_str("hello {}", "world")
-    'hello world'
-    """
-    return wrapping_string.format(x)
-
-
-def wrap_multiple_str(wrapping_string: str):
-    """Wrap multiple values in a wrapping string by passing a dict where the keys are the parameters in the wrapping string and the values are the desired values.
-
-    >>> wrap_multiple_str("hello {first} {second}")({ "first": "happy", "second": "world" })
-    'hello happy world'
-    """
-
-    def inner(x: Dict[str, str]) -> str:
-        return wrapping_string.format(**x)
-
-    return inner
 
 
 @currying.curry
@@ -741,7 +700,7 @@ average = sync.compose_left(
     sync.bifurcate(sum, operator.count),
     excepts_decorator.excepts(
         ZeroDivisionError,
-        operator.just(0),
+        construct.just(0),
         sync.star(truediv),
     ),
 )
