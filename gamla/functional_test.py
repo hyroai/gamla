@@ -727,3 +727,11 @@ def test_speed_of_apply_spec():
     for _ in range(1000):
         functional_generic.apply_spec({"a": operator.identity, "b": lambda x: x + 1})(1)
     assert time.time() - start_time < 0.1
+
+
+def test_compose_empty():
+    assert functional_generic.compose()(1) == 1
+
+
+def test_compose_single_function():
+    assert functional_generic.compose(lambda x: x + 1)(1) == 2

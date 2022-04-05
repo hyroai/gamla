@@ -18,6 +18,7 @@ from typing import (
     Union,
 )
 
+import gamla
 from gamla import (
     apply_utils,
     construct,
@@ -129,6 +130,12 @@ def compose(*funcs):
     #     if not type_safety.composable(prev, f, None):
     #         logging.error(f"composing {prev} after {f}, which don't fit")
     #     prev = f
+
+    if operator.empty(funcs):
+        return gamla.identity
+
+    if len(funcs) == 1:
+        return operator.head(funcs)
 
     if any_is_async(funcs):
         composed = async_functions.compose(*funcs)
