@@ -154,11 +154,10 @@ def to_json(obj):
     return json.dumps(obj)
 
 
-@functools.lru_cache(maxsize=None)
 def compute_stable_json_hash(item) -> Text:
     return hashlib.sha1(
         json.dumps(
-            json.loads(to_json(item)),
+            item,
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8"),

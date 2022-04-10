@@ -31,6 +31,7 @@ data
    explode
    freeze_deep
    get_encode_config
+   transform_if_not_none
    tuple_of_tuples_to_csv
 
 debug_utils
@@ -104,6 +105,8 @@ functional
    eq_by
    eq_str_ignore_case
    flip
+   function_and_input_to_identifier
+   function_to_directory
    function_to_uid
    get_all_n_grams
    groupby_many_reduce
@@ -184,11 +187,13 @@ functional_generic
    curried_filter
    curried_map
    curried_to_binary
+   double_star
    find
    find_index
    first
    frequencies
    groupby
+   is_generator
    itemfilter
    itemmap
    juxt
