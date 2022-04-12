@@ -155,6 +155,7 @@ def to_json(obj):
 
 
 def compute_stable_json_hash(item) -> Text:
+    """Only works on json valid data types."""
     return hashlib.sha1(
         json.dumps(
             item,
