@@ -33,7 +33,7 @@ _indicate_depletion = object()
 
 
 def sample_with_randint(randint: Callable, k: int):
-    """Samples an iterable uniformly in one pass with O(1) memory.
+    """Samples an iterable uniformly in one pass with O(k) memory.
 
     >>> sample(2)([1, 2, 3])
     frozenset([1,3])
