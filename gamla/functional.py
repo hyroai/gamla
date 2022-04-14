@@ -30,37 +30,6 @@ from gamla import construct, currying, excepts_decorator, operator
 from gamla.optimized import sync
 
 
-def sample_with_randint(randint: Callable, k: int):
-    """Samples an iterable uniformly in one pass with O(k) memory.
-
-    >>> sample(2)([1, 2, 3])
-    frozenset([1,3])
-    """
-
-    def reducer(
-        index_and_sample: immutables.Map,
-        current,
-    ) -> Tuple[int, immutables.Map]:
-        index, sample = index_and_sample
-        if index < k:
-            return index + 1, sample.set(index, current)
-        replacement_index = randint(0, index)
-        if replacement_index < k:
-            return index + 1, sample.set(replacement_index, current)
-        return index + 1, sample
-
-    def sample(seq: Iterable):
-        return frozenset(
-            functools.reduce(reducer, seq, (0, immutables.Map()))[1].values(),
-        )
-
-    return sample
-
-
-sample = currying.curry(sample_with_randint)(random.randint)
-choice = sync.compose(operator.head, sample_with_randint(random.randint, 1))
-
-
 def sort_by(key: Callable):
     """Return a new list containing all items from the iterable in ascending order, sorted by a key.
     >>> sort_by(len)(["hi!", "my", "name", "is"])
@@ -739,3 +708,34 @@ def attr_equals(attribute: str, equals_what: Any) -> Callable[[Any], bool]:
         operator.attrgetter(attribute),
         operator.equals(equals_what),
     )
+
+
+def sample_with_randint(randint: Callable, k: int):
+    """Samples an iterable uniformly in one pass with O(k) memory.
+
+    >>> sample(2)([1, 2, 3])
+    frozenset([1,3])
+    """
+
+    def reducer(
+        index_and_sample: immutables.Map,
+        current,
+    ) -> Tuple[int, immutables.Map]:
+        index, sample = index_and_sample
+        if index < k:
+            return index + 1, sample.set(index, current)
+        replacement_index = randint(0, index)
+        if replacement_index < k:
+            return index + 1, sample.set(replacement_index, current)
+        return index + 1, sample
+
+    return sync.compose_left(
+        reduce(reducer, (0, immutables.Map())),
+        operator.second,
+        immutables.Map.values,
+        frozenset,
+    )
+
+
+sample = currying.curry(sample_with_randint)(random.randint)
+choice = sync.compose(operator.head, sample_with_randint(random.randint, 1))
