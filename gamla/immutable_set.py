@@ -4,7 +4,7 @@ import immutables
 
 
 # Just for typing.
-class ImmutableSet(immutables.Map):
+class ImmutableSet:
     pass
 
 
@@ -15,28 +15,32 @@ def create(iterable: Iterable) -> ImmutableSet:
 EMPTY: ImmutableSet = create([])
 
 
+def length(set: ImmutableSet) -> int:
+    return len(set)  # type: ignore
+
+
 def add(set: ImmutableSet, element) -> ImmutableSet:
-    return set.set(element, None)
+    return set.set(element, None)  # type: ignore
 
 
 def remove(set: ImmutableSet, element) -> ImmutableSet:
-    return set.delete(element)
+    return set.delete(element)  # type: ignore
 
 
 def contains(set: ImmutableSet, element) -> bool:
-    return element in set
+    return element in set  # type: ignore
 
 
 def union(set1: ImmutableSet, set2: ImmutableSet) -> ImmutableSet:
-    smaller, larger = sorted([set1, set2], key=len)
-    for element in smaller:
+    smaller, larger = sorted([set1, set2], key=length)
+    for element in smaller:  # type: ignore
         larger = add(larger, element)
     return larger
 
 
 def intersection(set1: ImmutableSet, set2: ImmutableSet) -> ImmutableSet:
-    smaller, larger = sorted([set1, set2], key=len)
-    for element in smaller:
-        if element not in larger:
+    smaller, larger = sorted([set1, set2], key=length)
+    for element in smaller:  # type: ignore
+        if not contains(larger, element):
             smaller = remove(smaller, element)
     return smaller
