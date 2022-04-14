@@ -722,12 +722,11 @@ def sample_with_randint(randint: Callable, k: int):
         current,
     ) -> Tuple[int, immutables.Map]:
         index, sample = index_and_sample
-        if index < k:
-            return index + 1, sample.set(index, current)
-        replacement_index = randint(0, index)
-        if replacement_index < k:
-            return index + 1, sample.set(replacement_index, current)
-        return index + 1, sample
+        replacement_index = index if index < k else randint(0, index)
+        return (
+            index + 1,
+            sample.set(replacement_index, current) if replacement_index < k else sample,
+        )
 
     return sync.compose_left(
         reduce(reducer, (0, immutables.Map())),
