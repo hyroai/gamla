@@ -33,9 +33,7 @@ def contains(set: ImmutableSet, element) -> bool:
 
 def union(set1: ImmutableSet, set2: ImmutableSet) -> ImmutableSet:
     smaller, larger = sorted([set1, set2], key=length)
-    for element in smaller:  # type: ignore
-        larger = add(larger, element)
-    return larger
+    return larger.update(smaller)  # type: ignore
 
 
 def intersection(set1: ImmutableSet, set2: ImmutableSet) -> ImmutableSet:
