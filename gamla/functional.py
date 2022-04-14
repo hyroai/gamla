@@ -14,7 +14,6 @@ from typing import (
     Callable,
     Collection,
     Dict,
-    FrozenSet,
     Iterable,
     List,
     Sequence,
@@ -24,12 +23,11 @@ from typing import (
 )
 
 import heapq_max
+import immutables
 import toolz
 
 from gamla import construct, currying, excepts_decorator, operator
 from gamla.optimized import sync
-
-_indicate_depletion = object()
 
 
 def sample_with_randint(randint: Callable, k: int):
@@ -39,20 +37,24 @@ def sample_with_randint(randint: Callable, k: int):
     frozenset([1,3])
     """
 
-    def sample_stream(seq: Iterable) -> FrozenSet:
-        iterator = iter(seq)
-        result = [next(iterator) for _ in range(k)]
-        i = len(result)
-        while True:
-            j = randint(0, i)
-            element = next(iterator, _indicate_depletion)
-            if element == _indicate_depletion:
-                return frozenset(result)
-            if j < k:
-                result[j] = element
-            i += 1
+    def reducer(
+        index_and_sample: immutables.Map,
+        current,
+    ) -> Tuple[int, immutables.Map]:
+        index, sample = index_and_sample
+        if index < k:
+            return index + 1, sample.set(index, current)
+        replacement_index = randint(0, index)
+        if replacement_index < k:
+            return index + 1, sample.set(replacement_index, current)
+        return index + 1, sample
 
-    return sample_stream
+    def sample(seq: Iterable):
+        return frozenset(
+            functools.reduce(reducer, seq, (0, immutables.Map()))[1].values(),
+        )
+
+    return sample
 
 
 sample = currying.curry(sample_with_randint)(random.randint)
