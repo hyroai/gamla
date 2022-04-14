@@ -15,7 +15,7 @@ class ImmutableSet:
     def __init__(self, inner):
         self._inner = inner
 
-    def __eq__(self, other):
+    def __eq__(self, _):
         raise NotImplementedError(
             "Use the functions in this module instead of operators.",
         )
