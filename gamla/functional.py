@@ -10,18 +10,17 @@ import random
 from concurrent import futures
 from operator import truediv
 from typing import (
-    AbstractSet,
     Any,
     Callable,
     Collection,
     Dict,
+    FrozenSet,
     Iterable,
     List,
     Sequence,
     Text,
     Tuple,
     TypeVar,
-    Union,
 )
 
 import heapq_max
@@ -29,6 +28,35 @@ import toolz
 
 from gamla import construct, currying, excepts_decorator, operator
 from gamla.optimized import sync
+
+_indicate_depletion = object()
+
+
+def sample_with_randint(randint: Callable, k: int):
+    """Samples an iterable uniformly in one pass with O(1) memory.
+
+    >>> sample(2)([1, 2, 3])
+    frozenset([1,3])
+    """
+
+    def sample_stream(seq: Iterable) -> FrozenSet:
+        iterator = iter(seq)
+        result = [next(iterator) for _ in range(k)]
+        i = len(result)
+        while True:
+            j = randint(0, i)
+            element = next(iterator, _indicate_depletion)
+            if element == _indicate_depletion:
+                return frozenset(result)
+            if j < k:
+                result[j] = element
+            i += 1
+
+    return sample_stream
+
+
+sample = currying.curry(sample_with_randint)(random.randint)
+choice = sync.compose(operator.head, sample_with_randint(random.randint, 1))
 
 
 def sort_by(key: Callable):
@@ -439,15 +467,6 @@ def get_all_n_grams(seq: Sequence) -> Iterable[Tuple]:
     for i in range(len(seq)):
         for j in range(i + 1, len(seq) + 1):
             yield tuple(seq[i:j])
-
-
-def sample(n: int):
-    """Chooses n unique random elements from a population sequence or set"""
-
-    def sample_inner(population: Union[Sequence, AbstractSet]):
-        return random.sample(population, n)
-
-    return sample_inner
 
 
 @currying.curry
