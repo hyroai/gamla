@@ -40,6 +40,9 @@ def _is_o_of_1(f, arg1, arg2):
     return time.perf_counter() - start < 0.0001
 
 
+_large_number = 9999
+
+
 def test_intersection():
     assert immutable_set.intersection(
         immutable_set.create([1, 2]),
@@ -50,15 +53,22 @@ def test_intersection():
 def test_performance_sanity():
     assert not _is_o_of_1(
         immutable_set.union,
-        immutable_set.create(range(999)),
-        immutable_set.create(range(999)),
+        immutable_set.create(range(_large_number)),
+        immutable_set.create(range(_large_number)),
     )
 
 
-def test_performance():
-    for f in [immutable_set.union, immutable_set.intersection]:
-        assert _is_o_of_1(
-            f,
-            immutable_set.create(range(999)),
-            immutable_set.create(range(1)),
-        )
+def test_union_performance():
+    assert _is_o_of_1(
+        immutable_set.union,
+        immutable_set.create(range(_large_number)),
+        immutable_set.create(range(_large_number // 64, _large_number // 32)),
+    )
+
+
+def test_intersection_performance():
+    assert _is_o_of_1(
+        immutable_set.intersection,
+        immutable_set.create(range(_large_number)),
+        immutable_set.create(range(1)),
+    )
