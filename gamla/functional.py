@@ -10,7 +10,6 @@ import random
 from concurrent import futures
 from operator import truediv
 from typing import (
-    AbstractSet,
     Any,
     Callable,
     Collection,
@@ -21,10 +20,10 @@ from typing import (
     Text,
     Tuple,
     TypeVar,
-    Union,
 )
 
 import heapq_max
+import immutables
 import toolz
 
 from gamla import construct, currying, excepts_decorator, operator
@@ -441,15 +440,6 @@ def get_all_n_grams(seq: Sequence) -> Iterable[Tuple]:
             yield tuple(seq[i:j])
 
 
-def sample(n: int):
-    """Chooses n unique random elements from a population sequence or set"""
-
-    def sample_inner(population: Union[Sequence, AbstractSet]):
-        return random.sample(population, n)
-
-    return sample_inner
-
-
 @currying.curry
 def eq_by(f, value_1, value_2):
     """Check if two values are equal when applying f on both of them."""
@@ -718,3 +708,33 @@ def attr_equals(attribute: str, equals_what: Any) -> Callable[[Any], bool]:
         operator.attrgetter(attribute),
         operator.equals(equals_what),
     )
+
+
+def sample_with_randint(randint: Callable, k: int):
+    """Samples an iterable uniformly in one pass with O(k) memory.
+
+    >>> sample(2)([1, 2, 3])
+    frozenset([1,3])
+    """
+
+    def reducer(
+        index_and_sample: Tuple[int, immutables.Map],
+        current,
+    ) -> Tuple[int, immutables.Map]:
+        index, sample = index_and_sample
+        replacement_index = index if index < k else randint(0, index)
+        return (
+            index + 1,
+            sample.set(replacement_index, current) if replacement_index < k else sample,
+        )
+
+    return sync.compose_left(
+        reduce(reducer, (0, immutables.Map())),
+        operator.second,
+        immutables.Map.values,
+        frozenset,
+    )
+
+
+sample = currying.curry(sample_with_randint)(random.randint)
+choice = sync.compose(operator.head, sample_with_randint(random.randint, 1))

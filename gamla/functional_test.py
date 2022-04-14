@@ -1,4 +1,5 @@
 import asyncio
+import random
 import time
 from operator import not_, truediv
 
@@ -735,3 +736,9 @@ def test_compose_empty():
 
 def test_compose_single_function():
     assert functional_generic.compose(lambda x: x + 1)(1) == 2
+
+
+def test_sample_with_randint():
+    assert functional.sample_with_randint(random.Random(0).randint, 1)(
+        range(10),
+    ) == frozenset([3])
