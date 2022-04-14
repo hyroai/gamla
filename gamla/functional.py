@@ -718,7 +718,7 @@ def sample_with_randint(randint: Callable, k: int):
     """
 
     def reducer(
-        index_and_sample: immutables.Map,
+        index_and_sample: Tuple[int, immutables.Map],
         current,
     ) -> Tuple[int, immutables.Map]:
         index, sample = index_and_sample
