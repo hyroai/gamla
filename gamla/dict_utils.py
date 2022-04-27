@@ -204,3 +204,18 @@ def rename_key(old: str, new: str) -> Callable[[dict], dict]:
     {'first_name': 'Danny', 'age': 20}
     """
     return sync.keymap(sync.when(operator.equals(old), construct.just(new)))
+
+
+def transform_item(key, f: Callable) -> Callable[[dict], dict]:
+    """transform a value of `key` in a dict. i.e given a dict `d`, return a new dictionary `e` s.t e[key] = f(d[key]).
+
+    >>> my_dict = {"name": "Danny", "age": 20}
+    >>> transform_item("name", str.upper)(my_dict)
+    {'name': 'DANNY', 'age': 20}
+    """
+    return functional_generic.itemmap(
+        functional_generic.when(
+            functional_generic.compose_left(operator.head, operator.equals(key)),
+            functional_generic.packstack(operator.identity, f),
+        ),
+    )
