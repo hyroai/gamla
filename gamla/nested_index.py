@@ -1,3 +1,4 @@
+"""Builds an index with an arbitrary amount of steps from an iterable."""
 from typing import Callable, Dict, Iterable, Tuple
 
 from gamla import functional_generic, operator

@@ -1,13 +1,13 @@
-from gamla import functional_generic, hierarchical_index, operator
+from gamla import functional_generic, nested_index, operator
 
 
 def test_index():
     index = functional_generic.pipe(
-        hierarchical_index.build(
+        nested_index.build(
             map(functional_generic.groupby, [operator.head, operator.second]),
             ["uri", "dani"],
         ),
-        hierarchical_index.to_query,
+        nested_index.to_query,
     )
     assert index("d")("a") == frozenset(["dani"])
     assert index("u")("r") == frozenset(["uri"])
@@ -17,14 +17,14 @@ def test_index():
 
 def test_three_level_index():
     three_level_index = functional_generic.pipe(
-        hierarchical_index.build(
+        nested_index.build(
             map(
                 functional_generic.groupby,
                 [operator.head, operator.second, operator.nth(2)],
             ),
             ["uri", "dani"],
         ),
-        hierarchical_index.to_query,
+        nested_index.to_query,
     )
     assert three_level_index("d")("a")("n") == frozenset(["dani"])
     assert three_level_index("u")("r")("i") == frozenset(["uri"])
