@@ -18,17 +18,21 @@ def _return_after_n_calls(n: int, value) -> Callable:
     return return_after_n_calls
 
 
-def _dict_to_getter_with_default_recursive(default, d: Dict):
-    def dict_to_getter_with_default_inner(key):
+def _dict_to_getter_with_default_recursive(default, num_of_steps: int, d: Dict):
+    def dict_to_getter_with_default_recursive(key):
         if key in d:
             if isinstance(d[key], dict):
-                return _dict_to_getter_with_default_recursive(default, d[key])
+                return _dict_to_getter_with_default_recursive(
+                    default,
+                    num_of_steps - 1,
+                    d[key],
+                )
             else:
                 return d[key]
         else:
-            return default
+            return _return_after_n_calls(num_of_steps - 1, default)
 
-    return dict_to_getter_with_default_inner
+    return dict_to_getter_with_default_recursive
 
 
 def _make_index_dict(steps):
@@ -48,6 +52,7 @@ def build(steps: Iterable, it) -> HierarchicalIndex:
 
 def to_query(index: HierarchicalIndex) -> Callable:
     return _dict_to_getter_with_default_recursive(
-        _return_after_n_calls(_steps(index) - 1, frozenset()),
+        frozenset(),
+        _steps(index),
         _dict(index),
     )
