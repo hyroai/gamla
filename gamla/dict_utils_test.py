@@ -73,3 +73,10 @@ def test_add_key_value():
 
 def test_remove_key():
     assert dict_utils.remove_key("1")({"1": 1, "2": 2}) == {"2": 2}
+
+
+def test_transform_item():
+    assert dict_utils.transform_item("1", operator.add(1))({"1": 1, "2": 2}) == {
+        "1": 2,
+        "2": 2,
+    }
