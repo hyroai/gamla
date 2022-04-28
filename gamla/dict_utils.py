@@ -2,7 +2,7 @@ import functools
 from operator import getitem
 from typing import Callable, Dict, Iterable
 
-from gamla import construct, currying, functional, operator
+from gamla import construct, currying, functional, functional_generic, operator
 from gamla.optimized import sync
 
 
