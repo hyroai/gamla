@@ -56,7 +56,7 @@ def double_star(f):
     async def double_star(x):
         return await f(**x)
 
-    return star
+    return double_star
 
 
 def thunk(f, *args, **kwargs):
