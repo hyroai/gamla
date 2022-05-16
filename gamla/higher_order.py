@@ -42,6 +42,7 @@ def prepare_and_apply_async(f):
     return prepare_and_apply
 
 
+# If the prepared function is sync and the applied function is async this doesn't work.
 prepare_and_apply = functional_generic.choose_by_async(
     prepare_and_apply_sync,
     prepare_and_apply_async,
