@@ -51,6 +51,5 @@ async def test_prepare_and_apply():
         return async_increment if x < 10 else async_decrement
 
     assert (
-        await higher_order.prepare_and_apply_async(async_conditional_transformation)(15)
-        == 14
+        await higher_order.prepare_and_apply(async_conditional_transformation)(15) == 14
     )
