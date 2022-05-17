@@ -897,12 +897,12 @@ anystack = compose_left(packstack, after(any))
 
 
 def _choose_by_async(f_sync, f_async):
-    def _choose_by_async(f):
+    def choose_by_async(f):
         if inspect.iscoroutinefunction(f):
             return f_async(f)
         return f_sync(f)
 
-    return _choose_by_async
+    return choose_by_async
 
 
 #: Turns a variadic function into an unary one that gets a tuple of args to the original function.
