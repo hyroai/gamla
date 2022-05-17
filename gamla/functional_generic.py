@@ -896,26 +896,26 @@ allstack = compose_left(packstack, after(all))
 anystack = compose_left(packstack, after(any))
 
 
-def choose_by_async(f_sync, f_async):
-    def choose_by_async(f):
+def _choose_by_async(f_sync, f_async):
+    def _choose_by_async(f):
         if inspect.iscoroutinefunction(f):
             return f_async(f)
         return f_sync(f)
 
-    return choose_by_async
+    return _choose_by_async
 
 
 #: Turns a variadic function into an unary one that gets a tuple of args to the original function.
 #:
 #: >>> pipe((2, 3), star(lambda x, y: x + y))
 #: 5
-star = choose_by_async(sync.star, async_functions.star)
+star = _choose_by_async(sync.star, async_functions.star)
 
 #: Turns a variadic function into an unary one that gets a dict of keywoded args to the original function.
 #:
 #: >>> pipe(({"x": 2, "y": 3}), double_star(lambda x, y: x + y))
 #: 5
-double_star = choose_by_async(sync.double_star, async_functions.double_star)
+double_star = _choose_by_async(sync.double_star, async_functions.double_star)
 
 #: Return a dict with number of occurrences of each value in a sequence.
 #: >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])
