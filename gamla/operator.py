@@ -242,7 +242,9 @@ def between(low: int, high: int):
     return between
 
 
-def empty(seq):
+def empty(seq: Union[Iterable, Sequence]) -> bool:
+    if is_generator(seq):
+        seq = tuple(seq)
     try:
         next(iter(seq))
     except StopIteration:
@@ -250,7 +252,7 @@ def empty(seq):
     return False
 
 
-def nonempty(seq):
+def nonempty(seq: Union[Iterable, Sequence]) -> bool:
     return not empty(seq)
 
 
@@ -334,3 +336,7 @@ def is_iterable(x):
         return True
     except TypeError:
         return False
+
+
+def is_generator(iterable):
+    return hasattr(iterable, "__iter__") and not hasattr(iterable, "__len__")
