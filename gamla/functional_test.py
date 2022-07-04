@@ -249,14 +249,28 @@ def test_apply_spec():
     )(1) == {"identity": 1, "increment": 2}
 
 
-async def test_apply_spec_async():
-    async def async_identity(x):
-        await asyncio.sleep(0.01)
-        return x
+async def _async_identity(x):
+    await asyncio.sleep(0.01)
+    return x
 
+
+async def test_apply_spec_async():
     assert await functional_generic.apply_spec(
-        {"identity": async_identity, "increment": operator.add(1)},
+        {"identity": _async_identity, "increment": operator.add(1)},
     )(1) == {"identity": 1, "increment": 2}
+
+
+@pytest.mark.timeout(0.1)
+async def test_apply_spec_async_terminal_iterable():
+    # When a terminal was iterable then apply_spec got stuck.
+    assert await functional_generic.compose_left(
+        functional_generic.apply_spec(
+            {
+                "identity": functional_generic.compose_left(_async_identity),
+                "increment": construct.just("some text"),
+            },
+        ),
+    )(1)
 
 
 async def test_apply_spec_async_recursive():
