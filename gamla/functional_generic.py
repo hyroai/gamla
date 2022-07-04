@@ -584,7 +584,7 @@ async def _await_dict(value):
             dict,
             valmap(_await_dict),
         )
-    if isinstance(value, Iterable):
+    if isinstance(value, Iterable) and not isinstance(value, str):
         return await pipe(value, async_functions.map(_await_dict), type(value))
     return await async_functions.to_awaitable(value)
 
