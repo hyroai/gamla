@@ -124,6 +124,21 @@ async def test_retry():
     assert await io_utils.retry(SomeError, 3, 0, f)(3, 2) == 5
 
 
+async def test_retry_with_count():
+    class SomeError(Exception):
+        pass
+
+    succeeds_in_n_retries = 2
+
+    async def f(x, y):
+        nonlocal succeeds_in_n_retries
+        if succeeds_in_n_retries == 0:
+            return x + y
+        succeeds_in_n_retries -= 1
+        raise SomeError
+    assert await io_utils.retry_with_count(SomeError, 3, 3, 0, f)(3, 2) == (5,2)
+
+
 async def test_retry_raises():
     class SomeError(Exception):
         pass
