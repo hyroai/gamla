@@ -1,6 +1,6 @@
 """Synchronous versions of common functions for optimized use cases."""
 import itertools
-from typing import Callable, Tuple
+from typing import Any, Callable, Iterable, Tuple, Union
 
 from gamla import construct, operator
 
@@ -421,3 +421,32 @@ def bifurcate(*funcs):
     (15, 5)
     """
     return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
+
+
+_should_be_concatinated = anyjuxt(
+    *map(operator.is_instance)([frozenset, set, tuple, list])
+)
+
+
+def flatten(iterable: Iterable[Union[Any, Iterable]]) -> Iterable[Any]:
+    """Flatten a given iterable revursively.
+    >>> iter = [1, "a", frozenset({"something"}), (("hi", 6),)]
+    >>> flatten(iter)
+    (
+        1,
+        "a",
+        "something",
+        "hi",
+        6,
+    )
+    """
+    if anymap(_should_be_concatinated)(iterable):
+        return flatten(
+            pipe(
+                iterable,
+                map(when(complement(_should_be_concatinated), construct.wrap_tuple)),
+                operator.concat,
+                tuple,
+            ),
+        )
+    return iterable
