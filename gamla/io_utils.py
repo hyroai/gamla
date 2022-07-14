@@ -2,7 +2,6 @@ import asyncio
 import functools
 import logging
 import time
-import pytest
 from typing import Callable, Dict, Text, Tuple, Union
 
 import async_timeout
@@ -281,16 +280,19 @@ def retry_with_count(
     f: Callable,
 ):
     """Wraps a coroutine to retry on given exceptions with count of retries."""
+
     async def retry_inner(*args, **kwargs):
         try:
-            return await f(*args, **kwargs), max_times-times
+            return await f(*args, **kwargs), max_times - times
         except exception:
             await asyncio.sleep(wait_seconds)
             if not times:
                 raise exception
-            return await retry_with_count(exception, max_times, times - 1, wait_seconds, f)(*args, **kwargs)
-    return retry_inner
+            return await retry_with_count(
+                exception, max_times, times - 1, wait_seconds, f
+            )(*args, **kwargs)
 
+    return retry_inner
 
 
 @currying.curry
@@ -303,8 +305,9 @@ def retry(
     """Wraps a coroutine to retry on given exceptions."""
 
     async def retry_inner(*args, **kwargs):
-        output, _ = await retry_with_count(exception, times, times, wait_seconds, f)(*args, **kwargs)
+        output, _ = await retry_with_count(exception, times, times, wait_seconds, f)(
+            *args, **kwargs
+        )
         return output
+
     return retry_inner
-
-
