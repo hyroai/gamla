@@ -308,7 +308,6 @@ def retry_with_count(
     return _retry_with_count(exception, times, times, wait_seconds, f)
 
 
-
 @currying.curry
 def retry(
     exception: Union[Exception, Tuple[Exception, ...]],
@@ -319,6 +318,9 @@ def retry(
     """Wraps a coroutine to retry on given exceptions."""
 
     async def retry_inner(*args, **kwargs):
-        output, _ = await retry_with_count(exception, times, wait_seconds, f)(*args, **kwargs)
+        output, _ = await retry_with_count(exception, times, wait_seconds, f)(
+            *args, **kwargs
+        )
         return output
+
     return retry_inner
