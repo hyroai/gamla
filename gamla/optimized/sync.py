@@ -423,13 +423,13 @@ def bifurcate(*funcs):
     return compose_left(iter, lambda it: itertools.tee(it, len(funcs)), stack(funcs))
 
 
-_should_be_concatinated = anyjuxt(
+_should_be_concatenated = anyjuxt(
     *map(operator.is_instance)([frozenset, set, tuple, list])
 )
 
 
 def flatten(iterable: Iterable[Union[Any, Iterable]]) -> Iterable[Any]:
-    """Flatten a given iterable revursively.
+    """Flatten a given iterable recursively.
     >>> iter = [1, "a", frozenset({"something"}), (("hi", 6),)]
     >>> flatten(iter)
     (
@@ -440,11 +440,11 @@ def flatten(iterable: Iterable[Union[Any, Iterable]]) -> Iterable[Any]:
         6,
     )
     """
-    if anymap(_should_be_concatinated)(iterable):
+    if anymap(_should_be_concatenated)(iterable):
         return flatten(
             pipe(
                 iterable,
-                map(when(complement(_should_be_concatinated), construct.wrap_tuple)),
+                map(when(complement(_should_be_concatenated), construct.wrap_tuple)),
                 operator.concat,
                 tuple,
             ),
