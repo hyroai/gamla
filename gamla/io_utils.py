@@ -286,7 +286,7 @@ def _retry_with_count(
             await asyncio.sleep(wait_seconds)
             if not times:
                 raise exception
-            return await retry_with_count(
+            return await _retry_with_count(
                 exception,
                 max_times,
                 times - 1,
@@ -308,6 +308,7 @@ def retry_with_count(
     return _retry_with_count(exception, times, times, wait_seconds, f)
 
 
+
 @currying.curry
 def retry(
     exception: Union[Exception, Tuple[Exception, ...]],
@@ -316,5 +317,8 @@ def retry(
     f: Callable,
 ):
     """Wraps a coroutine to retry on given exceptions."""
-    output, _ = retry_with_count(exception, times, wait_seconds, f)
-    return output
+
+    async def retry_inner(*args, **kwargs):
+        output, _ = await retry_with_count(exception, times, wait_seconds, f)(*args, **kwargs)
+        return output
+    return retry_inner
