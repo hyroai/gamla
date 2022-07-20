@@ -272,6 +272,43 @@ post_json_async = post_json_with_extra_headers_and_params_async({}, {})
 
 
 @currying.curry
+def _retry_with_count(
+    exception: Union[Exception, Tuple[Exception, ...]],
+    max_times: int,
+    times: int,
+    wait_seconds: float,
+    f: Callable,
+):
+    async def retry_inner(*args, **kwargs):
+        try:
+            return await f(*args, **kwargs), max_times - times
+        except exception:
+            await asyncio.sleep(wait_seconds)
+            if not times:
+                raise exception
+            return await _retry_with_count(
+                exception,
+                max_times,
+                times - 1,
+                wait_seconds,
+                f,
+            )(*args, **kwargs)
+
+    return retry_inner
+
+
+@currying.curry
+def retry_with_count(
+    exception: Union[Exception, Tuple[Exception, ...]],
+    times: int,
+    wait_seconds: float,
+    f: Callable,
+):
+    """Wraps a coroutine to retry on given exceptions and returns tuple of output and count of retries."""
+    return _retry_with_count(exception, times, times, wait_seconds, f)
+
+
+@currying.curry
 def retry(
     exception: Union[Exception, Tuple[Exception, ...]],
     times: int,
@@ -281,12 +318,9 @@ def retry(
     """Wraps a coroutine to retry on given exceptions."""
 
     async def retry_inner(*args, **kwargs):
-        try:
-            return await f(*args, **kwargs)
-        except exception:
-            await asyncio.sleep(wait_seconds)
-            if not times:
-                raise exception
-            return await retry(exception, times - 1, wait_seconds, f)(*args, **kwargs)
+        output, _ = await retry_with_count(exception, times, wait_seconds, f)(
+            *args, **kwargs
+        )
+        return output
 
     return retry_inner
