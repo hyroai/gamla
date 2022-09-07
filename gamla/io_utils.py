@@ -210,12 +210,7 @@ async def get_async_with_headers(headers: Dict[str, str], timeout: float, url: T
     >>> response = await get_async_with_headers({some_header: some_value}, 30, "https://www.someurl.com")
     """
     async with httpx.AsyncClient() as client:
-        return await client.get(
-            url,
-            timeout=timeout,
-            headers=headers,
-            follow_redirects=True,
-        )
+        return await client.get(url, timeout=timeout, headers=headers)
 
 
 #: Performs an async GET request to url with the specified timeout (seconds) and headers.
