@@ -512,7 +512,7 @@ def duplicated_values(seq):
         if item in seen:
             duplicates.append(item)
         else:
-            seen.append(item)
+            seen.add(item)
     return duplicates
 
 
