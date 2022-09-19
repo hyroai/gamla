@@ -507,13 +507,13 @@ def duplicated_values(seq):
     (2, 3)
     """
     seen = set()
-    duplicates = ()
+    duplicates = []
     for item in seq:
         if item in seen:
             duplicates.append(item)
         else:
             seen.add(item)
-    return duplicates
+    return tuple(duplicates)
 
 
 def interpose(el):
