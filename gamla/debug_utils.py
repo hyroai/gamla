@@ -9,7 +9,7 @@ import termcolor
 import toolz
 import yappi
 
-from gamla import functional_generic
+from gamla import functional_generic, operator
 from gamla.optimized import sync
 
 logger = functional_generic.side_effect(logging.info)
@@ -37,7 +37,7 @@ def _log_and_break(x):
 #: - Materializes generators, as most of the time we are interested in looking into them, so can have unexpected results.
 #: - The current value can be referenced by `x` in the debug prompt.
 debug = functional_generic.compose_left(
-    functional_generic.when(functional_generic.is_generator, tuple),
+    functional_generic.when(operator.is_generator, tuple),
     functional_generic.side_effect(_log_and_break),
 )
 
