@@ -756,3 +756,7 @@ def test_sample_with_randint():
     assert functional.sample_with_randint(random.Random(0).randint, 1)(
         range(10),
     ) == frozenset([3])
+
+
+def test_duplicated_values():
+    assert functional.duplicated_values([1, 2, "a", "a", 5]) == ("a",)

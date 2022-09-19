@@ -500,6 +500,22 @@ def unique_by(f):
 unique = unique_by(operator.identity)
 
 
+def duplicated_values(seq):
+    """Returns duplicated values from a given sequence.
+
+    >>> duplicated_values([1,2,2,3,3,4,5])
+    (2, 3)
+    """
+    seen = set()
+    duplicates = ()
+    for item in seq:
+        if item in seen:
+            duplicates.append(item)
+        else:
+            seen.append(item)
+    return duplicates
+
+
 def interpose(el):
     """Introduces an element between each pair of elements in the input sequence.
 
