@@ -1,6 +1,8 @@
 import asyncio
 import random
+import threading
 
+import gamla
 import pytest
 
 from gamla import functional_generic, io_utils
@@ -172,6 +174,38 @@ async def test_throtle():
         functional_generic.curried_map(multiply_with_delay),
         tuple,
     ) == (1, 4, 9)
+
+
+import time
+
+
+async def test_throttle_sync():
+    factor = 0
+    res = ()
+
+    @io_utils.throttle(1)
+    def multiply_with_delay(x):
+        nonlocal factor
+        nonlocal res
+        factor = factor + 1
+        time.sleep(0.01)
+        res = res + (x * factor,)
+
+    functional_generic.pipe(
+        (1, 2, 3),
+        functional_generic.curried_map(
+            gamla.compose_left(
+                lambda input: threading.Thread(
+                    target=multiply_with_delay, args=(input,)
+                ),
+                gamla.side_effect(lambda thread: thread.start()),
+            )
+        ),
+        tuple,
+        gamla.map(lambda thread: thread.join()),
+        tuple,
+    )
+    assert res == (1, 4, 9)
 
 
 async def test_make_throttler():
