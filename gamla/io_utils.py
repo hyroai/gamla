@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import threading
 import time
 from typing import Callable, Dict, Text, Tuple, Union
 
@@ -162,14 +163,27 @@ def make_throttler(limit):
     semaphore = None
 
     def wrap_function(f):
+
+        if asyncio.iscoroutinefunction(f):
+
+            @functools.wraps(f)
+            async def wrap(*args, **kwargs):
+                nonlocal semaphore
+                # This must be in the inner function so that we avoid creating an event loop before the user has, causing the code to run with two different event loops.
+                if not semaphore:
+                    semaphore = asyncio.Semaphore(limit)
+                async with semaphore:
+                    return await f(*args, **kwargs)
+
+            return wrap
+
         @functools.wraps(f)
-        async def wrap(*args, **kwargs):
+        def wrap(*args, **kwargs):
             nonlocal semaphore
-            # This must be in the inner function so that we avoid creating an event loop before the user has, causing the code to run with two different event loops.
             if not semaphore:
-                semaphore = asyncio.Semaphore(limit)
-            async with semaphore:
-                return await f(*args, **kwargs)
+                semaphore = threading.BoundedSemaphore(limit)
+            with semaphore:
+                return f(*args, **kwargs)
 
         return wrap
 
