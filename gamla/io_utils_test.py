@@ -1,10 +1,11 @@
 import asyncio
 import random
 import threading
+import time
 
-import gamla
 import pytest
 
+import gamla
 from gamla import functional_generic, io_utils
 
 
@@ -176,9 +177,6 @@ async def test_throtle():
     ) == (1, 4, 9)
 
 
-import time
-
-
 async def test_throttle_sync():
     factor = 0
     res = ()
@@ -196,10 +194,11 @@ async def test_throttle_sync():
         functional_generic.curried_map(
             gamla.compose_left(
                 lambda input: threading.Thread(
-                    target=multiply_with_delay, args=(input,)
+                    target=multiply_with_delay,
+                    args=(input,),
                 ),
                 gamla.side_effect(lambda thread: thread.start()),
-            )
+            ),
         ),
         tuple,
         gamla.map(lambda thread: thread.join()),
