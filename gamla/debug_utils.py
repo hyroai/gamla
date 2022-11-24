@@ -5,7 +5,6 @@ import logging
 from typing import Text
 
 import tabulate
-import termcolor
 import toolz
 import yappi
 
@@ -27,8 +26,7 @@ def log_text(text: Text, level: int = logging.INFO):
     return functional_generic.side_effect(lambda x: logging.log(level, text.format(x)))
 
 
-def _log_and_break(x):
-    logging.info(termcolor.colored(x, "yellow"))
+def _break(x):
     builtins.breakpoint()
 
 
@@ -38,7 +36,7 @@ def _log_and_break(x):
 #: - The current value can be referenced by `x` in the debug prompt.
 debug = functional_generic.compose_left(
     functional_generic.when(functional_generic.is_generator, tuple),
-    functional_generic.side_effect(_log_and_break),
+    functional_generic.side_effect(_break),
 )
 
 debug_after = functional_generic.after(debug)
