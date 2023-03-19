@@ -343,3 +343,17 @@ def retry(
         return output
 
     return retry_inner
+
+
+def sleep(seconds: int) -> Callable:
+    """Curried sleep to be used inside compositions.
+
+    >>> gamla.compose_left(fetch, gamla.side_effect(sleep(2)))
+
+    """
+
+    @functional.ignore_input
+    async def sleep():
+        await asyncio.sleep(seconds)
+
+    return sleep
