@@ -2,6 +2,7 @@ import asyncio
 import random
 import threading
 import time
+import timeit
 
 import pytest
 
@@ -227,3 +228,9 @@ async def test_make_throttler():
 
     await asyncio.gather(inc(), dec(), inc(), dec())
     assert total == 0
+
+
+async def test_sleep():
+    start = timeit.default_timer()
+    await io_utils.sleep(0.1)()
+    assert timeit.default_timer() - start > 0.1
