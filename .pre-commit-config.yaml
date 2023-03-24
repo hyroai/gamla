@@ -5,13 +5,8 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
 
-  - repo: https://github.com/asottile/seed-isort-config
-    rev: v2.2.0
-    hooks:
-      - id: seed-isort-config
-
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
 
