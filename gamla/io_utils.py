@@ -345,7 +345,7 @@ def retry(
     return retry_inner
 
 
-def sleep(seconds: int) -> Callable:
+def sleep(seconds: float) -> Callable:
     """Curried sleep to be used inside compositions.
 
     >>> gamla.compose_left(fetch, gamla.side_effect(sleep(2)))
