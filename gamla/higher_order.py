@@ -1,8 +1,11 @@
-from gamla import functional_generic, operator
+import asyncio
+from typing import Any, Callable
+
+from gamla import excepts_decorator, functional, functional_generic, operator, sync
 from gamla.optimized import async_functions
 
 
-def prepare_and_apply(f):
+def prepare_and_apply(f: Callable) -> Callable:
     """Transforms a higher order function to a regular one.
 
     Uses the given value once to prepare a regular function, then again to call it with.
@@ -15,13 +18,13 @@ def prepare_and_apply(f):
     14
     """
 
-    def prepare_and_apply(value):
+    def prepare_and_apply(value: Any):
         return f(value)(value)
 
     return prepare_and_apply
 
 
-def prepare_and_apply_async(f):
+def prepare_and_apply_async(f: Callable) -> Callable:
     """Transforms a higher order function to a regular one.
 
     Uses the given value once to prepare a regular function, then again to call it with.
@@ -34,12 +37,45 @@ def prepare_and_apply_async(f):
     14
     """
 
-    async def prepare_and_apply(value):
+    async def prepare_and_apply(value: Any):
         return await async_functions.to_awaitable(
             (await async_functions.to_awaitable(f(value)))(value),
         )
 
     return prepare_and_apply
+
+
+def ignore_first(f: Callable) -> Callable:
+    if asyncio.iscoroutinefunction(f):
+
+        async def ignore_first_async(_, *args, **kwargs):
+            return await f(*args, **kwargs)
+
+        return ignore_first_async
+
+    def ignore_first(_, *args, **kwargs):
+        return f(*args, **kwargs)
+
+    return ignore_first
+
+
+def persistent_cache(
+    get_item: Callable[[str], Any],
+    set_item: Callable[[str, Any], None],
+    make_key: Callable,
+) -> Callable:
+    def decorator(f: Callable):
+        return excepts_decorator.try_and_excepts(
+            KeyError,
+            sync.compose_left(
+                sync.juxt(ignore_first(functional.make_key), ignore_first(f)),
+                functional_generic.side_effect(sync.star(set_item)),
+                operator.second,
+            ),
+            sync.compose_left(functional.make_key, get_item),
+        )
+
+    return decorator
 
 
 #: Make a function act on the first element on incoming input.

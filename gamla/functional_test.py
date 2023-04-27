@@ -760,3 +760,10 @@ def test_sample_with_randint():
 
 def test_duplicated_values():
     assert functional.duplicated_values([1, 2, "a", "a", 5]) == ("a",)
+
+
+def test_ignore_first():
+    assert (
+        functional.make_key("something")(1, "a", ("this is a tuple",))
+        == "something:bb3e5790db17439b8e07f238a82bf90037676a4e"
+    )

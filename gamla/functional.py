@@ -164,6 +164,15 @@ def compute_stable_json_hash(item) -> Text:
     ).hexdigest()
 
 
+def make_key(name: str):
+    return sync.compose_left(
+        lambda *args, **kwargs: (args, kwargs),
+        sync.star(make_call_key),
+        compute_stable_json_hash,
+        construct.wrap_str(name + ":{}"),
+    )
+
+
 @currying.curry
 def assert_that_with_message(input_to_message: Callable, f: Callable):
     """Assert a function `f` on the input, printing the output of `input_to_message(input)` if assertion is False.
