@@ -66,7 +66,7 @@ def persistent_cache(
 ) -> Callable:
     def decorator(f: Callable):
         return excepts_decorator.try_and_excepts(
-            KeyError,
+            KeyError,  # type: ignore
             sync.compose_left(
                 sync.juxt(ignore_first(make_key), ignore_first(f)),
                 functional_generic.side_effect(sync.star(set_item)),
