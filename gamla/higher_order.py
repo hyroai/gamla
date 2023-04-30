@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Callable
 
-from gamla import excepts_decorator, functional, functional_generic, operator, sync
+from gamla import excepts_decorator, functional_generic, operator, sync
 from gamla.optimized import async_functions
 
 
@@ -68,11 +68,11 @@ def persistent_cache(
         return excepts_decorator.try_and_excepts(
             KeyError,
             sync.compose_left(
-                sync.juxt(ignore_first(functional.make_key), ignore_first(f)),
+                sync.juxt(ignore_first(make_key), ignore_first(f)),
                 functional_generic.side_effect(sync.star(set_item)),
                 operator.second,
             ),
-            sync.compose_left(functional.make_key, get_item),
+            sync.compose_left(make_key, get_item),
         )
 
     return decorator

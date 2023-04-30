@@ -57,3 +57,4 @@ def test_persistent_cache():
         )(f)("something")
         == "something"
     )
+    assert d == {"some key:c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
