@@ -19,6 +19,8 @@ async def to_awaitable(value):
 
 
 def wrap_awaitable(f):
+    """Wraps a function with async."""
+
     async def async_identity(x):
         return x
 

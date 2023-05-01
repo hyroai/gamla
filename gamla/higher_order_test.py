@@ -33,7 +33,7 @@ def test_ignore_first():
     def increment(x):
         return x + 1
 
-    assert higher_order.ignore_first(increment)("a", 2) == 3
+    assert higher_order.ignore_first_arg(increment)("a", 2) == 3
 
 
 def test_persistent_cache():
@@ -53,8 +53,30 @@ def test_persistent_cache():
         higher_order.persistent_cache(
             get_item,
             set_item,
-            functional.make_key("some key"),
+            functional.make_hashed_call_key("some key"),
         )(f)("something")
         == "something"
     )
+    assert d == {"some key:c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
+
+
+async def test_persistent_cache_async():
+    d = {}
+
+    async def get_item(key: str):
+        return d[key]
+
+    async def set_item(key: str, value):
+        d[key] = value
+        return
+
+    async def f(x):
+        return x
+
+    result = await higher_order.persistent_cache(
+        get_item,
+        set_item,
+        functional.make_hashed_call_key("some key"),
+    )(f)("something")
+    assert result == "something"
     assert d == {"some key:c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}

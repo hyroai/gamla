@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Callable
 
-from gamla import excepts_decorator, functional_generic, operator, sync
+from gamla import excepts_decorator, functional_generic, operator
 from gamla.optimized import async_functions
 
 
@@ -45,18 +45,19 @@ def prepare_and_apply_async(f: Callable) -> Callable:
     return prepare_and_apply
 
 
-def ignore_first(f: Callable) -> Callable:
+def ignore_first_arg(f: Callable) -> Callable:
+    """Ignores the first argument."""
     if asyncio.iscoroutinefunction(f):
 
-        async def ignore_first_async(_, *args, **kwargs):
+        async def ignore_first_arg_async(_, *args, **kwargs):
             return await f(*args, **kwargs)
 
-        return ignore_first_async
+        return ignore_first_arg_async
 
-    def ignore_first(_, *args, **kwargs):
+    def ignore_first_arg(_, *args, **kwargs):
         return f(*args, **kwargs)
 
-    return ignore_first
+    return ignore_first_arg
 
 
 def persistent_cache(
@@ -64,15 +65,20 @@ def persistent_cache(
     set_item: Callable[[str, Any], None],
     make_key: Callable,
 ) -> Callable:
+    """Wraps a function with persistent cache. Gets the item getter and item setter as parameters."""
+
     def decorator(f: Callable):
         return excepts_decorator.try_and_excepts(
             KeyError,  # type: ignore
-            sync.compose_left(
-                sync.juxt(ignore_first(make_key), ignore_first(f)),
-                functional_generic.side_effect(sync.star(set_item)),
+            functional_generic.compose_left(
+                functional_generic.juxt(
+                    ignore_first_arg(make_key),
+                    ignore_first_arg(f),
+                ),
+                functional_generic.side_effect(functional_generic.star(set_item)),
                 operator.second,
             ),
-            sync.compose_left(make_key, get_item),
+            functional_generic.compose_left(make_key, get_item),
         )
 
     return decorator

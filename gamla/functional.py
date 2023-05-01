@@ -164,7 +164,8 @@ def compute_stable_json_hash(item) -> Text:
     ).hexdigest()
 
 
-def make_key(name: str):
+def make_hashed_call_key(name: str):
+    """Creates a stable hash for args and kwargs."""
     return sync.compose_left(
         lambda *args, **kwargs: (args, kwargs),
         sync.star(make_call_key),

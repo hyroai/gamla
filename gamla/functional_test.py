@@ -762,7 +762,7 @@ def test_duplicated_values():
     assert functional.duplicated_values([1, 2, "a", "a", 5]) == ("a",)
 
 
-def test_ignore_first():
+def test_make_hashed_call_key():
     assert (
         functional.make_key("something")(1, "a", ("this is a tuple",))
         == "something:bb3e5790db17439b8e07f238a82bf90037676a4e"
