@@ -153,6 +153,18 @@ def to_json(obj):
     return json.dumps(obj)
 
 
+# To get a unique caching key for each function invocation, we take `args` and `items()`
+# of `kwargs` and sort them (by keys), while also marking the beginning of `kwargs`.
+# Inspired by: http://code.activestate.com/recipes/578078/ (python LRU cache
+# implementation).
+def make_call_key(args, kwargs):
+    """Stable id for function calls, can be used for caching."""
+    key = args
+    if kwargs:
+        key += "##kwargs##", tuple(sorted(kwargs.items()))
+    return key
+
+
 def compute_stable_json_hash(item) -> Text:
     """Only works on json valid data types."""
     return hashlib.sha1(
@@ -164,14 +176,11 @@ def compute_stable_json_hash(item) -> Text:
     ).hexdigest()
 
 
-def make_hashed_call_key(name: str):
-    """Creates a stable hash for args and kwargs."""
-    return sync.compose_left(
-        lambda *args, **kwargs: (args, kwargs),
-        sync.star(make_call_key),
-        compute_stable_json_hash,
-        construct.wrap_str(name + ":{}"),
-    )
+make_hashed_call_key = sync.compose_left(
+    lambda *args, **kwargs: (args, kwargs),
+    sync.star(make_call_key),
+    compute_stable_json_hash,
+)
 
 
 @currying.curry
@@ -198,18 +207,6 @@ assert_that = assert_that_with_message(construct.just(""))
 def pmap(f, n_workers, it):
     # The `tuple` is for callers convenience (even without it, the pool is eager).
     return tuple(futures.ThreadPoolExecutor(max_workers=n_workers).map(f, it))
-
-
-# To get a unique caching key for each function invocation, we take `args` and `items()`
-# of `kwargs` and sort them (by keys), while also marking the beginning of `kwargs`.
-# Inspired by: http://code.activestate.com/recipes/578078/ (python LRU cache
-# implementation).
-def make_call_key(args, kwargs):
-    """Stable id for function calls, can be used for caching."""
-    key = args
-    if kwargs:
-        key += "##kwargs##", tuple(sorted(kwargs.items()))
-    return key
 
 
 @currying.curry

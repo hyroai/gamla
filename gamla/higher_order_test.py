@@ -53,11 +53,11 @@ def test_persistent_cache():
         higher_order.persistent_cache(
             get_item,
             set_item,
-            functional.make_hashed_call_key("some key"),
+            functional.make_hashed_call_key,
         )(f)("something")
         == "something"
     )
-    assert d == {"some key:c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
+    assert d == {"c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
 
 
 async def test_persistent_cache_async():
@@ -76,7 +76,7 @@ async def test_persistent_cache_async():
     result = await higher_order.persistent_cache(
         get_item,
         set_item,
-        functional.make_hashed_call_key("some key"),
+        functional.make_hashed_call_key,
     )(f)("something")
     assert result == "something"
-    assert d == {"some key:c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
+    assert d == {"c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
