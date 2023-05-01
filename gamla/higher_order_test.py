@@ -1,3 +1,6 @@
+import asyncio
+import functools
+
 from gamla import functional, higher_order
 
 
@@ -36,6 +39,38 @@ def test_ignore_first():
     assert higher_order.ignore_first_arg(increment)("a", 2) == 3
 
 
+class _CalledTooManyTimes(Exception):
+    pass
+
+
+def assert_max_called(n: int):
+    def decorator(f):
+        count = 0
+        if asyncio.iscoroutinefunction(f):
+
+            @functools.wraps(f)
+            async def wrapped(*args, **kwargs):
+                nonlocal count
+                count += 1
+                if count > n:
+                    raise _CalledTooManyTimes()
+                return await f(*args, **kwargs)
+
+            return wrapped
+
+        @functools.wraps(f)
+        def wrapped(*args, **kwargs):
+            nonlocal count
+            count += 1
+            if count > n:
+                raise _CalledTooManyTimes()
+            return f(*args, **kwargs)
+
+        return wrapped
+
+    return decorator
+
+
 def test_persistent_cache():
     d = {}
 
@@ -46,6 +81,7 @@ def test_persistent_cache():
         d[key] = value
         return
 
+    @assert_max_called(1)
     def f(x):
         return x
 
@@ -70,6 +106,7 @@ async def test_persistent_cache_async():
         d[key] = value
         return
 
+    @assert_max_called(1)
     async def f(x):
         return x
 
