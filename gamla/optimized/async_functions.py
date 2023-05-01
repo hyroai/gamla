@@ -18,6 +18,15 @@ async def to_awaitable(value):
     return value
 
 
+def wrap_awaitable(f):
+    """Wraps a function with async."""
+
+    async def async_identity(x):
+        return x
+
+    return compose_left(f, async_identity)
+
+
 def compose_left(*funcs):
     async def compose_left_async(*args, **kwargs):
         for f in funcs:
