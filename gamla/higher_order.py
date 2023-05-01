@@ -63,7 +63,7 @@ def ignore_first_arg(f: Callable) -> Callable:
 def persistent_cache(
     get_item: Callable[[str], Any],
     set_item: Callable[[str, Any], None],
-    make_key: Callable,
+    make_key: Callable[[Any], str],
 ) -> Callable:
     """Wraps a function with persistent cache. Gets the item getter and item setter as parameters."""
 
