@@ -24,5 +24,6 @@ setuptools.setup(
         "termcolor",
         "toolz",
         "yappi",
+        "urllib3<2",
     ],
 )
