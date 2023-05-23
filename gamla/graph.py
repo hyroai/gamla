@@ -104,11 +104,11 @@ def traverse_graph_by_radius(
 #: Gets a sequence of edges and returns a graph made of these edges.
 #:
 #: >>> graph.edges_to_graph([(1,2), (2, 3), (3, 1), (3, 2)])
-#: {1: frozenset({2}), 2: frozenset({3}), 3: frozenset({1, 2})}
+#: {1: (2,), 2: (3,), 3: (1, 2)}
 edges_to_graph = functional_generic.compose(
     functional_generic.sync.valmap(
         functional_generic.sync.compose(
-            frozenset,
+            tuple,
             functional_generic.sync.map(operator.second),
         ),
     ),
