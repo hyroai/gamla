@@ -1,7 +1,14 @@
 import itertools
 from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
-from gamla import construct, currying, dict_utils, functional_generic, operator
+from gamla import (
+    construct,
+    currying,
+    dict_utils,
+    functional,
+    functional_generic,
+    operator,
+)
 from gamla.optimized import sync
 
 
@@ -109,6 +116,7 @@ edges_to_graph = functional_generic.compose(
     functional_generic.sync.valmap(
         functional_generic.sync.compose(
             tuple,
+            functional.unique,
             functional_generic.sync.map(operator.second),
         ),
     ),
