@@ -1,7 +1,14 @@
 import itertools
 from typing import Any, Callable, Dict, FrozenSet, Iterable, Set, Text, Tuple
 
-from gamla import construct, currying, dict_utils, functional_generic, operator
+from gamla import (
+    construct,
+    currying,
+    dict_utils,
+    functional,
+    functional_generic,
+    operator,
+)
 from gamla.optimized import sync
 
 
@@ -104,11 +111,12 @@ def traverse_graph_by_radius(
 #: Gets a sequence of edges and returns a graph made of these edges.
 #:
 #: >>> graph.edges_to_graph([(1,2), (2, 3), (3, 1), (3, 2)])
-#: {1: frozenset({2}), 2: frozenset({3}), 3: frozenset({1, 2})}
+#: {1: (2,), 2: (3,), 3: (1, 2)}
 edges_to_graph = functional_generic.compose(
     functional_generic.sync.valmap(
         functional_generic.sync.compose(
-            frozenset,
+            tuple,
+            functional.unique,
             functional_generic.sync.map(operator.second),
         ),
     ),
@@ -132,6 +140,7 @@ reverse_graph = functional_generic.compose_left(
     graph_to_edges,
     functional_generic.curried_map(functional_generic.compose_left(reversed, tuple)),
     edges_to_graph,
+    functional_generic.sync.valmap(frozenset),
 )
 
 #: Gets a sequence of nodes (cliques) and returns the bidirectional graph they represent
@@ -141,6 +150,7 @@ reverse_graph = functional_generic.compose_left(
 cliques_to_graph = functional_generic.compose_left(
     sync.mapcat(lambda clique: itertools.permutations(clique, r=2)),
     edges_to_graph,
+    functional_generic.sync.valmap(frozenset),
 )
 
 
@@ -198,6 +208,7 @@ def groupby_many(f: Callable, it: Iterable) -> Dict[Text, Any]:
             ),
         ),
         edges_to_graph,
+        functional_generic.sync.valmap(frozenset),
     )
 
 
