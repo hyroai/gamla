@@ -132,6 +132,7 @@ reverse_graph = functional_generic.compose_left(
     graph_to_edges,
     functional_generic.curried_map(functional_generic.compose_left(reversed, tuple)),
     edges_to_graph,
+    functional_generic.sync.valmap(frozenset),
 )
 
 #: Gets a sequence of nodes (cliques) and returns the bidirectional graph they represent
@@ -141,6 +142,7 @@ reverse_graph = functional_generic.compose_left(
 cliques_to_graph = functional_generic.compose_left(
     sync.mapcat(lambda clique: itertools.permutations(clique, r=2)),
     edges_to_graph,
+    functional_generic.sync.valmap(frozenset),
 )
 
 
@@ -198,6 +200,7 @@ def groupby_many(f: Callable, it: Iterable) -> Dict[Text, Any]:
             ),
         ),
         edges_to_graph,
+        functional_generic.sync.valmap(frozenset),
     )
 
 
