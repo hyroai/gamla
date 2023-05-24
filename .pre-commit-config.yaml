@@ -41,6 +41,11 @@ repos:
         additional_dependencies:
           ["types-requests", "types-tabulate", "types-termcolor"]
 
+  - repo: https://github.com/hyroai/lint
+    rev: 5a97db4c54d40bb27044b1a037c5f9b35ec503ba
+    hooks:
+      - id: static-analysis
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.1.0
     hooks:
