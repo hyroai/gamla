@@ -218,14 +218,21 @@ def timeout(seconds: float):
 
 
 @currying.curry
-async def get_async_with_headers(headers: Dict[str, str], timeout: float, url: Text):
-    """Performs an async GET request to url with the specified timeout (seconds) and headers.
+async def get_async_with_headers_and_params(
+    params: Dict[Text, Text],
+    headers: Dict[str, str],
+    timeout: float,
+    url: Text,
+):
+    """Performs an async GET request to url with the specified timeout (seconds), headers and params.
+    Expects the params to be a dictionary object.
 
-    >>> response = await get_async_with_headers({some_header: some_value}, 30, "https://www.someurl.com")
+    >>> response = await get_async_with_headers_and_params({"Date": "07/08/2022"}, {some_header: some_value}, 30, "https://www.someurl.com")
     """
     async with httpx.AsyncClient() as client:
         return await client.get(
             url,
+            params=params,
             timeout=timeout,
             headers=headers,
             follow_redirects=True,
@@ -233,10 +240,14 @@ async def get_async_with_headers(headers: Dict[str, str], timeout: float, url: T
 
 
 #: Performs an async GET request to url with the specified timeout (seconds) and headers.
-#: Expects the payload to be a json serializable object.
+#:
+#: >>> response = await get_async_with_headers({some_header: some_value}, 30, "https://www.someurl.com")
+get_async_with_headers = get_async_with_headers_and_params({})
+
+#: Performs an async GET request to url with the specified timeout.
 #:
 #: >>> response = await get_async(30, "https://www.someurl.com")
-get_async = get_async_with_headers({})
+get_async = get_async_with_headers_and_params({}, {})
 
 
 @currying.curry
