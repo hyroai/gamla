@@ -1,7 +1,8 @@
 import asyncio
 import functools
+import zlib
 
-from gamla import functional, higher_order
+from gamla import functional, functional_generic, higher_order
 
 
 def test_prepare_and_apply():
@@ -117,3 +118,57 @@ async def test_persistent_cache_async():
     )(f)("something")
     assert result == "something"
     assert d == {"c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
+
+
+def test_persistent_cache_force():
+    d = {}
+
+    def get_item(key: str):
+        return d[key]
+
+    def set_item(key: str, value):
+        d[key] = value
+        return
+
+    @assert_max_called(1)
+    def f(x):
+        return x
+
+    assert (
+        higher_order.persistent_cache(
+            get_item, set_item, functional.make_hashed_call_key, force=True
+        )(f)("something")
+        == "something"
+    )
+    assert d == {"c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
+
+
+def test_persistent_cache_zip():
+    d = {}
+
+    def get_item(key: str):
+        return d[key]
+
+    def set_item(key: str, value):
+        d[key] = value
+        return
+
+    @assert_max_called(1)
+    def f(x):
+        return x
+
+    assert (
+        higher_order.persistent_cache(
+            get_item,
+            set_item,
+            functional.make_hashed_call_key,
+            functional_generic.compose_left(lambda x: x.encode("utf-8"), zlib.compress),
+            functional_generic.compose_left(
+                zlib.decompress, lambda x: x.decode("utf-8")
+            ),
+        )(f)("something")
+        == "something"
+    )
+    assert d == {
+        "c3aa999f887e4eb8a1dda68862dcf172a78b5d30": b"x\x9c+\xce\xcfM-\xc9\xc8\xccK\x07\x00\x13G\x03\xcf"
+    }

@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Callable
 
-from gamla import excepts_decorator, functional_generic, operator
+from gamla import construct, excepts_decorator, functional, functional_generic, operator
 from gamla.optimized import async_functions
 
 
@@ -64,6 +64,9 @@ def persistent_cache(
     get_item: Callable[[str], Any],
     set_item: Callable[[str, Any], None],
     make_key: Callable[[Any], str],
+    encode: Callable[[Any], Any] = operator.identity,
+    decode: Callable[[Any], Any] = operator.identity,
+    force: bool = False,
 ) -> Callable:
     """Wraps a function with persistent cache. Gets the item getter and item setter as parameters."""
 
@@ -73,12 +76,17 @@ def persistent_cache(
             functional_generic.compose_left(
                 functional_generic.juxt(
                     ignore_first_arg(make_key),
-                    ignore_first_arg(f),
+                    functional_generic.compose_left(ignore_first_arg(f), encode),
                 ),
                 functional_generic.side_effect(functional_generic.star(set_item)),
                 operator.second,
+                decode,
             ),
-            functional_generic.compose_left(make_key, get_item),
+            functional_generic.ternary(
+                operator.identity(construct.just(force)),
+                functional.make_raise(KeyError),
+                functional_generic.compose_left(make_key, get_item, decode),
+            ),
         )
 
     return decorator
