@@ -83,7 +83,7 @@ def persistent_cache(
                 decode,
             ),
             functional_generic.ternary(
-                operator.identity(construct.just(force)),
+                construct.just(force),
                 functional.make_raise(KeyError),
                 functional_generic.compose_left(make_key, get_item, decode),
             ),

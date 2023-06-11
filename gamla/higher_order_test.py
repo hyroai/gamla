@@ -46,27 +46,26 @@ class _CalledTooManyTimes(Exception):
 
 def assert_max_called(n: int):
     def decorator(f):
-        count = 0
         if asyncio.iscoroutinefunction(f):
 
             @functools.wraps(f)
             async def wrapped(*args, **kwargs):
-                nonlocal count
-                count += 1
-                if count > n:
+                wrapped.count += 1
+                if wrapped.count > n:
                     raise _CalledTooManyTimes()
                 return await f(*args, **kwargs)
 
+            wrapped.count = 0
             return wrapped
 
         @functools.wraps(f)
         def wrapped(*args, **kwargs):
-            nonlocal count
-            count += 1
-            if count > n:
+            wrapped.count += 1
+            if wrapped.count > n:
                 raise _CalledTooManyTimes()
             return f(*args, **kwargs)
 
+        wrapped.count = 0
         return wrapped
 
     return decorator
@@ -86,14 +85,14 @@ def test_persistent_cache():
     def f(x):
         return x
 
-    assert (
-        higher_order.persistent_cache(
-            get_item,
-            set_item,
-            functional.make_hashed_call_key,
-        )(f)("something")
-        == "something"
-    )
+    cached_function = higher_order.persistent_cache(
+        get_item, set_item, functional.make_hashed_call_key
+    )(f)
+
+    result_set = cached_function("something")
+    result_get = cached_function("something")
+    assert result_set == "something"
+    assert result_get == "something"
     assert d == {"c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
 
 
@@ -111,12 +110,14 @@ async def test_persistent_cache_async():
     async def f(x):
         return x
 
-    result = await higher_order.persistent_cache(
-        get_item,
-        set_item,
-        functional.make_hashed_call_key,
-    )(f)("something")
-    assert result == "something"
+    cached_function = higher_order.persistent_cache(
+        get_item, set_item, functional.make_hashed_call_key
+    )(f)
+
+    result_set = await cached_function("something")
+    result_get = await cached_function("something")
+    assert result_set == "something"
+    assert result_get == "something"
     assert d == {"c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
 
 
@@ -130,17 +131,19 @@ def test_persistent_cache_force():
         d[key] = value
         return
 
-    @assert_max_called(1)
+    @assert_max_called(2)
     def f(x):
         return x
 
-    assert (
-        higher_order.persistent_cache(
-            get_item, set_item, functional.make_hashed_call_key, force=True
-        )(f)("something")
-        == "something"
-    )
+    cached_function = higher_order.persistent_cache(
+        get_item, set_item, functional.make_hashed_call_key, force=True
+    )(f)
+    result_set = cached_function("something")
+    result_get = cached_function("something")
+    assert result_set == "something"
+    assert result_get == "something"
     assert d == {"c3aa999f887e4eb8a1dda68862dcf172a78b5d30": "something"}
+    assert f.count == 2
 
 
 def test_persistent_cache_zip():
