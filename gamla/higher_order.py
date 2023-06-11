@@ -64,9 +64,9 @@ def persistent_cache(
     get_item: Callable[[str], Any],
     set_item: Callable[[str, Any], None],
     make_key: Callable[[Any], str],
-    encode: Callable[[Any], Any] = operator.identity,
-    decode: Callable[[Any], Any] = operator.identity,
-    force: bool = False,
+    encode: Callable[[Any], Any],
+    decode: Callable[[Any], Any],
+    force: bool,
 ) -> Callable:
     """Wraps a function with persistent cache. Gets the item getter and item setter as parameters."""
 
