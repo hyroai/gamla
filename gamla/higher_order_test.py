@@ -163,12 +163,13 @@ def test_persistent_cache_zip():
             functional.make_hashed_call_key,
             functional_generic.compose_left(lambda x: x.encode("utf-8"), zlib.compress),
             functional_generic.compose_left(
-                zlib.decompress, lambda x: x.decode("utf-8")
+                zlib.decompress,
+                lambda x: x.decode("utf-8"),
             ),
             False,
         )(f)(_VALUE_TO_CACHE)
         == _VALUE_TO_CACHE
     )
     assert d == {
-        "c3aa999f887e4eb8a1dda68862dcf172a78b5d30": b"x\x9c+\xce\xcfM-\xc9\xc8\xccK\x07\x00\x13G\x03\xcf"
+        "c3aa999f887e4eb8a1dda68862dcf172a78b5d30": b"x\x9c+\xce\xcfM-\xc9\xc8\xccK\x07\x00\x13G\x03\xcf",
     }
