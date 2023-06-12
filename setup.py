@@ -24,6 +24,5 @@ setuptools.setup(
         "termcolor",
         "toolz",
         "yappi",
-        "zlib",
     ],
 )
