@@ -68,7 +68,10 @@ def persistent_cache(
     decode: Callable[[Any], Any],
     force: bool,
 ) -> Callable:
-    """Wraps a function with persistent cache. Gets the item getter and item setter as parameters."""
+    """Wraps a function with persistent cache. Gets the item getter and item setter, a function that creates the key,
+    an encoder function that will run on the value before it is saved to the cache, a decoder function that will run on
+    the value retrieved from the cache, and a boolean flag that if set to true forces the cache to refresh
+    """
 
     def decorator(f: Callable):
         return excepts_decorator.try_and_excepts(
