@@ -116,16 +116,16 @@ async def test_persistent_cache_async():
     async def f(x):
         return x
 
-    cached_function = higher_order.persistent_cache(
-        *generate_getter_and_setter(d),
-        functional.make_hashed_call_key,
-        gamla.identity,
-        gamla.identity,
-        False,
-    )(f)
-
-    assert await cached_function(_VALUE_TO_CACHE) == _VALUE_TO_CACHE
-    assert await cached_function(_VALUE_TO_CACHE) == _VALUE_TO_CACHE
+    assert (
+        await higher_order.persistent_cache(
+            *generate_getter_and_setter(d),
+            functional.make_hashed_call_key,
+            gamla.identity,
+            gamla.identity,
+            False,
+        )(f)(_VALUE_TO_CACHE)
+        == _VALUE_TO_CACHE
+    )
     assert d == _CACHE_SUCCESS_STATE
 
 
