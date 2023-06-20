@@ -1,7 +1,14 @@
 import asyncio
 from typing import Any, Callable
 
-from gamla import construct, excepts_decorator, functional, functional_generic, operator
+from gamla import (
+    construct,
+    debug_utils,
+    excepts_decorator,
+    functional,
+    functional_generic,
+    operator,
+)
 from gamla.optimized import async_functions
 
 
@@ -88,7 +95,14 @@ def persistent_cache(
             functional_generic.ternary(
                 construct.just(force),
                 functional.make_raise(KeyError),
-                functional_generic.compose_left(make_key, get_item, decode),
+                functional_generic.compose_left(
+                    functional_generic.compose_left(
+                        make_key,
+                        debug_utils.log_text("getting {} from cache"),
+                    ),
+                    get_item,
+                    decode,
+                ),
             ),
         )
 
