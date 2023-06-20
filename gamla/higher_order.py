@@ -96,10 +96,8 @@ def persistent_cache(
                 construct.just(force),
                 functional.make_raise(KeyError),
                 functional_generic.compose_left(
-                    functional_generic.compose_left(
-                        make_key,
-                        debug_utils.log_text("getting {} from cache"),
-                    ),
+                    make_key,
+                    debug_utils.log_text("getting {} from cache"),
                     get_item,
                     decode,
                 ),
