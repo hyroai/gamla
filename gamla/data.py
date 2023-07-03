@@ -26,6 +26,9 @@ class frozendict(dict):  # noqa: N801
             self,
         ) > functional_generic.map_dict(dict.items, operator.identity)(other)
 
+    def __repr__(self) -> str:
+        return f"frozendict({super().__repr__()})"
+
     # TODO(nitzo): Disabled since we need to be able to un-serialize with dill/pickle.
     # __setitem__ = _immutable
     __delitem__ = _immutable
