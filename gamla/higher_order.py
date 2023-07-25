@@ -64,13 +64,10 @@ def persistent_cache(
     get_item: Callable[[str], Any],
     set_item: Callable[[str, Any], None],
     make_key: Callable[[Any], str],
-    encode: Callable[[Any], Any],
-    decode: Callable[[Any], Any],
     force: bool,
 ) -> Callable:
     """Wraps a function with persistent cache. Gets the item getter and item setter, a function that creates the key,
-    an encoder function that will run on the value before it is saved to the cache, a decoder function that will run on
-    the value retrieved from the cache, and a boolean flag that if set to true forces the cache to refresh
+    and a boolean flag that if set to true forces the cache to refresh.
     """
 
     def decorator(f: Callable):
@@ -79,16 +76,15 @@ def persistent_cache(
             functional_generic.compose_left(
                 functional_generic.juxt(
                     ignore_first_arg(make_key),
-                    functional_generic.compose_left(ignore_first_arg(f), encode),
+                    ignore_first_arg(f),
                 ),
                 functional_generic.side_effect(functional_generic.star(set_item)),
                 operator.second,
-                decode,
             ),
             functional_generic.ternary(
                 construct.just(force),
                 functional.make_raise(KeyError),
-                functional_generic.compose_left(make_key, get_item, decode),
+                functional_generic.compose_left(make_key, get_item),
             ),
         )
 
