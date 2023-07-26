@@ -4,7 +4,7 @@ import zlib
 from typing import Any, Callable
 
 import gamla
-from gamla import functional, functional_generic, higher_order
+from gamla import currying, functional, functional_generic, higher_order
 
 _VALUE_TO_CACHE = "something"
 _CACHE_SUCCESS_STATE = {"c3aa999f887e4eb8a1dda68862dcf172a78b5d30": _VALUE_TO_CACHE}
@@ -76,17 +76,26 @@ def assert_max_called(n: int):
     return decorator
 
 
-def generate_getter_and_setter(
+@currying.curry
+def _generate_getter_and_setter_with_encoder_and_decoder(
+    encoder: Callable,
+    decoder: Callable,
     d: dict,
 ) -> tuple[Callable[[str], Any], Callable[[str, Any], Any]]:
     def get_item(key: str):
-        return d[key]
+        return decoder(d[key])
 
     def set_item(key: str, value):
-        d[key] = value
+        d[key] = encoder(value)
         return
 
     return get_item, set_item
+
+
+_generate_getter_and_setter = _generate_getter_and_setter_with_encoder_and_decoder(
+    gamla.identity,
+    gamla.identity,
+)
 
 
 def test_persistent_cache():
@@ -97,10 +106,8 @@ def test_persistent_cache():
         return x
 
     cached_function = higher_order.persistent_cache(
-        *generate_getter_and_setter(d),
+        *_generate_getter_and_setter(d),
         functional.make_hashed_call_key,
-        gamla.identity,
-        gamla.identity,
         False,
     )(f)
 
@@ -118,10 +125,8 @@ async def test_persistent_cache_async():
 
     assert (
         await higher_order.persistent_cache(
-            *generate_getter_and_setter(d),
+            *_generate_getter_and_setter(d),
             functional.make_hashed_call_key,
-            gamla.identity,
-            gamla.identity,
             False,
         )(f)(_VALUE_TO_CACHE)
         == _VALUE_TO_CACHE
@@ -137,10 +142,8 @@ def test_persistent_cache_force():
         return x
 
     cached_function = higher_order.persistent_cache(
-        *generate_getter_and_setter(d),
+        *_generate_getter_and_setter(d),
         functional.make_hashed_call_key,
-        gamla.identity,
-        gamla.identity,
         True,
     )(f)
 
@@ -159,13 +162,18 @@ def test_persistent_cache_zip():
 
     assert (
         higher_order.persistent_cache(
-            *generate_getter_and_setter(d),
-            functional.make_hashed_call_key,
-            functional_generic.compose_left(lambda x: x.encode("utf-8"), zlib.compress),
-            functional_generic.compose_left(
-                zlib.decompress,
-                lambda x: x.decode("utf-8"),
+            *_generate_getter_and_setter_with_encoder_and_decoder(
+                functional_generic.compose_left(
+                    lambda x: x.encode("utf-8"),
+                    zlib.compress,
+                ),
+                functional_generic.compose_left(
+                    zlib.decompress,
+                    lambda x: x.decode("utf-8"),
+                ),
+                d,
             ),
+            functional.make_hashed_call_key,
             False,
         )(f)(_VALUE_TO_CACHE)
         == _VALUE_TO_CACHE
