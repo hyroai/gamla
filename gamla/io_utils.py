@@ -24,7 +24,7 @@ def _color_for_duration(duration: float):
     return "red"
 
 
-def _log_finish(req_id: Text, start: float):
+def log_finish(req_id: Text, start: float):
     finish = time.time()
     elapsed = finish - start
     logging.info(
@@ -37,7 +37,7 @@ def _async_timeit(f):
     async def wrapper(*args, **kwargs):
         start = time.time()
         result = await f(*args, **kwargs)
-        _log_finish(f.__name__, start)
+        log_finish(f.__name__, start)
         return result
 
     return wrapper
@@ -56,7 +56,7 @@ def timeit(f):
     def wrapper(*args, **kwargs):
         start = time.time()
         result = f(*args, **kwargs)
-        _log_finish(f.__name__, start)
+        log_finish(f.__name__, start)
         return result
 
     return wrapper
