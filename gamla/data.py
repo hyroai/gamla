@@ -1,11 +1,11 @@
 import dataclasses
 import itertools
 import json
-from typing import Callable, Collection, Dict
+from typing import Any, Callable, Collection, Dict
 
 import dataclasses_json
 
-from gamla import construct, functional_generic, operator
+from gamla import construct, currying, functional_generic, operator
 from gamla.optimized import sync
 
 
@@ -112,7 +112,8 @@ def explode(*positions: Collection[int]):
     )
 
 
-def transform_if_not_none(transform: Callable, value):
+@currying.curry
+def transform_if_not_none(transform: Callable, value: Any) -> Any:
     """
     Apply a function on a given value if it's not None. Else, return the None value.
 
