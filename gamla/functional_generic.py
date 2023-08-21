@@ -832,7 +832,7 @@ def groupby(
 
 
 def is_generator(iterable):
-    return hasattr(iterable, "__iter__") and not hasattr(iterable, "__len__")
+    return inspect.isgenerator(iterable)
 
 
 def side_effect(f: Callable):
