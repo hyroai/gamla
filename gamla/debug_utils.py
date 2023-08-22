@@ -8,7 +8,7 @@ import tabulate
 import toolz
 import yappi
 
-from gamla import functional_generic
+from gamla import excepts_decorator, functional_generic, higher_order
 from gamla.optimized import sync
 
 logger = functional_generic.side_effect(logging.info)
@@ -39,6 +39,27 @@ debug = functional_generic.compose_left(
     functional_generic.side_effect(_break),
 )
 
+
+def debug_on_exception(f):
+    """Debug exception in a pipeline stage by looking at the causal value.
+
+    >>> gamla.pipe(
+    ...     "abc",
+    ...     gamla.itemgetter("some_key"),  # This would cause an exception.
+    ... )
+
+    >>> gamla.pipe(
+    ...     "abc",
+    ...     gamla.debug_on_exception(gamla.itemgetter("some_key")),  # Now we can see the cause of the exception - we expect a `dict` but get a `str`.
+    ... )
+    """
+    return excepts_decorator.try_and_excepts(
+        Exception,
+        functional_generic.compose_left(higher_order.ignore_first_arg(debug), f),
+        f,
+    )
+
+
 debug_after = functional_generic.after(debug)
 debug_before = functional_generic.before(debug)
 
@@ -54,40 +75,6 @@ def _debug_generic(f):
 debug_compose = _debug_generic(functional_generic.compose)
 #: Replace regular `compose_left` calls with this to get a breakpoint at each step.
 debug_compose_left = _debug_generic(functional_generic.compose_left)
-
-
-def debug_exception(f):
-    """Debug exception in a pipeline stage by looking at the causal value.
-
-    >>> gamla.pipe(
-    ...     "abc",
-    ...     gamla.itemgetter("some_key"),  # This would cause an exception.
-    ... )
-
-    >>> gamla.pipe(
-    ...     "abc",
-    ...     gamla.debug_exception(gamla.itemgetter("some_key")),  # Now we can see the cause of the exception - we expect a `dict` but get a `str`.
-    ... )
-    """
-    if asyncio.iscoroutinefunction(f):
-
-        async def debug_exception(*x, **kwargs):
-            try:
-                return await f(*x, **kwargs)
-            except Exception as e:
-                builtins.breakpoint()
-                raise e
-
-    else:
-
-        def debug_exception(*x, **kwargs):  # type: ignore
-            try:
-                return f(*x, **kwargs)
-            except Exception as e:
-                builtins.breakpoint()
-                raise e
-
-    return functools.wraps(f)(debug_exception)
 
 
 def _print_stats():
