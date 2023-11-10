@@ -1,4 +1,4 @@
-from gamla import dict_utils, functional_generic, operator
+from gamla import dict_utils, operator
 
 
 def test_itemgetter():
@@ -50,15 +50,6 @@ def test_get_or_transform():
 def test_get_or_identity():
     assert dict_utils.get_or_identity({1: 1})(1) == 1
     assert dict_utils.get_or_identity({1: 1})(2) == 2
-
-
-def test_make_index():
-    index = dict_utils.make_index(
-        map(functional_generic.groupby, [operator.head, operator.second]),
-    )(["uri", "dani"])
-    assert index("d")("a") == frozenset(["dani"])
-    assert index("u")("r") == frozenset(["uri"])
-    assert index("h")("i") == frozenset()
 
 
 def test_rename_key():
