@@ -12,6 +12,7 @@ import requests.adapters
 import termcolor
 from requests.packages.urllib3.util import retry as retry_lib
 
+import gamla
 from gamla import currying, functional
 from gamla.optimized import sync
 
@@ -32,34 +33,51 @@ def log_finish(req_id: Text, start: float):
     )
 
 
-def _async_timeit(f):
+def _async_timeit(label: str, f: Callable) -> Callable:
     @functools.wraps(f)
     async def wrapper(*args, **kwargs):
         start = time.time()
         result = await f(*args, **kwargs)
-        log_finish(f.__name__, start)
+        log_finish(f.__name__ + label, start)
         return result
 
     return wrapper
 
 
-def timeit(f):
+@gamla.curry
+def timeit_with_label(label: str, f: Callable) -> Callable:
     """Wraps a function `f` with a timer.
     Logs the start time, and end time (and difference in seconds).
 
-    >>> timed_get_async = timeit(get_async)
+    log format: "f.__name__:label <elapsed_time> seconds"
+    Do NOT change this format w/o due process. We have datadog monitors dependent on it.
+
+    >>> timed_get_async = timeit(label, get_async)
     """
+    if label:
+        label = (
+            ":" + label
+        )  # Do NOT change this format. We have datadog monitors dependent on it.
+
     if asyncio.iscoroutinefunction(f):
-        return _async_timeit(f)
+        return _async_timeit(label, f)
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         start = time.time()
         result = f(*args, **kwargs)
-        log_finish(f.__name__, start)
+        log_finish(f.__name__ + label, start)
         return result
 
     return wrapper
+
+
+"""Wraps a function `f` with a timer.
+Logs the start time, and end time (and difference in seconds).
+
+>>> timed_get_async = timeit(get_async)
+"""
+timeit = timeit_with_label("")
 
 
 def requests_with_retry(retries: int = 3) -> requests.Session:
