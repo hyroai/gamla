@@ -50,11 +50,14 @@ def timeit_with_label(label: str, f: Callable) -> Callable:
     Logs the start time, and end time (and difference in seconds).
 
     log format: "f.__name__:label <elapsed_time> seconds"
+    Do NOT change this format w/o due process. We have datadog monitors dependent on it.
 
     >>> timed_get_async = timeit(label, get_async)
     """
     if label:
-        label = ":" + label
+        label = (
+            ":" + label
+        )  # Do NOT change this format. We have datadog monitors dependent on it.
 
     if asyncio.iscoroutinefunction(f):
         return _async_timeit(label, f)
