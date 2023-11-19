@@ -38,7 +38,7 @@ def _async_timeit(label: str, f: Callable) -> Callable:
     async def wrapper(*args, **kwargs):
         start = time.time()
         result = await f(*args, **kwargs)
-        log_finish(f.__name__+label, start)
+        log_finish(f.__name__ + label, start)
         return result
 
     return wrapper
@@ -63,7 +63,7 @@ def timeit_with_label(label: str, f: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         start = time.time()
         result = f(*args, **kwargs)
-        log_finish(f.__name__+label, start)
+        log_finish(f.__name__ + label, start)
         return result
 
     return wrapper
