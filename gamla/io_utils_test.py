@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import random
 import threading
 import time
@@ -234,3 +235,9 @@ async def test_sleep():
     start = timeit.default_timer()
     await io_utils.sleep(0.1)()
     assert timeit.default_timer() - start > 0.1
+
+
+def test_timeit_with_label(caplog):
+    with caplog.at_level(logging.INFO):
+        gamla.timeit_with_label("label", lambda s: s)(None)
+    assert gamla.regex_match(r".+<lambda>:label \d.\d+ seconds")(caplog.text)
