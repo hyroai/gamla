@@ -37,7 +37,7 @@ def capitalize(text: Text):
     >>>capitalize("my name is John Smith")
     'My name is John Smith'
     """
-    return text[0].upper() + text[1:]
+    return text[0].upper() + text[1:] if text else ""
 
 
 def regex_match(pattern):
