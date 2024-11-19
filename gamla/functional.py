@@ -114,7 +114,12 @@ def just_raise(exception):
     >>> just_raise(KeyError)
     raise exception KeyError
     """
-    raise exception
+    try:
+        raise exception
+    except Exception as e:
+        # Without this the exception will reference itself via the traceback. which will cause more GC work.
+        exception = None
+        raise e
 
 
 def make_raise(exception):
@@ -125,8 +130,13 @@ def make_raise(exception):
     raise exception KeyError
     """
 
-    def inner():
-        raise exception
+    def inner(exception=exception):
+        try:
+            raise exception
+        except Exception as e:
+            # Without this the exception will reference itself via the traceback. which will cause more GC work.
+            exception = None
+            raise e
 
     return ignore_input(inner)
 
