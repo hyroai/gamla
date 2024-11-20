@@ -35,11 +35,16 @@ repos:
           ]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.942
+    rev: v1.5.1
     hooks:
       - id: mypy
+        args: [ --follow-imports=silent, --ignore-missing-imports ]
+        exclude: vulture_whitelist.py
         additional_dependencies:
-          ["types-requests", "types-tabulate", "types-termcolor"]
+          - types-cachetools
+          - types-python-dateutil
+          - types-pytz
+          - types-requests
 
   - repo: https://github.com/hyroai/lint
     rev: 5a97db4c54d40bb27044b1a037c5f9b35ec503ba
