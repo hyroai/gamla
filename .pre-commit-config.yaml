@@ -39,12 +39,17 @@ repos:
     hooks:
       - id: mypy
         args: [ --follow-imports=silent, --ignore-missing-imports ]
-        exclude: vulture_whitelist.py
+        exclude: (?x)^(
+          vulture_whitelist.py|
+          [^/]*/.*_test.py|
+          )$
         additional_dependencies:
           - types-cachetools
           - types-python-dateutil
           - types-pytz
           - types-requests
+          - types-tabulate
+
 
   - repo: https://github.com/hyroai/lint
     rev: 5a97db4c54d40bb27044b1a037c5f9b35ec503ba
