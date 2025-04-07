@@ -4,6 +4,8 @@ import json
 from typing import Any, Callable, Collection, Dict
 
 import dataclasses_json
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import CoreSchema, core_schema
 
 from gamla import construct, currying, functional_generic, operator
 from gamla.optimized import sync
@@ -17,6 +19,14 @@ class frozendict(dict):  # noqa: N801
     def __init__(self, *args, **kwargs):
         self.__setattr__ = _immutable
         super(frozendict, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls,
+        source_type: Any,
+        handler: GetCoreSchemaHandler,
+    ) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls, handler(dict))
 
     def __hash__(self):
         return hash(tuple(self.items()))
@@ -64,6 +74,14 @@ freeze_deep = functional_generic.map_dict(_freeze_nonterminal, operator.identity
 
 
 class Enum(frozenset):
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls,
+        source_type: Any,
+        handler: GetCoreSchemaHandler,
+    ) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls, handler(frozenset))
+
     def __getattr__(self, name):
         if name in self:
             return name

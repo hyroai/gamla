@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gamla",
-    version="157",
+    version="158",
     python_requires=">=3.11",
     long_description=_LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
@@ -24,5 +24,6 @@ setuptools.setup(
         "termcolor",
         "toolz",
         "yappi",
+        "pydantic~=2.10.2",
     ],
 )
