@@ -260,12 +260,12 @@ async def get_async_with_headers_and_params(
 #: Performs an async GET request to url with the specified timeout (seconds) and headers.
 #:
 #: >>> response = await get_async_with_headers({some_header: some_value}, 30, "https://www.someurl.com")
-get_async_with_headers = get_async_with_headers_and_params({})
+get_async_with_headers = get_async_with_headers_and_params(None)
 
 #: Performs an async GET request to url with the specified timeout.
 #:
 #: >>> response = await get_async(30, "https://www.someurl.com")
-get_async = get_async_with_headers_and_params({}, {})
+get_async = get_async_with_headers_and_params(None, {})
 
 
 @currying.curry
