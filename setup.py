@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gamla",
-    version="158",
+    version="159",
     python_requires=">=3.11",
     long_description=_LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
