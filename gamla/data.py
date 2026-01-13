@@ -27,7 +27,7 @@ class frozendict(dict):  # noqa: N801
         ) > functional_generic.map_dict(dict.items, operator.identity)(other)
 
     def __repr__(self) -> str:
-        return f"frozendict({super().__repr__()})"
+        return super().__repr__()
 
     # TODO(nitzo): Disabled since we need to be able to un-serialize with dill/pickle.
     # __setitem__ = _immutable
@@ -57,9 +57,7 @@ def _freeze_nonterminal(v):
 #: Freeze recursively a dictionary.
 #:
 #: >>> freeze_deep({"1": {"2": "345", "some-string": ["hello"]}})
-#: data.frozendict(
-#:  {"1": data.frozendict({"2": "345", "some-string": ("hello",)})},
-#: )
+#: {"1": {"2": "345", "some-string": ("hello",)}}
 freeze_deep = functional_generic.map_dict(_freeze_nonterminal, operator.identity)
 
 
