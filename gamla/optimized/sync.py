@@ -1,4 +1,5 @@
 """Synchronous versions of common functions for optimized use cases."""
+
 import itertools
 from typing import Any, Callable, Iterable, Tuple, Union
 
@@ -35,7 +36,7 @@ def valfilter(predicate):
 
     def valfilter(d):
         new_d = {}
-        for (k, v) in d.items():
+        for k, v in d.items():
             if predicate(v):
                 new_d[k] = d[k]
         return new_d

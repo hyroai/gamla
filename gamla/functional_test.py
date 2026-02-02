@@ -332,7 +332,7 @@ async def test_reduce_async():
         await asyncio.sleep(0.1)
         return x + y
 
-    assert await (functional_generic.reduce_curried(slow_addition, 0)([1, 2, 3])) == 6
+    assert await functional_generic.reduce_curried(slow_addition, 0)([1, 2, 3]) == 6
 
 
 def test_reduce():
@@ -359,7 +359,7 @@ async def test_scan_async():
         await asyncio.sleep(0.01)
         return x + y
 
-    assert await (functional_generic.scan(slow_addition, 0)([1, 2, 3])) == (
+    assert await functional_generic.scan(slow_addition, 0)([1, 2, 3]) == (
         0,
         1,
         3,

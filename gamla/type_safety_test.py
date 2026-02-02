@@ -52,13 +52,13 @@ def test_compose_on_key():
 
 _T = TypeVar("_T")
 _T_number = TypeVar("_T_number", int, float)
-_T_collection_or_dict_of_strings = TypeVar(
-    "_T_collection_or_dict_of_strings",
+TCollectionOrDictOfStrings = TypeVar(
+    "TCollectionOrDictOfStrings",
     Dict[str, str],
     Collection[str],
 )
-_T_list_or_frozenset_of_strings = TypeVar(
-    "_T_list_or_frozenset_of_strings",
+TListOrFrozensetOfStrings = TypeVar(
+    "TListOrFrozensetOfStrings",
     List[str],
     FrozenSet[str],
 )
@@ -90,7 +90,7 @@ _T_list_or_frozenset_of_strings = TypeVar(
         [Dict, Dict[str, int]],
         [FrozenSet[int], Collection[_T]],
         [FrozenSet[int], Collection[_T_number]],
-        [_T_list_or_frozenset_of_strings, _T_collection_or_dict_of_strings],
+        [TListOrFrozensetOfStrings, TCollectionOrDictOfStrings],
     ],
 )
 def test_is_subtype(subtype, supertype):

@@ -431,9 +431,9 @@ def partition_after(
     seq: Sequence,
 ) -> Sequence[Sequence]:
     return toolz.reduce(
-        lambda a, b: (*a, (b,))
-        if not a or predicate(a[-1][-1])
-        else (*a[:-1], (*a[-1], b)),
+        lambda a, b: (
+            (*a, (b,)) if not a or predicate(a[-1][-1]) else (*a[:-1], (*a[-1], b))
+        ),
         seq,
         (),
     )
