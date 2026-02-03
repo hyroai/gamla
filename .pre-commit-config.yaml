@@ -50,13 +50,6 @@ repos:
           - types-requests
           - types-tabulate
 
-
-  - repo: https://github.com/hyroai/lint
-    rev: 29f3032e3a69fb69845210b14661628de72e4ef3
-    hooks:
-      - id: static-analysis
-        exclude: gamla/debug_utils\.py$
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.1.0
     hooks:
