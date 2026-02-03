@@ -41,7 +41,7 @@ def capitalize(text: Text):
 
 
 def regex_match(pattern):
-    r"""A curried regex match. Gets a pattern and returns a function that expects a text to match the pattern with.
+    """A curried regex match. Gets a pattern and returns a function that expects a text to match the pattern with.
 
     >>> regex_match(r"phone:(\d*)")("phone:1234567").group(1)  # noqa: W605
     '1234567'
