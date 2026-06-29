@@ -19,7 +19,15 @@ class frozendict(dict):  # noqa: N801
         super(frozendict, self).__init__(*args, **kwargs)
 
     def __hash__(self):
-        return hash(tuple(self.items()))
+        # frozendict is immutable, so cache the hash on first use: instances are
+        # re-hashed many times (set/dict membership) and recomputing recurses
+        # through nested frozendicts. Stored in __dict__ directly to bypass the
+        # _immutable guard; it is not part of the dict items.
+        cached = self.__dict__.get("_cached_hash")
+        if cached is None:
+            cached = hash(tuple(self.items()))
+            self.__dict__["_cached_hash"] = cached
+        return cached
 
     def __gt__(self, other):
         return functional_generic.map_dict(dict.items, operator.identity)(
