@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 import itertools
 import json
 from typing import Any, Callable, Collection, Dict
@@ -18,8 +19,19 @@ class frozendict(dict):  # noqa: N801
         self.__setattr__ = _immutable
         super(frozendict, self).__init__(*args, **kwargs)
 
-    def __hash__(self):
+    @functools.cached_property
+    def _hash(self):
+        # Caching matters: a frozendict is re-hashed heavily (set/dict membership
+        # during graph composition) and each recompute recurses through nested
+        # frozendicts. cached_property fills __dict__ lazily on first access, so it
+        # neither runs at construction (values may be unhashable yet never hashed)
+        # nor goes stale when dill/pickle repopulates items after construction.
         return hash(tuple(self.items()))
+
+    def __hash__(self):
+        # hash() looks __hash__ up on the type and calls it, so __hash__ itself
+        # can't be the cached_property — delegate to the cached helper.
+        return self._hash
 
     def __gt__(self, other):
         return functional_generic.map_dict(dict.items, operator.identity)(
