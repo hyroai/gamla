@@ -33,6 +33,15 @@ class frozendict(dict):  # noqa: N801
         # can't be the cached_property — delegate to the cached helper.
         return self._hash
 
+    def __getstate__(self):
+        # The cached hash must not be serialized: str hashes are randomized per
+        # interpreter (PYTHONHASHSEED), so a cache computed in one process is
+        # wrong in another — an unpickled frozendict would stop matching an
+        # equal one in dict/set lookups. Dropped here, recomputed on first use.
+        state = self.__dict__.copy()
+        state.pop("_hash", None)
+        return state
+
     def __gt__(self, other):
         return functional_generic.map_dict(dict.items, operator.identity)(
             self,
