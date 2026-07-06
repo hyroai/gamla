@@ -27,6 +27,20 @@ def test_frozendict_serializable():
     assert fd == fd_clone
 
 
+def test_frozendict_cached_hash_not_serialized():
+    fd = data.frozendict({"a": "something", "b": 1})
+    hash(fd)  # Populate the hash cache before pickling.
+
+    fd_clone = pickle.loads(pickle.dumps(fd))
+
+    # str hashes are randomized per interpreter (PYTHONHASHSEED), so a cache
+    # computed in one process is wrong in another. The cache must be dropped on
+    # serialization and recomputed lazily by the loading process.
+    assert "_hash" not in fd_clone.__dict__
+    assert hash(fd_clone) == hash(fd)
+    assert fd_clone == fd
+
+
 def test_explode():
     assert functional_generic.pipe(
         [
