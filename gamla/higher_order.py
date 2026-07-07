@@ -1,4 +1,4 @@
-import asyncio
+import inspect
 from typing import Any, Callable
 
 from gamla import construct, excepts_decorator, functional, functional_generic, operator
@@ -47,7 +47,7 @@ def prepare_and_apply_async(f: Callable) -> Callable:
 
 def ignore_first_arg(f: Callable) -> Callable:
     """Ignores the first argument."""
-    if asyncio.iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
 
         async def ignore_first_arg_async(_, *args, **kwargs):
             return await f(*args, **kwargs)

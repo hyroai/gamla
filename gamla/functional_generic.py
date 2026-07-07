@@ -51,23 +51,6 @@ def compose_left(*funcs):
     return compose(*reversed(funcs))
 
 
-_CO_COROUTINE = inspect.CO_COROUTINE
-_IS_COROUTINE_MARKER = getattr(asyncio.coroutines, "_is_coroutine", object())
-
-
-def _fast_iscoroutinefunction(f) -> bool:
-    """`asyncio.iscoroutinefunction` without the `inspect` machinery for the
-    common case of plain functions, which dominates composition-heavy code."""
-    while isinstance(f, functools.partial):
-        f = f.func
-    code = getattr(f, "__code__", None)
-    if code is None:
-        return asyncio.iscoroutinefunction(f)
-    return bool(code.co_flags & _CO_COROUTINE) or (
-        getattr(f, "_is_coroutine", None) is _IS_COROUTINE_MARKER
-    )
-
-
 def curried_map(f):
     """Constructs a function that maps elements of a given iterable using the given function.
 
@@ -77,7 +60,7 @@ def curried_map(f):
     >>> curried_map(inc)([3, 4, 5])
     [4, 5, 6]
     """
-    if _fast_iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
         return async_functions.map(f)
     return sync.map(f)
 
@@ -100,7 +83,7 @@ def curried_to_binary(f):
 
 
 def any_is_async(funcs):
-    return any(map(_fast_iscoroutinefunction, funcs))
+    return any(map(inspect.iscoroutinefunction, funcs))
 
 
 # Copying `toolz` convention.
@@ -702,7 +685,7 @@ def reduce_curried(
     reducer: Reducer,
     initial_value: _ReducerState,
 ) -> Callable[[Iterable[_ReducedElement]], _ReducerState]:
-    if asyncio.iscoroutinefunction(reducer):
+    if inspect.iscoroutinefunction(reducer):
 
         async def reduce_async(elements):
             state = initial_value
@@ -723,7 +706,7 @@ def scan(
 
     See https://en.wikipedia.org/wiki/Prefix_sum#Scan_higher_order_function."""
 
-    if asyncio.iscoroutinefunction(reducer):
+    if inspect.iscoroutinefunction(reducer):
 
         async def reduce_keeping_history_async(
             past_states: Tuple[_ReducerState, ...],
@@ -800,7 +783,7 @@ map_filter_empty = compose_left(curried_map, after(curried_filter(operator.ident
 
 
 def merge_with(f):
-    if asyncio.iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
 
         async def merge_with(*dicts):
             result = _inner_merge_with(dicts)
@@ -860,7 +843,7 @@ def side_effect(f: Callable):
     2
     3
     """
-    if asyncio.iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
 
         async def do(x):
             if is_generator(x):
