@@ -1,5 +1,5 @@
-import asyncio
 import functools
+import inspect
 from typing import Any, Callable, Tuple, Union
 
 from gamla import currying
@@ -11,7 +11,7 @@ def excepts(
     handler: Callable[[Exception], Any],
     function: Callable,
 ):
-    if asyncio.iscoroutinefunction(function):
+    if inspect.iscoroutinefunction(function):
 
         async def excepts(*args, **kwargs):
             try:
@@ -36,7 +36,7 @@ def try_and_excepts(
     function: Callable,
 ):
     """Same as sync excepts only that the handler gets the original function params after the exception param."""
-    if asyncio.iscoroutinefunction(function):
+    if inspect.iscoroutinefunction(function):
 
         async def try_and_excepts(*args, **kwargs):
             try:

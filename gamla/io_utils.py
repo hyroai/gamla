@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import inspect
 import logging
 import threading
 import time
@@ -59,7 +60,7 @@ def timeit_with_label(label: str, f: Callable) -> Callable:
             ":" + label
         )  # Do NOT change this format. We have datadog monitors dependent on it.
 
-    if asyncio.iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
         return _async_timeit(label, f)
 
     @functools.wraps(f)
@@ -182,7 +183,7 @@ def make_throttler(limit):
 
     def wrap_function(f):
 
-        if asyncio.iscoroutinefunction(f):
+        if inspect.iscoroutinefunction(f):
 
             @functools.wraps(f)
             async def wrap(*args, **kwargs):
