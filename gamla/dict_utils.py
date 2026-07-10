@@ -1,6 +1,6 @@
 import functools
 from operator import getitem
-from typing import Any, Callable, Dict, Iterable
+from typing import Callable, Dict, Iterable
 
 from gamla import construct, currying, functional, functional_generic, operator
 from gamla.optimized import sync
@@ -135,38 +135,6 @@ def dict_to_getter_with_default(default, d: Dict):
         return d.get(key, default)
 
     return dict_to_getter_with_default
-
-
-def _return_after_n_calls(n, value):
-    if n == 0:
-        return value
-
-    def return_after_n_calls(_):
-        return _return_after_n_calls(n - 1, value)
-
-    return return_after_n_calls
-
-
-def make_index(
-    steps: Iterable[Callable[[Iterable], Dict]],
-) -> Callable[[Iterable], Any]:
-    """Builds an index with arbitrary amount of steps from an iterable.
-
-    >>> index = dict_utils.make_index(map(gamla.groupby, [gamla.head, gamla.second]))(["uri", "dani"])
-    >>> index("d")("a")
-    frozenset(["dani"])
-    """
-    steps = tuple(steps)
-    if not steps:
-        return frozenset
-    return functional_generic.compose_left(
-        operator.head(steps),
-        functional_generic.valmap(make_index(steps[1:])),
-        lambda d: lambda x: d.get(
-            x,
-            _return_after_n_calls(len(steps) - 1, frozenset()),
-        ),
-    )
 
 
 def add_key_value(key, value):
