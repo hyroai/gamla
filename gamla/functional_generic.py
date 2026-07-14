@@ -60,7 +60,7 @@ def curried_map(f):
     >>> curried_map(inc)([3, 4, 5])
     [4, 5, 6]
     """
-    if asyncio.iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
         return async_functions.map(f)
     return sync.map(f)
 
@@ -83,7 +83,7 @@ def curried_to_binary(f):
 
 
 def any_is_async(funcs):
-    return any(map(asyncio.iscoroutinefunction, funcs))
+    return any(map(inspect.iscoroutinefunction, funcs))
 
 
 # Copying `toolz` convention.
@@ -685,7 +685,7 @@ def reduce_curried(
     reducer: Reducer,
     initial_value: _ReducerState,
 ) -> Callable[[Iterable[_ReducedElement]], _ReducerState]:
-    if asyncio.iscoroutinefunction(reducer):
+    if inspect.iscoroutinefunction(reducer):
 
         async def reduce_async(elements):
             state = initial_value
@@ -706,7 +706,7 @@ def scan(
 
     See https://en.wikipedia.org/wiki/Prefix_sum#Scan_higher_order_function."""
 
-    if asyncio.iscoroutinefunction(reducer):
+    if inspect.iscoroutinefunction(reducer):
 
         async def reduce_keeping_history_async(
             past_states: Tuple[_ReducerState, ...],
@@ -783,7 +783,7 @@ map_filter_empty = compose_left(curried_map, after(curried_filter(operator.ident
 
 
 def merge_with(f):
-    if asyncio.iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
 
         async def merge_with(*dicts):
             result = _inner_merge_with(dicts)
@@ -843,7 +843,7 @@ def side_effect(f: Callable):
     2
     3
     """
-    if asyncio.iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
 
         async def do(x):
             if is_generator(x):

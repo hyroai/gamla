@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gamla"
-version = "160"
+version = "163"
 description = "Functional programming library for Python."
 readme = "README.md"
 requires-python = ">=3.14"

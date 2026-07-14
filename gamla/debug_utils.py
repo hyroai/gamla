@@ -1,6 +1,6 @@
-import asyncio
 import builtins
 import functools
+import inspect
 import logging
 from typing import Text
 
@@ -105,7 +105,7 @@ def _print_stats():
 
 
 def profileit(f):
-    if asyncio.iscoroutinefunction(f):
+    if inspect.iscoroutinefunction(f):
 
         @functools.wraps(f)
         async def wrapper(*args, **kwargs):

@@ -1,4 +1,3 @@
-import asyncio
 import functools
 import inspect
 
@@ -97,7 +96,7 @@ def curry(f):
         len(f_len_args) > 1
     ), f"Curry function must have at least 2 parameters, {f} has {len(f_len_args)}"
     defaults = _infer_defaults(f_len_args)
-    is_coroutine = asyncio.iscoroutinefunction(f)
+    is_coroutine = inspect.iscoroutinefunction(f)
 
     @functools.wraps(f)
     def indirection(*args, **kwargs):
