@@ -67,7 +67,6 @@ get_or_identity = get_or_transform(operator.identity)
 
 
 def get_in(keys: Iterable):
-
     """Creates a function that returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
 
     >>> get_in(["a", "b", 1])({"a": {"b": [0, 1, 2]}})

@@ -1,4 +1,5 @@
 """Asynchronous versions of common functions for optimized use cases."""
+
 import asyncio
 import inspect
 

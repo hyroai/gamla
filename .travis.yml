@@ -1,14 +1,12 @@
 dist: jammy
 language: python
 python:
-  - 3.11
+  - 3.14
 jobs:
   include:
     - stage: test
       name: pytest
-      install:
-        - pip install --upgrade pytest
-        - pip install -e .
+      install: pip install -e .
       script: pytest
     - stage: test
       name: pre-commit
