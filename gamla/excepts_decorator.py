@@ -1,8 +1,8 @@
 import functools
-import inspect
 from typing import Any, Callable, Tuple, Union
 
 from gamla import currying
+from gamla.optimized import async_functions
 
 
 @currying.curry
@@ -11,7 +11,7 @@ def excepts(
     handler: Callable[[Exception], Any],
     function: Callable,
 ):
-    if inspect.iscoroutinefunction(function):
+    if async_functions.is_coroutine_function(function):
 
         async def excepts(*args, **kwargs):
             try:
@@ -36,7 +36,7 @@ def try_and_excepts(
     function: Callable,
 ):
     """Same as sync excepts only that the handler gets the original function params after the exception param."""
-    if inspect.iscoroutinefunction(function):
+    if async_functions.is_coroutine_function(function):
 
         async def try_and_excepts(*args, **kwargs):
             try:

@@ -1,6 +1,5 @@
 import asyncio
 import functools
-import inspect
 import logging
 import threading
 import time
@@ -15,7 +14,7 @@ from requests.packages.urllib3.util import retry as retry_lib
 
 import gamla
 from gamla import currying, functional
-from gamla.optimized import sync
+from gamla.optimized import async_functions, sync
 
 
 def _color_for_duration(duration: float):
@@ -60,7 +59,7 @@ def timeit_with_label(label: str, f: Callable) -> Callable:
             ":" + label
         )  # Do NOT change this format. We have datadog monitors dependent on it.
 
-    if inspect.iscoroutinefunction(f):
+    if async_functions.is_coroutine_function(f):
         return _async_timeit(label, f)
 
     @functools.wraps(f)
@@ -183,7 +182,7 @@ def make_throttler(limit):
 
     def wrap_function(f):
 
-        if inspect.iscoroutinefunction(f):
+        if async_functions.is_coroutine_function(f):
 
             @functools.wraps(f)
             async def wrap(*args, **kwargs):

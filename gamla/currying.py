@@ -1,6 +1,8 @@
 import functools
 import inspect
 
+from gamla.optimized import async_functions
+
 
 def _curry_helper(
     is_coroutine, signature, f, args_so_far, kwargs_so_far, *args, **kwargs
@@ -96,7 +98,7 @@ def curry(f):
         len(f_len_args) > 1
     ), f"Curry function must have at least 2 parameters, {f} has {len(f_len_args)}"
     defaults = _infer_defaults(f_len_args)
-    is_coroutine = inspect.iscoroutinefunction(f)
+    is_coroutine = async_functions.is_coroutine_function(f)
 
     @functools.wraps(f)
     def indirection(*args, **kwargs):

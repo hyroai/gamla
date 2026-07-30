@@ -2,7 +2,6 @@ import dataclasses
 import functools
 import hashlib
 import heapq
-import inspect
 import itertools
 import json
 import os
@@ -27,7 +26,7 @@ import immutables
 import toolz
 
 from gamla import construct, currying, excepts_decorator, operator
-from gamla.optimized import sync
+from gamla.optimized import async_functions, sync
 
 
 def sort_by(key: Callable):
@@ -85,7 +84,7 @@ def singleize(func: Callable) -> Callable:
             return await func(some_input)
         return operator.head(await func((some_input,)))
 
-    if inspect.iscoroutinefunction(func):
+    if async_functions.is_coroutine_function(func):
         return wrapped_async
     return wrapped
 
@@ -103,7 +102,7 @@ def ignore_input(inner: Callable[[], Any]) -> Callable:
     async def ignore_and_run_async(*args, **kwargs):
         return await inner()
 
-    if inspect.iscoroutinefunction(inner):
+    if async_functions.is_coroutine_function(inner):
         return ignore_and_run_async
     return ignore_and_run
 
