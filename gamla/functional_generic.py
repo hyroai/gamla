@@ -2,6 +2,7 @@ import asyncio
 import functools
 import inspect
 import itertools
+import os
 from operator import not_
 from typing import (
     Any,
@@ -28,6 +29,14 @@ from gamla import (
     operator,
 )
 from gamla.optimized import async_functions, sync
+
+# `compose`/`compose_left` rename their result to point at the caller's
+# file:line so tracebacks/logs show the composition's origin instead of a
+# generic "composed" frame. That costs a stack-frame walk plus allocating a
+# new code object (`__code__.replace`) on every call, purely for debugging;
+# opt out with GAMLA_NAME_COMPOSED_FUNCTIONS=0 in latency-sensitive processes
+# that don't rely on it. Default stays on to preserve existing behavior.
+_NAME_COMPOSED_FUNCTIONS = os.environ.get("GAMLA_NAME_COMPOSED_FUNCTIONS", "1") != "0"
 
 
 def compose_left(*funcs):
@@ -140,6 +149,8 @@ def compose(*funcs):
         composed = async_functions.compose(*funcs)
     else:
         composed = sync.compose(*funcs)
+    if not _NAME_COMPOSED_FUNCTIONS:
+        return composed
     composed = functools.wraps(operator.last(funcs))(composed)
     frame = inspect.currentframe().f_back.f_back
     composed.__code__ = composed.__code__.replace(
