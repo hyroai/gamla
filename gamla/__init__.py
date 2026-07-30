@@ -25,6 +25,7 @@ check = sync.check
 map = functional_generic.curried_map
 filter = functional_generic.curried_filter
 
+is_coroutine_function = async_functions.is_coroutine_function
 to_awaitable = async_functions.to_awaitable
 wrap_awaitable = async_functions.wrap_awaitable
 
