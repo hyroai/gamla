@@ -2,6 +2,32 @@
 
 import asyncio
 import inspect
+import types
+
+_CO_COROUTINE = inspect.CO_COROUTINE
+
+
+def is_coroutine_function(f) -> bool:
+    """`inspect.iscoroutinefunction` with fast paths for the common callable types.
+
+    Composition combinators check async-ness on every dynamic dispatch
+    (`pipe`, `ternary`, `map`, `juxt`), so the check must be cheap: plain
+    functions and bound methods are decided straight from the code-object
+    flag, builtins are never coroutine functions, and any other callable
+    falls back to `inspect`. Functions tagged with
+    `inspect.markcoroutinefunction` (which sets no code flag) are not
+    recognized by the fast path.
+    """
+    t = type(f)
+    if t is types.FunctionType:
+        return bool(f.__code__.co_flags & _CO_COROUTINE)
+    if t is types.BuiltinFunctionType:
+        return False
+    if t is types.MethodType:
+        m = f.__func__
+        if type(m) is types.FunctionType:
+            return bool(m.__code__.co_flags & _CO_COROUTINE)
+    return inspect.iscoroutinefunction(f)
 
 
 async def to_awaitable(value):

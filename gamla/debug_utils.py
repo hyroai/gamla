@@ -1,6 +1,5 @@
 import builtins
 import functools
-import inspect
 import logging
 from typing import Text
 
@@ -9,7 +8,7 @@ import toolz
 import yappi
 
 from gamla import excepts_decorator, functional_generic, higher_order
-from gamla.optimized import sync
+from gamla.optimized import async_functions, sync
 
 logger = functional_generic.side_effect(logging.info)
 
@@ -105,7 +104,7 @@ def _print_stats():
 
 
 def profileit(f):
-    if inspect.iscoroutinefunction(f):
+    if async_functions.is_coroutine_function(f):
 
         @functools.wraps(f)
         async def wrapper(*args, **kwargs):
