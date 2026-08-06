@@ -6,8 +6,11 @@ jobs:
   include:
     - stage: test
       name: pytest
-      install: pip install -e .
-      script: pytest
+      install:
+        - curl -LsSf https://astral.sh/uv/install.sh | sh
+        - export PATH="$HOME/.local/bin:$PATH"
+        - uv sync --locked --group test
+      script: uv run pytest
     - stage: test
       name: pre-commit
       install: pip install pre-commit

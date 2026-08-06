@@ -14,14 +14,15 @@ dependencies = [
     "heapq_max",
     "httpx",
     "immutables",
-    "pytest-asyncio",
-    "pytest",
     "requests",
     "tabulate",
     "termcolor",
     "toolz",
     "yappi",
 ]
+
+[dependency-groups]
+test = ["pytest", "pytest-asyncio"]
 
 [tool.setuptools.packages.find]
 where = ["."]
