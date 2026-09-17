@@ -61,6 +61,35 @@ async def test_batch_decorator_errors():
     assert times_f_called == 2
 
 
+async def test_batch_decorator_lone_call_is_not_delayed():
+    @io_utils.batch_calls(100)
+    async def identity(inputs):
+        return inputs
+
+    started = time.perf_counter()
+    assert await identity(1) == 1
+    assert time.perf_counter() - started < 0.05
+
+
+async def test_batch_calls_with_window_joins_staggered_callers():
+    times_f_called = 0
+
+    @io_utils.batch_calls_with_window(0.2, 100)
+    async def identity(inputs):
+        nonlocal times_f_called
+        times_f_called += 1
+        return inputs
+
+    async def call_after(delay, x):
+        await asyncio.sleep(delay)
+        return await identity(x)
+
+    assert await asyncio.gather(*(call_after(i * 0.01, i) for i in range(5))) == list(
+        range(5),
+    )
+    assert times_f_called == 1
+
+
 async def test_batch_decorator_max_size():
     times_f_called = 0
 

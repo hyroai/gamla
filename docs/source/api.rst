@@ -271,6 +271,7 @@ io_utils
 
 .. autosummary::
    batch_calls
+   batch_calls_with_window
    get_async
    get_async_with_headers
    head_async_with_headers

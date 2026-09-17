@@ -99,20 +99,28 @@ def requests_with_retry(retries: int = 3) -> requests.Session:
     return session
 
 
+#: Dispatch window of `batch_calls`. `asyncio.sleep(0)` yields once, so callers that are
+#: already scheduled when the dispatch task runs are sent together, and a lone caller pays
+#: one event-loop iteration instead of a fixed timer.
+_SAME_TICK_WINDOW_SECONDS = 0
+
+
 @currying.curry
-def batch_calls(max_batch_size: int, f: Callable):
-    """Batches single call into one request.
+def batch_calls_with_window(window_seconds: float, max_batch_size: int, f: Callable):
+    """Batches single calls into one request.
     Turns `f`, a function that gets a `tuple` of independent requests, into a function
     that gets a single request.
-    Each request will be at most of size `max_batched_size`.
-    Requests will be performed in time intervals of 0.1s.
+    Each call opens a dispatch that fires after `window_seconds`; everything queued by then
+    goes out in requests of at most `max_batch_size`. Every call waits at least the window,
+    so use a positive one only when callers arriving on different event-loop iterations
+    must share a request (e.g. many conversations feeding one model server).
 
-    >>> batched_f = batch_calls(5, f)
+    >>> batched_f = batch_calls_with_window(0.1, 5, f)
     """
     queue: Dict = {}
 
     async def make_call():
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(window_seconds)
         if not queue:
             return
         slice_from_queue = tuple(functional.take(max_batch_size)(queue))
@@ -148,6 +156,13 @@ def batch_calls(max_batch_size: int, f: Callable):
         return await async_result
 
     return wrapped
+
+
+#: `batch_calls_with_window` with a same-tick window: concurrent callers (e.g. a `gather`)
+#: still share a request, a lone caller is dispatched on the next event-loop iteration.
+#:
+#: >>> batched_f = batch_calls(5, f)
+batch_calls = batch_calls_with_window(_SAME_TICK_WINDOW_SECONDS)
 
 
 def queue_identical_calls(f):

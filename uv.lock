@@ -91,7 +91,7 @@ wheels = [
 
 [[package]]
 name = "gamla"
-version = "164"
+version = "165"
 source = { editable = "." }
 dependencies = [
     { name = "async-timeout" },
